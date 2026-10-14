@@ -1,8 +1,8 @@
-/* ═══════════════════ 2026 REALISM 3D EMBLEMS (S · A · B · C · D · E) & HOLOGRAPHIC FOIL ═══════════════════ */
+/* ═══════════════════ 3D EMBLEMS (10 ARCHITECTURES FOR S · A · B · C · D · E) & HOLO FOIL ═══════════════════ */
 .lstage {
   position: relative;
-  width: 148px;
-  height: 168px;
+  width: 140px;
+  height: 154px;
   display: grid;
   place-items: center;
   perspective: 780px;
@@ -23,8 +23,8 @@
 
 .l3d-in {
   position: relative;
-  width: 90px;
-  height: 90px;
+  width: 86px;
+  height: 86px;
   display: grid;
   place-items: center;
   transform-style: preserve-3d;
@@ -33,7 +33,7 @@
 .ll {
   position: absolute;
   font-family: var(--serif);
-  font-size: 68px;
+  font-size: 64px;
   font-weight: 900;
   line-height: 1;
   letter-spacing: -0.02em;
@@ -56,9 +56,9 @@
 
 .seal-floor {
   position: absolute;
-  bottom: 12px;
-  width: 86px;
-  height: 22px;
+  bottom: 10px;
+  width: 82px;
+  height: 20px;
   border-radius: 50%;
   background: radial-gradient(closest-side, var(--tg), transparent 78%);
   transform: rotateX(75deg) translateZ(-28px);
@@ -74,28 +74,26 @@
   transform-style: preserve-3d;
   perspective: 720px;
 }
-.emblems-realism .realism-system,
-.emblems-cyber .realism-system {
+
+/* Все 8 canvas-ориентированных 3D-режимов активируют .realism-system */
+body.emblems-realism .realism-system,
+body.emblems-quantum .realism-system,
+body.emblems-crystal .realism-system,
+body.emblems-eclipse .realism-system,
+body.emblems-runic .realism-system,
+body.emblems-synth .realism-system,
+body.emblems-galaxy .realism-system,
+body.emblems-cyber .realism-system {
   display: grid;
   place-items: center;
 }
-.emblems-realism .orbit-system,
-.emblems-realism .element-system,
-.emblems-realism .lstage > .ring {
-  display: none !important;
-}
-.emblems-realism .lstage {
-  --seal-size: 132px;
-  height: 172px;
-  perspective: 780px;
-  transform-style: preserve-3d;
-}
+
 .seal-canvas-3d {
   position: absolute;
-  width: calc(var(--seal-size, 132px) * 1.18);
-  height: calc(var(--seal-size, 132px) * 1.18);
+  width: calc(var(--seal-size, 126px) * 1.18);
+  height: calc(var(--seal-size, 126px) * 1.18);
   left: 50%;
-  top: 46%;
+  top: 48%;
   transform: translate(-50%, -50%) translateZ(-8px)
     rotateX(calc(var(--bry, 0deg) * 0.65))
     rotateY(calc(var(--brx, 0deg) * 0.65));
@@ -106,10 +104,10 @@
 
 .realism-gimbal {
   position: absolute;
-  width: var(--seal-size, 132px);
-  height: var(--seal-size, 132px);
+  width: var(--seal-size, 126px);
+  height: var(--seal-size, 126px);
   left: 50%;
-  top: 46%;
+  top: 48%;
   transform: translate(-50%, -50%) rotateX(var(--bry, 0deg)) rotateY(var(--brx, 0deg));
   transform-style: preserve-3d;
   pointer-events: none;
@@ -164,26 +162,27 @@
   100% { transform: rotateX(-58deg) rotateY(34deg) rotateZ(360deg); }
 }
 
-.emblems-realism .l3d {
-  transform: translateY(-4px) rotateX(var(--bry, 0deg)) rotateY(var(--brx, 0deg));
+/* Кинематика букв S · A · B · C · D · E */
+.l3d {
+  transform: translateY(-2px) rotateX(var(--bry, 0deg)) rotateY(var(--brx, 0deg));
 }
-.emblems-realism .tier[data-rank="1"] .l3d-in,
-.emblems-realism .fx-demo-seal[data-rank="1"] .l3d-in {
+.tier[data-rank="1"] .l3d-in,
+.fx-demo-seal[data-rank="1"] .l3d-in {
   animation: sealRealismS 7.2s cubic-bezier(.37, 0, .63, 1) infinite;
 }
-.emblems-realism .tier[data-rank="2"] .l3d-in {
+.tier[data-rank="2"] .l3d-in {
   animation: sealRealismA 6.6s cubic-bezier(.37, 0, .63, 1) infinite;
 }
-.emblems-realism .tier[data-rank="3"] .l3d-in {
+.tier[data-rank="3"] .l3d-in {
   animation: sealRealismB 7.8s cubic-bezier(.37, 0, .63, 1) infinite;
 }
-.emblems-realism .tier[data-rank="4"] .l3d-in {
+.tier[data-rank="4"] .l3d-in {
   animation: sealRealismC 7.4s cubic-bezier(.37, 0, .63, 1) infinite;
 }
-.emblems-realism .tier[data-rank="5"] .l3d-in {
+.tier[data-rank="5"] .l3d-in {
   animation: sealRealismD 6.8s cubic-bezier(.37, 0, .63, 1) infinite;
 }
-.emblems-realism .tier[data-rank="6"] .l3d-in {
+.tier[data-rank="6"] .l3d-in {
   animation: sealRealismE 8.6s cubic-bezier(.37, 0, .63, 1) infinite;
 }
 
@@ -244,7 +243,7 @@
     drop-shadow(0 0 22px color-mix(in srgb, var(--t) 55%, transparent));
   animation: pbrMetalSheen 5.2s ease-in-out infinite;
 }
-.emblems-realism .tier[data-rank="2"] .ll.face {
+.tier[data-rank="2"] .ll.face {
   filter:
     drop-shadow(-1.5px 0 0 rgba(255, 60, 140, 0.55))
     drop-shadow(1.5px 0 0 rgba(0, 245, 255, 0.65))
@@ -255,90 +254,18 @@
   50%      { background-position: 100% 80%; }
 }
 
-.seal-year-3d {
-  position: absolute;
-  bottom: 2px;
-  left: 50%;
-  transform: translateX(-50%) translateZ(24px) rotateX(10deg);
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 3px 9px 3px 7px;
-  border-radius: 999px;
-  background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.03)),
-    rgba(12, 10, 24, 0.88);
-  border: 1px solid color-mix(in srgb, var(--t) 65%, rgba(255, 255, 255, 0.35));
-  box-shadow:
-    0 6px 16px -4px rgba(0, 0, 0, 0.85),
-    0 0 16px -3px var(--tg),
-    inset 0 1px 0 rgba(255, 255, 255, 0.45);
-  font-family: var(--sans);
-  font-size: 9px;
-  font-weight: 800;
-  letter-spacing: 0.14em;
-  color: #fff;
-  white-space: nowrap;
-  z-index: 6;
-  pointer-events: none;
-  overflow: hidden;
-  animation: yearPlateFloat 5.6s ease-in-out infinite alternate;
-}
-.seal-year-3d::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(110deg, transparent 25%, rgba(255, 255, 255, 0.55) 48%, transparent 72%);
-  transform: translateX(-130%);
-  animation: yearPlateGlint 6.4s cubic-bezier(.4, 0, .2, 1) infinite;
-}
-@keyframes yearPlateFloat {
-  0%   { transform: translateX(-50%) translateZ(22px) translateY(0px) rotateX(10deg); }
-  100% { transform: translateX(-50%) translateZ(28px) translateY(-2.5px) rotateX(-6deg); }
-}
-@keyframes yearPlateGlint {
-  0%, 72%   { transform: translateX(-130%); }
-  92%, 100% { transform: translateX(130%); }
-}
-.seal-year-3d .sy-dot {
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: var(--t);
-  box-shadow: 0 0 8px var(--t), 0 0 3px #fff;
-}
-.seal-year-3d .sy-yr {
-  font-family: var(--serif);
-  font-size: 10.5px;
-  color: var(--t2);
-  letter-spacing: 0.06em;
-  text-shadow: 0 0 10px var(--tg);
-}
-.seal-year-3d .sy-tag {
-  font-size: 7.5px;
-  color: var(--ink-soft);
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-}
-.tier[data-tier="S"] .seal-year-3d {
-  background: linear-gradient(135deg, rgba(255, 215, 106, 0.28), rgba(62, 22, 35, 0.92));
-  border-color: #ffe8a3;
-}
-.tier[data-tier="S"] .seal-year-3d .sy-yr {
-  color: #fff4ce;
-}
-
+/* 3D-бейдж года и OKLCH голографическая фольга на карточках постеров */
 .card-year-3d {
   position: absolute;
-  top: 7px;
-  left: 31px;
+  top: 6px;
+  left: 28px;
   z-index: 4;
-  padding: 2px 6px;
-  border-radius: 6px;
+  padding: 2px 5px;
+  border-radius: 5px;
   font-family: var(--sans);
-  font-size: 9px;
+  font-size: 8.5px;
   font-weight: 800;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.05em;
   color: #fff;
   background: linear-gradient(135deg, color-mix(in srgb, var(--t) 55%, rgba(10, 8, 20, 0.82)), rgba(10, 8, 20, 0.88));
   border: 1px solid color-mix(in srgb, var(--t2) 55%, rgba(255, 255, 255, 0.22));
@@ -374,11 +301,6 @@
 body.fx-tilt:not(.editing) .card:hover .holo-foil {
   opacity: 0.88;
 }
-.seal-caption > span { display: none; }
-.emblems-realism .seal-caption .caption-realism,
-.emblems-cyber .seal-caption .caption-realism { display: inline; }
-.emblems-elements .seal-caption .caption-elements { display: inline; }
-.emblems-orbits .seal-caption .caption-orbits { display: inline; }
 
 .element-system, .orbit-system {
   display: none;
@@ -391,16 +313,16 @@ body.fx-tilt:not(.editing) .card:hover .holo-foil {
 .emblems-orbits .orbit-system { display: grid; }
 .orbit-ring {
   position: absolute;
-  width: 118px;
-  height: 118px;
+  width: 114px;
+  height: 114px;
   border-radius: 50%;
   border: 1px dashed var(--t);
   box-shadow: 0 0 15px var(--tg);
   animation: rgSpinOuter 10s linear infinite;
 }
 .orbit-ring.o2 {
-  width: 94px;
-  height: 94px;
+  width: 90px;
+  height: 90px;
   border-style: solid;
   animation: rgSpinInner 14s linear infinite;
 }
