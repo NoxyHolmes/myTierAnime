@@ -1,4 +1,4 @@
-/* ════════════════════ REAL-TIME 3D PBR & VOLUMETRIC SEAL ENGINE (S · A · B · C · D · E) ════════════════════ */
+/* ════════════════════ REAL-TIME 3D SEAL ENGINE + 6 NEW ARCHITECTURES ════════════════════ */
 (() => {
   let sealCanvases = [];
   let sealRaf = 0;
@@ -30,6 +30,7 @@
     return [cx + pt[0] * scale * k, cy + pt[1] * scale * k, k, pt[2]];
   }
 
+  /* ── Классические 6 печатей Реализма (S, A, B, C, D, E) ── */
   function drawSealS(ctx, w, h, t, hue) {
     const cx = w / 2, cy = h / 2, R = w * 0.38;
     ctx.save();
@@ -52,47 +53,27 @@
       { rad: 0.66, rx: t * 0.9,         ry: -t * 0.6,       rz: t * 0.4, w: 1.2, hShift: 15 }
     ];
     rings.forEach(rg => {
-      const segs = 40;
+      const segs = 36;
       for (let i = 0; i < segs; i++) {
         const a0 = (i / segs) * Math.PI * 2;
         const a1 = ((i + 1) / segs) * Math.PI * 2;
         const p0 = proj(rot3D(Math.cos(a0) * rg.rad, Math.sin(a0) * rg.rad, 0, rg.rx, rg.ry, rg.rz), cx, cy, R);
         const p1 = proj(rot3D(Math.cos(a1) * rg.rad, Math.sin(a1) * rg.rad, 0, rg.rx, rg.ry, rg.rz), cx, cy, R);
         const spec = Math.max(0, Math.sin(a0 * 2 + t * 2.2));
-        const depthAlpha = Math.min(0.95, Math.max(0.18, (p0[3] + 1.3) * 0.48));
-        ctx.strokeStyle = `hsla(${hue + rg.hShift}, 96%, ${62 + spec * 32}%, ${depthAlpha})`;
-        ctx.lineWidth = rg.w * p0[2] * (0.85 + spec * 0.45);
+        ctx.strokeStyle = `hsla(${hue + rg.hShift}, 96%, ${62 + spec * 32}%, 0.75)`;
+        ctx.lineWidth = rg.w * p0[2];
         ctx.beginPath();
         ctx.moveTo(p0[0], p0[1]);
         ctx.lineTo(p1[0], p1[1]);
         ctx.stroke();
       }
     });
-    for (let i = 0; i < 8; i++) {
-      const ang = t * 1.15 + (i * Math.PI) / 4;
-      const pt = rot3D(Math.cos(ang) * 1.05, Math.sin(ang) * 1.05, Math.sin(ang * 2 + t) * 0.28, 0.55, t * 0.35, 0.2);
-      const pr = proj(pt, cx, cy, R);
-      const sz = 4.2 * pr[2];
-      ctx.fillStyle = i % 2 === 0 ? "rgba(255, 70, 125, 0.92)" : `hsla(${hue}, 100%, 86%, 0.95)`;
-      ctx.beginPath();
-      ctx.moveTo(pr[0], pr[1] - sz * 1.35);
-      ctx.lineTo(pr[0] + sz, pr[1]);
-      ctx.lineTo(pr[0], pr[1] + sz * 1.35);
-      ctx.lineTo(pr[0] - sz, pr[1]);
-      ctx.closePath();
-      ctx.fill();
-    }
     ctx.restore();
   }
 
   const TESS_VERTS = [];
   for (let i = 0; i < 16; i++) {
-    TESS_VERTS.push([
-      (i & 1) ? 0.62 : -0.62,
-      (i & 2) ? 0.62 : -0.62,
-      (i & 4) ? 0.62 : -0.62,
-      (i & 8) ? 0.62 : -0.62
-    ]);
+    TESS_VERTS.push([(i & 1) ? 0.62 : -0.62, (i & 2) ? 0.62 : -0.62, (i & 4) ? 0.62 : -0.62, (i & 8) ? 0.62 : -0.62]);
   }
   const TESS_EDGES = [];
   for (let i = 0; i < 16; i++) {
@@ -107,36 +88,20 @@
     ctx.save();
     ctx.globalCompositeOperation = "lighter";
     const c4 = Math.cos(t * 0.85), s4 = Math.sin(t * 0.85);
-    const pts3D = TESS_VERTS.map(v => {
+    const projected = TESS_VERTS.map(v => {
       const x = v[0] * c4 - v[3] * s4;
       const w4 = v[0] * s4 + v[3] * c4;
       const d4 = 1.65 / (2.2 - w4);
-      return rot3D(x * d4, v[1] * d4, v[2] * d4, t * 0.55, t * 0.72, 0.3);
+      return proj(rot3D(x * d4, v[1] * d4, v[2] * d4, t * 0.55, t * 0.72, 0.3), cx, cy, R);
     });
-    const projected = pts3D.map(p => proj(p, cx, cy, R));
-    const passes = [
-      { dx: -1.6, dy: -0.6, col: `hsla(${(hue + 35) % 360}, 100%, 70%, 0.42)`, lw: 1.3 },
-      { dx: 1.6,  dy: 0.6,  col: `hsla(${(hue + 145) % 360}, 100%, 72%, 0.38)`, lw: 1.3 },
-      { dx: 0,    dy: 0,    col: `hsla(${hue}, 100%, 88%, 0.78)`, lw: 1.5 }
-    ];
-    passes.forEach(ps => {
-      ctx.strokeStyle = ps.col;
-      ctx.lineWidth = ps.lw;
-      ctx.beginPath();
-      for (const [a, b] of TESS_EDGES) {
-        const p0 = projected[a], p1 = projected[b];
-        ctx.moveTo(p0[0] + ps.dx, p0[1] + ps.dy);
-        ctx.lineTo(p1[0] + ps.dx, p1[1] + ps.dy);
-      }
-      ctx.stroke();
-    });
-    for (const p of projected) {
-      const r = Math.max(1.2, 2.3 * p[2]);
-      ctx.fillStyle = `hsla(${hue}, 100%, 94%, ${Math.min(0.9, (p[3] + 1.4) * 0.45)})`;
-      ctx.beginPath();
-      ctx.arc(p[0], p[1], r, 0, Math.PI * 2);
-      ctx.fill();
+    ctx.strokeStyle = `hsla(${hue}, 100%, 82%, 0.78)`;
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    for (const [a, b] of TESS_EDGES) {
+      ctx.moveTo(projected[a][0], projected[a][1]);
+      ctx.lineTo(projected[b][0], projected[b][1]);
     }
+    ctx.stroke();
     ctx.restore();
   }
 
@@ -144,8 +109,7 @@
     const cx = w / 2, cy = h / 2, R = w * 0.36;
     ctx.save();
     ctx.globalCompositeOperation = "lighter";
-    const N = 68;
-    const segs = [];
+    const N = 60;
     for (let i = 0; i < N; i++) {
       const u0 = (i / N) * Math.PI * 2;
       const u1 = ((i + 1) / N) * Math.PI * 2;
@@ -155,18 +119,11 @@
       };
       const p0 = proj(ptAt(u0), cx, cy, R);
       const p1 = proj(ptAt(u1), cx, cy, R);
-      segs.push({ p0, p1, u: u0, z: (p0[3] + p1[3]) * 0.5 });
-    }
-    segs.sort((a, b) => a.z - b.z);
-    for (const s of segs) {
-      const pulse = 0.5 + 0.5 * Math.sin(s.u * 3 - t * 3.2);
-      const alpha = Math.min(0.92, Math.max(0.2, (s.z + 1.2) * 0.52));
-      ctx.strokeStyle = `hsla(${hue + pulse * 26}, 95%, ${60 + pulse * 30}%, ${alpha})`;
-      ctx.lineWidth = (1.6 + pulse * 2.2) * s.p0[2];
-      ctx.lineCap = "round";
+      ctx.strokeStyle = `hsla(${hue}, 95%, 72%, 0.75)`;
+      ctx.lineWidth = 2.0 * p0[2];
       ctx.beginPath();
-      ctx.moveTo(s.p0[0], s.p0[1]);
-      ctx.lineTo(s.p1[0], s.p1[1]);
+      ctx.moveTo(p0[0], p0[1]);
+      ctx.lineTo(p1[0], p1[1]);
       ctx.stroke();
     }
     ctx.restore();
@@ -176,41 +133,18 @@
     const cx = w / 2, cy = h / 2, R = w * 0.37;
     ctx.save();
     ctx.globalCompositeOperation = "lighter";
-    const strands = 2, ptsPerStrand = 18;
-    const spheres = [];
-    for (let s = 0; s < strands; s++) {
+    for (let s = 0; s < 2; s++) {
       const phase = s * Math.PI;
-      for (let i = 0; i < ptsPerStrand; i++) {
-        const k = (i / (ptsPerStrand - 1)) * 2 - 1;
+      for (let i = 0; i < 16; i++) {
+        const k = (i / 15) * 2 - 1;
         const angle = k * Math.PI * 1.35 + t * 1.2 + phase;
         const rad = Math.sqrt(Math.max(0.12, 1 - k * k * 0.65)) * 0.95;
-        const p3 = rot3D(Math.cos(angle) * rad, k * 0.88, Math.sin(angle) * rad, 0.35, t * 0.45, -0.18);
-        const pr = proj(p3, cx, cy, R);
-        spheres.push({ pr, k, s, i });
+        const pr = proj(rot3D(Math.cos(angle) * rad, k * 0.88, Math.sin(angle) * rad, 0.35, t * 0.45, -0.18), cx, cy, R);
+        ctx.fillStyle = `hsla(${hue}, 95%, 75%, 0.8)`;
+        ctx.beginPath();
+        ctx.arc(pr[0], pr[1], 3.2 * pr[2], 0, Math.PI * 2);
+        ctx.fill();
       }
-    }
-    ctx.lineWidth = 1.1;
-    for (let i = 0; i < ptsPerStrand; i += 2) {
-      const a = spheres[i].pr, b = spheres[ptsPerStrand + i].pr;
-      ctx.strokeStyle = `hsla(${hue}, 90%, 72%, 0.32)`;
-      ctx.beginPath();
-      ctx.moveTo(a[0], a[1]);
-      ctx.lineTo(b[0], b[1]);
-      ctx.stroke();
-    }
-    spheres.sort((a, b) => a.pr[3] - b.pr[3]);
-    for (const sp of spheres) {
-      const [x, y, scale, z] = sp.pr;
-      const rad = Math.max(1.8, (3.2 + (sp.i % 3) * 0.9) * scale);
-      const alpha = Math.min(0.92, Math.max(0.22, (z + 1.2) * 0.5));
-      const g = ctx.createRadialGradient(x - rad * 0.35, y - rad * 0.35, rad * 0.1, x, y, rad);
-      g.addColorStop(0, `hsla(${hue}, 100%, 96%, ${alpha})`);
-      g.addColorStop(0.45, `hsla(${hue}, 92%, 68%, ${alpha * 0.85})`);
-      g.addColorStop(1, `hsla(${(hue + 25) % 360}, 88%, 40%, 0)`);
-      ctx.fillStyle = g;
-      ctx.beginPath();
-      ctx.arc(x, y, rad, 0, Math.PI * 2);
-      ctx.fill();
     }
     ctx.restore();
   }
@@ -220,31 +154,19 @@
     ctx.save();
     ctx.globalCompositeOperation = "lighter";
     const swing = Math.sin(t * 1.8) * 0.55;
-    const teeth = 24;
-    for (let i = 0; i < teeth; i++) {
-      const a0 = (i / teeth) * Math.PI * 2 + swing;
-      const a1 = ((i + 0.5) / teeth) * Math.PI * 2 + swing;
+    for (let i = 0; i < 24; i++) {
+      const a0 = (i / 24) * Math.PI * 2 + swing;
+      const a1 = ((i + 0.5) / 24) * Math.PI * 2 + swing;
       const r0 = i % 2 === 0 ? 0.98 : 0.82;
       const p0 = proj(rot3D(Math.cos(a0) * r0, Math.sin(a0) * r0, 0, 0.45, swing * 0.7, 0), cx, cy, R);
       const p1 = proj(rot3D(Math.cos(a1) * r0, Math.sin(a1) * r0, 0, 0.45, swing * 0.7, 0), cx, cy, R);
       ctx.strokeStyle = `hsla(${hue}, 95%, 68%, 0.78)`;
-      ctx.lineWidth = 2.1 * p0[2];
+      ctx.lineWidth = 2 * p0[2];
       ctx.beginPath();
       ctx.moveTo(p0[0], p0[1]);
       ctx.lineTo(p1[0], p1[1]);
       ctx.stroke();
     }
-    const bob = proj(rot3D(Math.sin(swing) * 0.85, Math.cos(swing) * 0.85, 0.2, 0.3, t * 0.4, 0), cx, cy, R);
-    ctx.strokeStyle = `hsla(${hue + 15}, 100%, 75%, 0.55)`;
-    ctx.lineWidth = 1.6;
-    ctx.beginPath();
-    ctx.moveTo(cx, cy - R * 0.3);
-    ctx.lineTo(bob[0], bob[1]);
-    ctx.stroke();
-    ctx.fillStyle = `hsla(${hue}, 100%, 82%, 0.92)`;
-    ctx.beginPath();
-    ctx.arc(bob[0], bob[1], 5.5 * bob[2], 0, Math.PI * 2);
-    ctx.fill();
     ctx.restore();
   }
 
@@ -252,18 +174,10 @@
     const cx = w / 2, cy = h / 2, R = w * 0.36;
     ctx.save();
     ctx.globalCompositeOperation = "lighter";
-    const verts = [
-      [0, -1.08, 0], [0, 1.08, 0],
-      [-0.55, 0, -0.55], [0.55, 0, -0.55],
-      [0.55, 0, 0.55], [-0.55, 0, 0.55]
-    ];
-    const edges = [
-      [0,2],[0,3],[0,4],[0,5],
-      [1,2],[1,3],[1,4],[1,5],
-      [2,3],[3,4],[4,5],[5,2]
-    ];
-    const pts = verts.map(v => proj(rot3D(v[0], v[1], v[2], 0.35, t * 0.5, Math.sin(t * 0.7) * 0.15), cx, cy, R));
-    ctx.strokeStyle = `hsla(${hue}, 35%, 78%, 0.68)`;
+    const verts = [[0, -1.08, 0], [0, 1.08, 0], [-0.55, 0, -0.55], [0.55, 0, -0.55], [0.55, 0, 0.55], [-0.55, 0, 0.55]];
+    const edges = [[0,2],[0,3],[0,4],[0,5],[1,2],[1,3],[1,4],[1,5],[2,3],[3,4],[4,5],[5,2]];
+    const pts = verts.map(v => proj(rot3D(v[0], v[1], v[2], 0.35, t * 0.5, 0.15), cx, cy, R));
+    ctx.strokeStyle = `hsla(${hue}, 35%, 78%, 0.72)`;
     ctx.lineWidth = 1.6;
     ctx.beginPath();
     for (const [a, b] of edges) {
@@ -274,8 +188,169 @@
     ctx.restore();
   }
 
+  /* ════════════════════ 6 НОВЫХ УНИКАЛЬНЫХ ВАРИАЦИЙ 3D-ЭМБЛЕМ ════════════════════ */
+
+  /* Вариация 1: Квантовый Вихрь (emblems-quantum) */
+  function drawQuantumVortex(ctx, w, h, t, hue) {
+    const cx = w / 2, cy = h / 2, R = w * 0.39;
+    ctx.save();
+    ctx.globalCompositeOperation = "lighter";
+    for (let arm = 0; arm < 3; arm++) {
+      const armOffset = (arm * Math.PI * 2) / 3;
+      ctx.beginPath();
+      for (let i = 0; i < 32; i++) {
+        const f = i / 31;
+        const ang = f * Math.PI * 4 - t * 2.2 + armOffset;
+        const rad = 0.2 + f * 0.85;
+        const z = Math.sin(f * Math.PI * 2 - t * 1.5) * 0.45;
+        const p = proj(rot3D(Math.cos(ang) * rad, Math.sin(ang) * rad, z, 0.65, t * 0.3, 0), cx, cy, R);
+        if (i === 0) ctx.moveTo(p[0], p[1]);
+        else ctx.lineTo(p[0], p[1]);
+      }
+      ctx.strokeStyle = `hsla(${(hue + arm * 28) % 360}, 100%, 74%, 0.75)`;
+      ctx.lineWidth = 2.0;
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  /* Вариация 2: Кристальная Матрица / Икосаэдр (emblems-crystal) */
+  const PHI = (1 + Math.sqrt(5)) / 2;
+  const ICO_V = [
+    [-1, PHI, 0], [1, PHI, 0], [-1, -PHI, 0], [1, -PHI, 0],
+    [0, -1, PHI], [0, 1, PHI], [0, -1, -PHI], [0, 1, -PHI],
+    [PHI, 0, -1], [PHI, 0, 1], [-PHI, 0, -1], [-PHI, 0, 1]
+  ].map(v => v.map(c => c * 0.56));
+
+  function drawCrystalMatrix(ctx, w, h, t, hue) {
+    const cx = w / 2, cy = h / 2, R = w * 0.38;
+    ctx.save();
+    ctx.globalCompositeOperation = "lighter";
+    const pts = ICO_V.map(v => proj(rot3D(v[0], v[1], v[2], t * 0.55, t * 0.75, 0.2), cx, cy, R));
+    ctx.strokeStyle = `hsla(${hue}, 100%, 80%, 0.62)`;
+    ctx.lineWidth = 1.4;
+    ctx.beginPath();
+    for (let i = 0; i < pts.length; i++) {
+      for (let j = i + 1; j < pts.length; j++) {
+        const dx = ICO_V[i][0] - ICO_V[j][0];
+        const dy = ICO_V[i][1] - ICO_V[j][1];
+        const dz = ICO_V[i][2] - ICO_V[j][2];
+        if (dx*dx + dy*dy + dz*dz < 1.35) {
+          ctx.moveTo(pts[i][0], pts[i][1]);
+          ctx.lineTo(pts[j][0], pts[j][1]);
+        }
+      }
+    }
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  /* Вариация 3: Солнечное Затмение Короны (emblems-eclipse) */
+  function drawEclipseCorona(ctx, w, h, t, hue) {
+    const cx = w / 2, cy = h / 2, R = w * 0.35;
+    ctx.save();
+    ctx.globalCompositeOperation = "lighter";
+    for (let i = 0; i < 48; i++) {
+      const a = (i / 48) * Math.PI * 2 + t * 0.25;
+      const flare = 1.05 + 0.32 * Math.sin(i * 5 + t * 3.4);
+      ctx.strokeStyle = `hsla(${hue + Math.sin(i)*20}, 100%, 72%, 0.55)`;
+      ctx.lineWidth = 2.2;
+      ctx.beginPath();
+      ctx.moveTo(cx + Math.cos(a) * R * 0.78, cy + Math.sin(a) * R * 0.78);
+      ctx.lineTo(cx + Math.cos(a) * R * flare, cy + Math.sin(a) * R * flare);
+      ctx.stroke();
+    }
+    ctx.globalCompositeOperation = "source-over";
+    ctx.fillStyle = "#080612";
+    ctx.beginPath();
+    ctx.arc(cx, cy, R * 0.74, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = `hsla(${hue}, 100%, 88%, 0.92)`;
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  /* Вариация 4: Рунический Алтарь / Гексаграмма (emblems-runic) */
+  function drawRunicAltar(ctx, w, h, t, hue) {
+    const cx = w / 2, cy = h / 2, R = w * 0.38;
+    ctx.save();
+    ctx.globalCompositeOperation = "lighter";
+    for (let tri = 0; tri < 2; tri++) {
+      const baseAng = t * 0.6 + tri * (Math.PI / 3);
+      ctx.beginPath();
+      for (let k = 0; k <= 3; k++) {
+        const a = baseAng + (k * Math.PI * 2) / 3;
+        const p = proj(rot3D(Math.cos(a) * 0.98, Math.sin(a) * 0.98, 0, 0.45 * Math.sin(t * 0.8), 0.35, 0), cx, cy, R);
+        if (k === 0) ctx.moveTo(p[0], p[1]);
+        else ctx.lineTo(p[0], p[1]);
+      }
+      ctx.strokeStyle = `hsla(${hue + tri * 35}, 100%, 76%, 0.85)`;
+      ctx.lineWidth = 2.0;
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  /* Вариация 5: Синтвейв Сетка (emblems-synth) */
+  function drawSynthGrid(ctx, w, h, t, hue) {
+    const cx = w / 2, cy = h / 2, R = w * 0.38;
+    ctx.save();
+    ctx.globalCompositeOperation = "lighter";
+    const g = ctx.createLinearGradient(cx, cy - R * 0.8, cx, cy + R * 0.3);
+    g.addColorStop(0, `hsla(${hue}, 100%, 72%, 0.75)`);
+    g.addColorStop(1, `hsla(${(hue + 80) % 360}, 100%, 60%, 0.15)`);
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.arc(cx, cy - R * 0.12, R * 0.62, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.strokeStyle = `hsla(${(hue + 140) % 360}, 100%, 72%, 0.7)`;
+    ctx.lineWidth = 1.2;
+    for (let i = -4; i <= 4; i++) {
+      const p0 = proj(rot3D(i * 0.25, 0.35, -0.4, 0.9, 0, 0), cx, cy, R);
+      const p1 = proj(rot3D(i * 0.45, 1.05, 0.5, 0.9, 0, 0), cx, cy, R);
+      ctx.beginPath();
+      ctx.moveTo(p0[0], p0[1]);
+      ctx.lineTo(p1[0], p1[1]);
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  /* Вариация 6: Галактическая Спираль (emblems-galaxy) */
+  function drawGalaxySpiral(ctx, w, h, t, hue) {
+    const cx = w / 2, cy = h / 2, R = w * 0.4;
+    ctx.save();
+    ctx.globalCompositeOperation = "lighter";
+    for (let i = 0; i < 64; i++) {
+      const r = (i / 64) * 1.05;
+      const a = i * 0.38 - t * 1.4 + (i % 2) * Math.PI;
+      const p = proj(rot3D(Math.cos(a) * r, Math.sin(a) * r, Math.sin(r * 4 - t) * 0.15, 0.8, 0.25, 0), cx, cy, R);
+      ctx.fillStyle = `hsla(${(hue + i * 1.5) % 360}, 100%, 80%, ${0.9 - r * 0.5})`;
+      ctx.beginPath();
+      ctx.arc(p[0], p[1], Math.max(1.2, (2.8 - r * 1.5) * p[2]), 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  function getActiveMode() {
+    const cl = document.body.classList;
+    if (cl.contains("emblems-quantum")) return "quantum";
+    if (cl.contains("emblems-crystal")) return "crystal";
+    if (cl.contains("emblems-eclipse")) return "eclipse";
+    if (cl.contains("emblems-runic")) return "runic";
+    if (cl.contains("emblems-synth")) return "synth";
+    if (cl.contains("emblems-galaxy")) return "galaxy";
+    if (cl.contains("emblems-cyber")) return "cyber";
+    if (cl.contains("emblems-realism")) return "realism";
+    return "other";
+  }
+
   function drawAllSeals(t) {
-    if (!document.body.classList.contains("emblems-realism") && !document.body.classList.contains("emblems-cyber")) return;
+    const mode = getActiveMode();
+    if (mode === "other") return;
     const fxOpen = document.getElementById("fxPanel")?.classList.contains("show");
     for (const cv of sealCanvases) {
       if (!cv.isConnected) continue;
@@ -289,12 +364,22 @@
       ctx.clearRect(0, 0, W, H);
       const idx = (+cv.dataset.sealIdx) || 0;
       const hue = (+cv.dataset.hue) || 45;
-      if (idx === 0) drawSealS(ctx, W, H, t, hue);
-      else if (idx === 1) drawSealA(ctx, W, H, t, hue);
-      else if (idx === 2) drawSealB(ctx, W, H, t, hue);
-      else if (idx === 3) drawSealC(ctx, W, H, t, hue);
-      else if (idx === 4) drawSealD(ctx, W, H, t, hue);
-      else drawSealE(ctx, W, H, t, hue);
+
+      if (mode === "quantum") drawQuantumVortex(ctx, W, H, t, hue);
+      else if (mode === "crystal") drawCrystalMatrix(ctx, W, H, t, hue);
+      else if (mode === "eclipse") drawEclipseCorona(ctx, W, H, t, hue);
+      else if (mode === "runic") drawRunicAltar(ctx, W, H, t, hue);
+      else if (mode === "synth") drawSynthGrid(ctx, W, H, t, hue);
+      else if (mode === "galaxy") drawGalaxySpiral(ctx, W, H, t, hue);
+      else if (mode === "cyber") drawSealA(ctx, W, H, t, hue);
+      else {
+        if (idx === 0) drawSealS(ctx, W, H, t, hue);
+        else if (idx === 1) drawSealA(ctx, W, H, t, hue);
+        else if (idx === 2) drawSealB(ctx, W, H, t, hue);
+        else if (idx === 3) drawSealC(ctx, W, H, t, hue);
+        else if (idx === 4) drawSealD(ctx, W, H, t, hue);
+        else drawSealE(ctx, W, H, t, hue);
+      }
     }
   }
 
