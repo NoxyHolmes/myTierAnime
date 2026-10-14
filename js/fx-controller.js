@@ -1,4 +1,4 @@
-/* ═══════════════════ SETTINGS & ATMOSPHERE ENGINE (SAKURA PETALS, EMBERS, RAIN, SNOW) ═══════════════════ */
+/* ═══════════════════ SETTINGS & ATMOSPHERE ENGINE (10 EMBLEM MODES + PARTICLES) ═══════════════════ */
 const FXController = (() => {
   let io = null;
   let bgEffect = localStorage.getItem("mta_bg_effect") || "sakura";
@@ -6,6 +6,19 @@ const FXController = (() => {
   let bgCount = parseInt(localStorage.getItem("mta_bg_count") || "65", 10);
   let bgWind  = parseFloat(localStorage.getItem("mta_bg_wind") || "0.5");
   let particles = [];
+
+  const ALL_EMBLEM_CLASSES = [
+    "emblems-realism",
+    "emblems-quantum",
+    "emblems-crystal",
+    "emblems-eclipse",
+    "emblems-runic",
+    "emblems-synth",
+    "emblems-galaxy",
+    "emblems-cyber",
+    "emblems-elements",
+    "emblems-orbits"
+  ];
 
   function init() {
     const savedMode = localStorage.getItem("mta_emblem_mode") || "emblems-realism";
@@ -118,7 +131,7 @@ const FXController = (() => {
   }
 
   function setEmblemMode(mode, save = true) {
-    document.body.classList.remove("emblems-realism", "emblems-elements", "emblems-orbits", "emblems-cyber");
+    document.body.classList.remove(...ALL_EMBLEM_CLASSES);
     document.body.classList.add(mode);
     if (save) localStorage.setItem("mta_emblem_mode", mode);
     document.querySelectorAll("[data-emblem-mode]").forEach(b => {
