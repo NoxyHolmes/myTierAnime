@@ -4,20 +4,20 @@ const DragDropEngine = (() => {
   let sourceTierId = null;
 
   function bindCardsAndGrids(onMoveCallback) {
-    document.querySelectorAll(".card").forEach(card => {
-      card.addEventListener("dragstart", e => {
+    document.querySelectorAll(".card-unit").forEach(unit => {
+      unit.addEventListener("dragstart", e => {
         if (!document.body.classList.contains("is-owner")) {
           e.preventDefault();
           return;
         }
-        draggedUid = card.dataset.uid;
-        sourceTierId = card.dataset.tierId;
-        card.classList.add("dragging");
+        draggedUid = unit.dataset.uid;
+        sourceTierId = unit.dataset.tierId;
+        unit.classList.add("dragging");
         e.dataTransfer.effectAllowed = "move";
       });
 
-      card.addEventListener("dragend", () => {
-        card.classList.remove("dragging");
+      unit.addEventListener("dragend", () => {
+        unit.classList.remove("dragging");
         document.querySelectorAll(".tier-grid").forEach(g => g.classList.remove("drag-over"));
       });
     });
@@ -38,8 +38,8 @@ const DragDropEngine = (() => {
         e.preventDefault();
         grid.classList.remove("drag-over");
         const targetTierId = grid.dataset.tierId;
-        const afterCard = e.target.closest(".card");
-        const targetUid = afterCard ? afterCard.dataset.uid : null;
+        const afterUnit = e.target.closest(".card-unit");
+        const targetUid = afterUnit ? afterUnit.dataset.uid : null;
 
         if (typeof onMoveCallback === "function") {
           onMoveCallback(draggedUid, sourceTierId, targetTierId, targetUid);
