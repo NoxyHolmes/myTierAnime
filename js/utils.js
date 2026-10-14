@@ -1,5 +1,6 @@
-/* ═══════════════════ CORE UTILITIES & DATE/SVG HELPERS ═══════════════════ */
+/* ═══════════════════ CORE UTILITIES, EPISODE/MOVIE/HOURS CALCULATOR & HELPERS ═══════════════════ */
 window.reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+window.tiltPower = 14;
 
 function esc(str) {
   if (str === null || str === undefined) return "";
@@ -10,7 +11,6 @@ function esc(str) {
     .replace(/"/g, "&quot;");
 }
 
-/* Парсинг даты формата ДД.ММ.ГГГГ или ГГГГ-ММ-ДД */
 function parseRuDate(str) {
   if (!str || typeof str !== "string") return 0;
   const s = str.trim();
@@ -30,15 +30,86 @@ function normWatched(w) {
   return [];
 }
 
-function watchedLatest(list) {
-  const arr = normWatched(list);
-  if (!arr.length) return null;
-  return [...arr].sort((a, b) => parseRuDate(b.date) - parseRuDate(a.date))[0];
+function normSeasons(item) {
+  if (!item) return [];
+  if (Array.isArray(item.seasons) && item.seasons.length > 0) {
+    return item.seasons.map((s, idx) => ({
+      title: s.title || `Сезон ${idx + 1}`,
+      type: s.type || item.kind || "TV Сериал",
+      episodes: Math.max(1, parseInt(s.episodes, 10) || 1),
+      epMinutes: Math.max(1, parseFloat(s.epMinutes) || (s.type === "Фильм" ? 110 : 24)),
+      date: s.date || "14.10.2026",
+      note: s.note || ""
+    }));
+  }
+  const parsedEps = parseInt(String(item.episodes || "12").replace(/\D/g, ""), 10) || 12;
+  const kind = item.kind || "TV Сериал";
+  const defaultMin = kind === "Фильм" ? 110 : 24;
+  const w = normWatched(item.watched);
+  return [
+    {
+      title: kind === "Фильм" ? "Полнометражный фильм" : "Сезон 1",
+      type: kind,
+      episodes: kind === "Фильм" ? 1 : parsedEps,
+      epMinutes: parseFloat(item.epMinutes) || defaultMin,
+      date: w[0]?.date || "14.10.2026",
+      note: w[0]?.note || "Просмотр"
+    }
+  ];
+}
+
+function calcItemMetrics(item) {
+  const seasons = normSeasons(item);
+  let totalEpisodes = 0;
+  let totalMovies = 0;
+  let totalMinutes = 0;
+  let latestMs = 0;
+  let latestDateStr = "";
+
+  seasons.forEach(s => {
+    const eps = Math.max(1, parseInt(s.episodes, 10) || 1);
+    const mins = Math.max(1, parseFloat(s.epMinutes) || (s.type === "Фильм" ? 110 : 24));
+    const partMinutes = eps * mins;
+    totalMinutes += partMinutes;
+
+    if (s.type === "Фильм") {
+      totalMovies += eps;
+    } else {
+      totalEpisodes += eps;
+    }
+
+    const ms = parseRuDate(s.date);
+    if (ms >= latestMs) {
+      latestMs = ms;
+      latestDateStr = s.date;
+    }
+  });
+
+  const totalHours = totalMinutes / 60;
+  const totalDays = totalHours / 24;
+
+  return {
+    seasons,
+    kind: item.kind || seasons[0]?.type || "TV Сериал",
+    totalEpisodes,
+    totalMovies,
+    totalMinutes,
+    totalHours,
+    totalDays,
+    latestMs,
+    latestDateStr,
+    latestYear: latestMs ? new Date(latestMs).getFullYear() : (item.year || 2026)
+  };
+}
+
+function formatHours(hoursFloat) {
+  const h = Number(hoursFloat || 0);
+  return h % 1 === 0 ? h.toFixed(0) : h.toFixed(1);
 }
 
 function accentHue(tier) {
   if (tier && typeof tier.hue === "number") return tier.hue;
-  const map = { S: 45, A: 185, B: 275, C: 148 };
+  const map = { S: 45, A: 185, B: 275, C: 148, D: 28, E: 215 };
   return map[tier?.id] || 45;
 }
 
