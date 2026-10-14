@@ -1,4 +1,4 @@
-/* ═══════════════════ MODALS: ANIME DETAILS, EDITOR & GITHUB TOKEN AUTH ═══════════════════ */
+/* ═══════════════════ MODALS: MULTI-SEASON DOSSIER & DYNAMIC SEASON/DURATION BUILDER ═══════════════════ */
 const Modals = (() => {
   function openModal(id) {
     document.getElementById(id)?.classList.add("open");
@@ -11,48 +11,189 @@ const Modals = (() => {
   function showAnimeDetails(item, tier) {
     const body = document.getElementById("detailsModalBody");
     if (!body) return;
-    const watches = normWatched(item.watched);
-    const watchHtml = watches.length
-      ? watches.map(w => `<li><b>${esc(w.date)}</b> — ${esc(w.note || "Просмотр")}</li>`).join("")
-      : "<li>Нет записей о датах просмотра</li>";
+
+    const m = calcItemMetrics(item);
+    const seasonsRows = m.seasons.map((s, idx) => {
+      const partHours = formatHours((s.episodes * s.epMinutes) / 60);
+      return `
+        <tr>
+          <td><b>#${idx + 1}</b> ${esc(s.title)}</td>
+          <td><span class="cum-kind">${esc(s.type)}</span></td>
+          <td>${s.episodes} ${s.type === "Фильм" ? "фильм(а)" : "эп."}</td>
+          <td>${s.epMinutes} мин.</td>
+          <td style="color:#00f5ff;font-weight:700;">${partHours} ч.</td>
+          <td><b>${esc(s.date)}</b></td>
+          <td style="color:var(--ink-soft);">${esc(s.note || "—")}</td>
+        </tr>
+      `;
+    }).join("");
 
     body.innerHTML = `
-      <div style="display:grid;grid-template-columns:200px 1fr;gap:20px;align-items:start;">
+      <div style="display:grid;grid-template-columns:210px 1fr;gap:22px;align-items:start;">
         <img src="${esc(item.poster)}" alt="${esc(item.title)}" style="width:100%;border-radius:12px;border:1px solid rgba(255,255,255,0.18);">
         <div>
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px;">
             <span class="canon-pill">ТИР ${esc(tier.id)}</span>
+            <span class="cum-kind">${esc(m.kind)}</span>
             <span style="color:#ffd76a;font-weight:800;">★ ${esc(item.score)}</span>
-            <span style="color:var(--ink-soft);font-size:12px;">${esc(item.year)} · ${esc(item.episodes || "")}</span>
+            <span style="color:var(--ink-soft);font-size:12px;">Релиз: ${esc(item.year)} · Студия: <b>${esc(item.studio || "—")}</b></span>
           </div>
           <h2 style="margin:0 0 4px;font-family:var(--serif);">${esc(item.title)}</h2>
-          <div style="font-size:12px;color:var(--ink-soft);margin-bottom:12px;">${esc(item.origTitle || "")} · Студия: <b>${esc(item.studio || "—")}</b></div>
-          <p style="font-size:13.5px;line-height:1.55;color:var(--ink);background:rgba(255,255,255,0.04);padding:12px;border-radius:10px;">
+          <div style="font-size:12px;color:var(--ink-soft);margin-bottom:12px;">${esc(item.origTitle || "")}</div>
+
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px;background:rgba(255,255,255,0.03);padding:10px 14px;border-radius:10px;border:1px solid var(--border-subtle);">
+            <div>
+              <div style="font-size:10px;color:var(--ink-soft);text-transform:uppercase;">Всего серий / фильмов</div>
+              <div style="font-size:16px;font-weight:800;color:#ffd76a;">${m.totalEpisodes} эп. ${m.totalMovies ? `+ ${m.totalMovies} ф.` : ""}</div>
+            </div>
+            <div>
+              <div style="font-size:10px;color:var(--ink-soft);text-transform:uppercase;">Общее время просмотра</div>
+              <div style="font-size:16px;font-weight:800;color:#00f5ff;">${formatHours(m.totalHours)} часов</div>
+            </div>
+            <div>
+              <div style="font-size:10px;color:var(--ink-soft);text-transform:uppercase;">В пересчёте на дни</div>
+              <div style="font-size:16px;font-weight:800;color:#fff;">${m.totalDays.toFixed(2)} дн.</div>
+            </div>
+          </div>
+
+          <p style="font-size:13.5px;line-height:1.55;color:var(--ink);background:rgba(255,255,255,0.04);padding:12px;border-radius:10px;margin:0 0 12px;">
             ${esc(item.comment || "Комментарий не добавлен.")}
           </p>
-          <div style="margin-top:12px;display:flex;gap:6px;flex-wrap:wrap;">
+
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;">
             ${(item.genres || []).map(g => `<span class="tier-count-pill">${esc(g)}</span>`).join("")}
           </div>
-          <h4 style="margin:16px 0 6px;font-size:12px;text-transform:uppercase;color:var(--ink-soft);">Хронология просмотров (Канон 2026):</h4>
-          <ul style="margin:0;padding-left:18px;font-size:12.5px;color:var(--ink-soft);line-height:1.6;">
-            ${watchHtml}
-          </ul>
+
+          <h4 style="margin:10px 0 6px;font-size:12px;text-transform:uppercase;color:var(--ink-soft);">
+            Все просмотренные сезоны, фильмы, OVA, ONA и спешлы (${m.seasons.length}):
+          </h4>
+          <table class="seasons-table">
+            <thead>
+              <tr>
+                <th>Сезон / Часть</th>
+                <th>Тип</th>
+                <th>Кол-во</th>
+                <th>1 серия</th>
+                <th>Всего часов</th>
+                <th>Дата просмотра</th>
+                <th>Заметка</th>
+              </tr>
+            </thead>
+            <tbody>${seasonsRows}</tbody>
+          </table>
         </div>
       </div>
     `;
+
+    const editOwnerBtn = document.getElementById("btnDetailsEditOwner");
+    if (editOwnerBtn) {
+      editOwnerBtn.onclick = () => {
+        closeModal("detailsModal");
+        openEditorModal(tier.id, item);
+      };
+    }
+
     openModal("detailsModal");
+  }
+
+  function createSeasonRowElement(part = {}) {
+    const row = document.createElement("div");
+    row.className = "season-row";
+    const type = part.type || "TV Сериал";
+    const defaultMin = type === "Фильм" ? 110 : 24;
+    const eps = part.episodes ?? (type === "Фильм" ? 1 : 12);
+    const mins = part.epMinutes ?? defaultMin;
+    const dateStr = part.date || new Date().toLocaleDateString("ru-RU");
+
+    row.innerHTML = `
+      <input type="text" class="form-control s-title" placeholder="Название (Сезон 1 / Фильм)" value="${esc(part.title || "Сезон 1")}" required>
+      <select class="form-control s-type">
+        ${["TV Сериал", "Фильм", "OVA", "ONA", "Спешл"].map(t => `<option value="${t}" ${t === type ? "selected" : ""}>${t}</option>`).join("")}
+      </select>
+      <input type="number" min="1" class="form-control s-eps" title="Количество серий" value="${eps}" required>
+      <input type="number" min="1" step="0.5" class="form-control s-mins" title="Длительность 1 серии (мин)" value="${mins}" required>
+      <input type="text" class="form-control s-date" placeholder="ДД.ММ.ГГГГ" value="${esc(dateStr)}" required>
+      <span class="s-calc">0 ч.</span>
+      <button type="button" class="btn btn-sm s-remove" title="Удалить часть">✕</button>
+    `;
+
+    const typeSel = row.querySelector(".s-type");
+    const epsInp = row.querySelector(".s-eps");
+    const minsInp = row.querySelector(".s-mins");
+
+    typeSel.addEventListener("change", () => {
+      if (typeSel.value === "Фильм") {
+        epsInp.value = 1;
+        if (+minsInp.value === 24) minsInp.value = 110;
+      } else if (+minsInp.value === 110) {
+        minsInp.value = 24;
+      }
+      recalculateSeasonsPreview();
+    });
+
+    epsInp.addEventListener("input", recalculateSeasonsPreview);
+    minsInp.addEventListener("input", recalculateSeasonsPreview);
+    row.querySelector(".s-remove").addEventListener("click", () => {
+      if (document.querySelectorAll("#seasonsEditorList .season-row").length > 1) {
+        row.remove();
+        recalculateSeasonsPreview();
+      } else {
+        showToast("У тайтла должен быть хотя бы 1 сезон или фильм");
+      }
+    });
+
+    return row;
+  }
+
+  function recalculateSeasonsPreview() {
+    const rows = [...document.querySelectorAll("#seasonsEditorList .season-row")];
+    let sumEps = 0;
+    let sumMovies = 0;
+    let sumMins = 0;
+
+    rows.forEach(r => {
+      const tp = r.querySelector(".s-type").value;
+      const ep = Math.max(1, parseInt(r.querySelector(".s-eps").value, 10) || 1);
+      const mn = Math.max(1, parseFloat(r.querySelector(".s-mins").value) || 24);
+      const partMins = ep * mn;
+      sumMins += partMins;
+      if (tp === "Фильм") sumMovies += ep;
+      else sumEps += ep;
+      r.querySelector(".s-calc").textContent = `${formatHours(partMins / 60)} ч. (${partMins} м)`;
+    });
+
+    const preview = document.getElementById("seasonsTotalPreview");
+    if (preview) {
+      const hrs = sumMins / 60;
+      preview.innerHTML = `
+        <span>Итого по тайтлу: <b>${sumEps} серий</b> ${sumMovies ? `+ <b>${sumMovies} фильм(ов)</b>` : ""}</span>
+        <span>Суммарное время: <b style="color:#00f5ff;">${formatHours(hrs)} часов</b> (${(hrs / 24).toFixed(2)} дней)</span>
+      `;
+    }
+  }
+
+  function readSeasonsFromEditor() {
+    const rows = [...document.querySelectorAll("#seasonsEditorList .season-row")];
+    return rows.map((r, i) => ({
+      title: r.querySelector(".s-title").value.trim() || `Часть ${i + 1}`,
+      type: r.querySelector(".s-type").value,
+      episodes: Math.max(1, parseInt(r.querySelector(".s-eps").value, 10) || 1),
+      epMinutes: Math.max(1, parseFloat(r.querySelector(".s-mins").value) || 24),
+      date: r.querySelector(".s-date").value.trim() || new Date().toLocaleDateString("ru-RU"),
+      note: ""
+    }));
   }
 
   function openEditorModal(tierId = "S", existingItem = null) {
     document.getElementById("editModalTitle").textContent = existingItem
-      ? "Редактировать тайтл"
+      ? `✎ Редактировать тайтл: ${existingItem.title}`
       : "Добавить тайтл в Канон";
     document.getElementById("fUid").value = existingItem ? existingItem.uid : "";
     document.getElementById("fTier").value = tierId;
+    document.getElementById("fKind").value = existingItem?.kind || "TV Сериал";
     document.getElementById("fTitle").value = existingItem ? existingItem.title : "";
     document.getElementById("fOrigTitle").value = existingItem ? existingItem.origTitle || "" : "";
     document.getElementById("fYear").value = existingItem ? existingItem.year || 2026 : 2026;
-    document.getElementById("fEpisodes").value = existingItem ? existingItem.episodes || "12 эп." : "12 эп.";
     document.getElementById("fStudio").value = existingItem ? existingItem.studio || "" : "";
     document.getElementById("fScore").value = existingItem ? existingItem.score || 9.0 : 9.0;
     document.getElementById("fReaction").value = existingItem ? existingItem.reaction || "✨ Канон" : "✨ Канон";
@@ -60,13 +201,39 @@ const Modals = (() => {
     document.getElementById("fGenres").value = existingItem ? (existingItem.genres || []).join(", ") : "";
     document.getElementById("fComment").value = existingItem ? existingItem.comment || "" : "";
 
-    const w = existingItem ? normWatched(existingItem.watched) : [];
-    const todayStr = new Date().toLocaleDateString("ru-RU");
-    document.getElementById("fWatchDate").value = w[0]?.date || todayStr;
-    document.getElementById("fWatchNote").value = w[0]?.note || "Просмотр";
+    const listHost = document.getElementById("seasonsEditorList");
+    listHost.innerHTML = "";
+    const parts = existingItem
+      ? normSeasons(existingItem)
+      : [{ title: "Сезон 1", type: "TV Сериал", episodes: 12, epMinutes: 24, date: new Date().toLocaleDateString("ru-RU") }];
 
+    parts.forEach(p => listHost.appendChild(createSeasonRowElement(p)));
+    recalculateSeasonsPreview();
     openModal("editorModal");
   }
 
-  return { openModal, closeModal, showAnimeDetails, openEditorModal };
+  function addSeasonRow(type = "TV Сериал") {
+    const listHost = document.getElementById("seasonsEditorList");
+    if (!listHost) return;
+    const idx = listHost.querySelectorAll(".season-row").length + 1;
+    const defaultTitle = type === "Фильм" ? `Фильм ${idx}` : (type === "TV Сериал" ? `Сезон ${idx}` : `${type} ${idx}`);
+    listHost.appendChild(createSeasonRowElement({
+      title: defaultTitle,
+      type,
+      episodes: type === "Фильм" ? 1 : 12,
+      epMinutes: type === "Фильм" ? 110 : 24,
+      date: new Date().toLocaleDateString("ru-RU")
+    }));
+    recalculateSeasonsPreview();
+  }
+
+  return {
+    openModal,
+    closeModal,
+    showAnimeDetails,
+    openEditorModal,
+    addSeasonRow,
+    readSeasonsFromEditor,
+    recalculateSeasonsPreview
+  };
 })();
