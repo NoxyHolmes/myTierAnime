@@ -57,7 +57,6 @@ const GitHubSync = (() => {
       "Content-Type": "application/json"
     };
 
-    // 1. Fetch current SHA if file exists
     let sha = undefined;
     const getRes = await fetch(apiUrl, { headers });
     if (getRes.ok) {
@@ -65,7 +64,6 @@ const GitHubSync = (() => {
       sha = existing.sha;
     }
 
-    // 2. Commit updated JSON
     payloadObj.meta = payloadObj.meta || {};
     payloadObj.meta.updatedAt = new Date().toISOString();
     const jsonStr = JSON.stringify(payloadObj, null, 2);
@@ -100,7 +98,6 @@ const GitHubSync = (() => {
     saveCredentials,
     verifyToken,
     commitTiersToGitHub,
-    logout,
-    getVerifiedUser: () => verifiedUser
+    logout
   };
 })();
