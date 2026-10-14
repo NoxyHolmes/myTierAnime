@@ -1,4 +1,4 @@
-/* ═══════════════════ 2026 REALISM 3D EMBLEMS (S · A · B · C) & HOLOGRAPHIC FOIL ═══════════════════ */
+/* ═══════════════════ 2026 REALISM 3D EMBLEMS (S · A · B · C · D · E) & HOLOGRAPHIC FOIL ═══════════════════ */
 .lstage {
   position: relative;
   width: 148px;
@@ -66,7 +66,6 @@
   pointer-events: none;
 }
 
-/* ── User Provided 2026 Realism System ── */
 .realism-system {
   display: none;
   position: absolute;
@@ -75,7 +74,8 @@
   transform-style: preserve-3d;
   perspective: 720px;
 }
-.emblems-realism .realism-system {
+.emblems-realism .realism-system,
+.emblems-cyber .realism-system {
   display: grid;
   place-items: center;
 }
@@ -104,7 +104,6 @@
   transition: transform 0.22s cubic-bezier(.2, .8, .2, 1);
 }
 
-/* 3D PBR-карданы вокруг буквы */
 .realism-gimbal {
   position: absolute;
   width: var(--seal-size, 132px);
@@ -165,7 +164,6 @@
   100% { transform: rotateX(-58deg) rotateY(34deg) rotateZ(360deg); }
 }
 
-/* Индивидуальная 3D-кинематика для S · A · B · C */
 .emblems-realism .l3d {
   transform: translateY(-4px) rotateX(var(--bry, 0deg)) rotateY(var(--brx, 0deg));
 }
@@ -173,43 +171,49 @@
 .emblems-realism .fx-demo-seal[data-rank="1"] .l3d-in {
   animation: sealRealismS 7.2s cubic-bezier(.37, 0, .63, 1) infinite;
 }
-.emblems-realism .tier[data-rank="2"] .l3d-in,
-.emblems-realism .fx-demo-seal[data-rank="2"] .l3d-in {
+.emblems-realism .tier[data-rank="2"] .l3d-in {
   animation: sealRealismA 6.6s cubic-bezier(.37, 0, .63, 1) infinite;
 }
-.emblems-realism .tier[data-rank="3"] .l3d-in,
-.emblems-realism .fx-demo-seal[data-rank="3"] .l3d-in {
+.emblems-realism .tier[data-rank="3"] .l3d-in {
   animation: sealRealismB 7.8s cubic-bezier(.37, 0, .63, 1) infinite;
 }
-.emblems-realism .tier[data-rank="4"] .l3d-in,
-.emblems-realism .fx-demo-seal[data-rank="4"] .l3d-in {
+.emblems-realism .tier[data-rank="4"] .l3d-in {
   animation: sealRealismC 7.4s cubic-bezier(.37, 0, .63, 1) infinite;
 }
+.emblems-realism .tier[data-rank="5"] .l3d-in {
+  animation: sealRealismD 6.8s cubic-bezier(.37, 0, .63, 1) infinite;
+}
+.emblems-realism .tier[data-rank="6"] .l3d-in {
+  animation: sealRealismE 8.6s cubic-bezier(.37, 0, .63, 1) infinite;
+}
 
-/* S: Тяжёлая прецессия королевской реликвии по 3 осям */
 @keyframes sealRealismS {
   0%, 100% { transform: translate3d(0, 3px, 10px) rotateY(-28deg) rotateX(10deg) rotateZ(-2deg); }
   25%      { transform: translate3d(2px, -3px, 16px) rotateY(4deg) rotateX(-8deg) rotateZ(1deg); }
   50%      { transform: translate3d(0, -6px, 12px) rotateY(28deg) rotateX(-10deg) rotateZ(2deg); }
   75%      { transform: translate3d(-2px, 0px, 15px) rotateY(-6deg) rotateX(7deg) rotateZ(-1deg); }
 }
-/* A: Кристаллический 3D-вальс кварцевой призмы */
 @keyframes sealRealismA {
   0%, 100% { transform: translate3d(0, -3px, 12px) rotateY(30deg) rotateX(-11deg) rotateZ(-4deg); }
   50%      { transform: translate3d(0, 5px, 14px) rotateY(-30deg) rotateX(11deg) rotateZ(4deg); }
 }
-/* B: Магнитная левитация и гироскопический крен */
 @keyframes sealRealismB {
   0%, 100% { transform: translate3d(-2px, 4px, 10px) rotateY(-24deg) rotateX(8deg) rotateZ(-8deg); }
   50%      { transform: translate3d(2px, -5px, 15px) rotateY(24deg) rotateX(-9deg) rotateZ(8deg); }
 }
-/* C: Невесомое гармоническое покачивание био-сферы */
 @keyframes sealRealismC {
   0%, 100% { transform: translate3d(-3px, 2px, 9px) rotateY(-22deg) rotateX(9deg) rotateZ(3deg); }
   50%      { transform: translate3d(3px, -5px, 14px) rotateY(22deg) rotateX(-9deg) rotateZ(-3deg); }
 }
+@keyframes sealRealismD {
+  0%, 100% { transform: translate3d(-4px, 0px, 11px) rotateY(-26deg) rotateX(6deg) rotateZ(-10deg); }
+  50%      { transform: translate3d(4px, -3px, 15px) rotateY(26deg) rotateX(-6deg) rotateZ(10deg); }
+}
+@keyframes sealRealismE {
+  0%, 100% { transform: translate3d(0, 4px, 8px) rotateY(-18deg) rotateX(12deg) rotateZ(-2deg); }
+  50%      { transform: translate3d(0, -4px, 12px) rotateY(18deg) rotateX(-12deg) rotateZ(2deg); }
+}
 
-/* Зеркальная PBR-фаска (.ll.bevel) и металлическое лицо (.ll.face) */
 .ll.bevel {
   background: linear-gradient(135deg, #ffffff 0%, rgba(255, 255, 255, 0.92) 25%, var(--t2) 55%, transparent 85%);
   -webkit-background-clip: text;
@@ -220,7 +224,7 @@
   opacity: 0.92;
   pointer-events: none;
 }
-.emblems-realism .ll.face, .ll.face {
+.ll.face {
   background: linear-gradient(
     145deg,
     #ffffff 0%,
@@ -240,9 +244,7 @@
     drop-shadow(0 0 22px color-mix(in srgb, var(--t) 55%, transparent));
   animation: pbrMetalSheen 5.2s ease-in-out infinite;
 }
-/* Оптическая RGB-дисперсия (хроматическая аберрация) для тира A */
-.emblems-realism .tier[data-rank="2"] .ll.face,
-.emblems-realism .fx-demo-seal[data-rank="2"] .ll.face {
+.emblems-realism .tier[data-rank="2"] .ll.face {
   filter:
     drop-shadow(-1.5px 0 0 rgba(255, 60, 140, 0.55))
     drop-shadow(1.5px 0 0 rgba(0, 245, 255, 0.65))
@@ -253,7 +255,6 @@
   50%      { background-position: 100% 80%; }
 }
 
-/* 3D-пластина года (.seal-year-3d) с бегущим бликом на оси Z = 24px */
 .seal-year-3d {
   position: absolute;
   bottom: 2px;
@@ -327,7 +328,6 @@
   color: #fff4ce;
 }
 
-/* 3D-бейдж года и OKLCH голографическая фольга на карточках постеров */
 .card-year-3d {
   position: absolute;
   top: 7px;
@@ -375,12 +375,11 @@ body.fx-tilt:not(.editing) .card:hover .holo-foil {
   opacity: 0.88;
 }
 .seal-caption > span { display: none; }
-.emblems-realism .seal-caption .caption-realism { display: inline; }
+.emblems-realism .seal-caption .caption-realism,
+.emblems-cyber .seal-caption .caption-realism { display: inline; }
 .emblems-elements .seal-caption .caption-elements { display: inline; }
 .emblems-orbits .seal-caption .caption-orbits { display: inline; }
-.fx-seg.cols-4 { grid-template-columns: repeat(2, 1fr); }
 
-/* Alternative Emblem Modes (Elements & Orbits) */
 .element-system, .orbit-system {
   display: none;
   position: absolute;
