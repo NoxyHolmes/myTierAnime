@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mytieranime-2026-v2.2';
+const CACHE_NAME = 'mytieranime-2026-v2.3';
 const ASSETS = [
   './',
   './index.html',
