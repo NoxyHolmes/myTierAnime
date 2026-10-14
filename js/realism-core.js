@@ -1,4 +1,4 @@
-/* ═══════════════════ 3D LAYER GENERATOR, YEAR CALCULATOR & 14-LAYER EXTRUSION (S–E) ═══════════════════ */
+/* ═══════════════════ 3D LAYER GENERATOR & 14-LAYER EXTRUSION (NO 2026 3D PILL) ═══════════════════ */
 const ELEMENT_NAMES = ["Сияние", "Призма", "Тушь", "Сакура", "Янтарь", "Пепел"];
 const ELEMENT_ART   = ["radiance", "prism", "ink", "sakura", "amber", "ash"];
 const ORBIT_NAMES   = ["Солнечная корона", "Двойная орбита", "Кристалл впечатлений", "Световая волна", "Маятник времени", "Кольцо забвения"];
@@ -11,25 +11,13 @@ const REALISM_NAMES = [
   "Монолит Забвения"
 ];
 
-function tierActiveYear(tier) {
-  const curYr = new Date().getFullYear();
-  if (!tier || !Array.isArray(tier.items)) return curYr;
-  let maxYr = 0;
-  tier.items.forEach(it => {
-    const m = calcItemMetrics(it);
-    if (m.latestYear && m.latestYear > maxYr) maxYr = m.latestYear;
-  });
-  return maxYr || curYr;
-}
-
+/* HTML-разметка 3D-холста и карданов БЕЗ капсулы "2026 3D" */
 function realismMarkup(index, tier) {
-  const yr = tierActiveYear(tier);
   const hue = tier ? accentHue(tier) : [45, 185, 275, 148, 28, 215][index % 6];
   return `<div class="realism-system" aria-hidden="true">
     <canvas class="seal-canvas-3d" width="220" height="220" data-seal-idx="${index % 6}" data-hue="${hue}"></canvas>
     <div class="realism-gimbal"><span class="rg-ring r-outer"></span><span class="rg-ring r-inner"></span></div>
-  </div>
-  <span class="seal-year-3d" aria-hidden="true"><i class="sy-dot"></i><b class="sy-yr">${yr}</b><small class="sy-tag">3D</small></span>`;
+  </div>`;
 }
 
 function elementMarkup(index) {
