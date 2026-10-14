@@ -1,10 +1,10 @@
-/* ═══════════════════ MAIN APPLICATION ORCHESTRATOR (myTierAnime 2026 v2.2) ═══════════════════ */
+/* ═══════════════════ MAIN APPLICATION ORCHESTRATOR (myTierAnime v2.3) ═══════════════════ */
 (() => {
-  const LOCAL_STORAGE_KEY = "mta_2026_state_v2";
+  const LOCAL_STORAGE_KEY = "mta_2026_state_v3";
   let appData = null;
   let searchQuery = "";
   let selectedGenre = "ALL";
-  let activeView = "tiers";
+  let activeView = "tiers"; // "tiers" или "calendar"
 
   const DEFAULT_TIERS_TEMPLATE = [
     { id: "S", rank: 1, name: "Абсолютный Канон", subtitle: "Астролябия Короны · Шедевры на все времена", hue: 45, items: [] },
@@ -17,7 +17,7 @@
 
   function ensureSixTiers(data) {
     if (!data || !Array.isArray(data.tiers)) {
-      return { meta: { title: "myTierAnime · Канон 2026" }, tiers: DEFAULT_TIERS_TEMPLATE };
+      return { meta: { title: "myTierAnime" }, tiers: DEFAULT_TIERS_TEMPLATE };
     }
     DEFAULT_TIERS_TEMPLATE.forEach(def => {
       if (!data.tiers.find(t => t.id === def.id)) {
@@ -28,6 +28,14 @@
   }
 
   async function loadInitialState() {
+    const cached = localStorage.getItem(LOCAL_STORAGE_KEY);
+    if (cached) {
+      try {
+        appData = ensureSixTiers(JSON.parse(cached));
+        return;
+      } catch {}
+    }
+
     try {
       const res = await fetch(`data/tiers.json?t=${Date.now()}`);
       if (res.ok) {
@@ -36,15 +44,7 @@
         return;
       }
     } catch (e) {
-      console.warn("Could not fetch remote tiers.json, checking local cache:", e);
-    }
-
-    const cached = localStorage.getItem(LOCAL_STORAGE_KEY);
-    if (cached) {
-      try {
-        appData = ensureSixTiers(JSON.parse(cached));
-        return;
-      } catch {}
+      console.warn("Could not fetch remote tiers.json:", e);
     }
     appData = ensureSixTiers(null);
   }
@@ -55,6 +55,7 @@
     StatsEngine.updateStats(appData.tiers);
   }
 
+  /* Чистая карточка тайтла (без крестика и кнопок редактирования на постере — они внутри карточки при клике) */
   function cardEl(item, idx, tierId) {
     const m = calcItemMetrics(item);
     const yr = m.latestYear || item.year || "";
@@ -77,19 +78,13 @@
           <span class="card-score-badge">★ ${esc(item.score)}</span>
           ${reactionHtml(item)}
 
-          <div class="card-owner-bar">
-            <button type="button" class="card-act-btn" data-action="edit" title="Редактировать тайтл">✎ Изм.</button>
-            <button type="button" class="card-act-btn danger" data-action="delete" title="Удалить тайтл">✕</button>
-          </div>
-
           <div class="card-info">
             <h3 class="card-title">${esc(item.title)}</h3>
-            <div class="card-sub">
-              <span>${esc(item.year || "")} · ${esc(item.studio || "")}</span>
-            </div>
+            <div class="card-sub">${esc(item.year || "")} · ${esc(item.studio || "")}</div>
           </div>
         </article>
 
+        <!-- Блок под карточкой: Тип тайтла + Общее кол-во серий + Часы -->
         <div class="card-under-meta">
           <div class="cum-row">
             <span class="cum-kind">${esc(m.kind)}</span>
@@ -98,14 +93,6 @@
           <div class="cum-stats">
             <span>🎞 ${countLabel}</span>
             <span class="cum-hours">⏱ ${formatHours(m.totalHours)} ч.</span>
-          </div>
-          <div class="cum-owner-actions">
-            <button type="button" class="cum-edit-btn" data-action="edit" data-uid="${esc(item.uid)}" data-tier-id="${esc(tierId)}">
-              ✎ Редактировать тайтл
-            </button>
-            <button type="button" class="cum-del-btn" data-action="delete" data-uid="${esc(item.uid)}" data-tier-id="${esc(tierId)}" title="Удалить">
-              ✕
-            </button>
           </div>
         </div>
       </div>
@@ -124,23 +111,19 @@
           (it.title && it.title.toLowerCase().includes(q)) ||
           (it.origTitle && it.origTitle.toLowerCase().includes(q)) ||
           (it.studio && it.studio.toLowerCase().includes(q));
-        const matchGenre = selectedGenre === "ALL" || (it.genres || []).includes(selectedGenre);
+        const matchGenre = selectedGenre === "ALL" || (it.genres || []).some(g => g.toLowerCase() === selectedGenre.toLowerCase());
         return matchText && matchGenre;
       });
 
       const badgeBodyHtml = `
-        <span class="seal-index">ТИР <b>${String(tierIdx + 1).padStart(2, "0")} · ${tierActiveYear(tier)}</b></span>
+        <span class="seal-index">ТИР <b>${String(tierIdx + 1).padStart(2, "0")}</b></span>
         <div class="lstage">
           ${realismMarkup(tierIdx, tier)}${elementMarkup(tierIdx)}${orbitalMarkup()}
           <span class="seal-floor" aria-hidden="true"></span>
           <span class="ring r1"></span><span class="ring r2"></span>
           <div class="l3d" data-l="${esc(tier.id)}"></div>
         </div>
-        <span class="seal-caption">
-          <span class="caption-realism">${REALISM_NAMES[tierIdx % 6]} · ${tierActiveYear(tier)}</span>
-          <span class="caption-elements">${ELEMENT_NAMES[tierIdx % 6]}</span>
-          <span class="caption-orbits">${ORBIT_NAMES[tierIdx % 6]}</span>
-        </span>
+        <span class="seal-caption">${REALISM_NAMES[tierIdx % 6]}</span>
       `;
 
       return `
@@ -157,8 +140,8 @@
                 </h2>
                 <div class="tier-meta-sub">${esc(tier.subtitle || "")}</div>
               </div>
-              <button type="button" class="btn owner-only" data-add-to-tier="${esc(tier.id)}">
-                + Тайтл в ${esc(tier.id)}
+              <button type="button" class="btn btn-sm btn-neon-gold" data-add-to-tier="${esc(tier.id)}">
+                ➕ Добавить в ${esc(tier.id)}
               </button>
             </header>
             <div class="tier-grid" data-tier-id="${esc(tier.id)}">
@@ -193,16 +176,27 @@
     }
   }
 
+  /* Заполнение полного списка всех существующих жанров аниме */
   function populateGenreFilter() {
     const sel = document.getElementById("genreFilter");
+    const picker = document.getElementById("genreQuickPicker");
     if (!sel || !appData) return;
-    const genres = new Set();
+
+    const allGenresSet = new Set(window.ALL_ANIME_GENRES || []);
     appData.tiers.forEach(t => {
-      (t.items || []).forEach(it => (it.genres || []).forEach(g => genres.add(g)));
+      (t.items || []).forEach(it => (it.genres || []).forEach(g => allGenresSet.add(g)));
     });
+    const sortedGenres = [...allGenresSet].sort((a, b) => a.localeCompare(b, "ru"));
+
     const current = sel.value || "ALL";
-    sel.innerHTML = `<option value="ALL">Все жанры (${genres.size})</option>` +
-      [...genres].sort().map(g => `<option value="${esc(g)}" ${g === current ? "selected" : ""}>${esc(g)}</option>`).join("");
+    sel.innerHTML = `<option value="ALL">Все жанры (${sortedGenres.length})</option>` +
+      sortedGenres.map(g => `<option value="${esc(g)}" ${g === current ? "selected" : ""}>${esc(g)}</option>`).join("");
+
+    if (picker && !picker.dataset.populated) {
+      picker.innerHTML = `<option value="">+ Выбрать жанр из энциклопедии (${sortedGenres.length})...</option>` +
+        sortedGenres.map(g => `<option value="${esc(g)}">${esc(g)}</option>`).join("");
+      picker.dataset.populated = "1";
+    }
   }
 
   function bindTierInteractions() {
@@ -213,29 +207,14 @@
     });
 
     document.querySelectorAll(".card-unit").forEach(unit => {
-      unit.addEventListener("click", e => {
+      unit.addEventListener("click", () => {
         const uid = unit.dataset.uid;
         const tierId = unit.dataset.tierId;
         const tier = appData.tiers.find(t => t.id === tierId);
         const item = tier?.items.find(i => i.uid === uid);
-        if (!item) return;
-
-        const actBtn = e.target.closest("[data-action]");
-        if (actBtn) {
-          e.stopPropagation();
-          if (actBtn.dataset.action === "edit") {
-            Modals.openEditorModal(tierId, item);
-          } else if (actBtn.dataset.action === "delete") {
-            if (confirm(`Удалить «${item.title}» из тира ${tierId}?`)) {
-              tier.items = tier.items.filter(i => i.uid !== uid);
-              saveLocalState();
-              render();
-              showToast(`Тайтл «${item.title}» удалён`);
-            }
-          }
-          return;
+        if (item && tier) {
+          Modals.showAnimeDetails(item, tier);
         }
-        Modals.showAnimeDetails(item, tier);
       });
     });
 
@@ -260,26 +239,73 @@
     });
   }
 
-  function bindGlobalUI() {
-    document.querySelectorAll("[data-switch-view]").forEach(btn => {
-      btn.addEventListener("click", () => {
-        activeView = btn.dataset.switchView;
-        document.querySelectorAll("[data-switch-view]").forEach(b => b.classList.toggle("active", b === btn));
-        const tiersEl = document.getElementById("tiersRoot");
-        const calEl = document.getElementById("calendarRoot");
-        if (activeView === "calendar") {
-          tiersEl.style.display = "none";
-          calEl.style.display = "block";
-          CalendarView.renderCalendar(appData.tiers, (uid, tierId) => {
-            const tier = appData.tiers.find(t => t.id === tierId);
-            const item = tier?.items.find(i => i.uid === uid);
-            if (item && tier) Modals.showAnimeDetails(item, tier);
-          });
-        } else {
-          calEl.style.display = "none";
-          tiersEl.style.display = "flex";
-        }
+  function toggleCalendarView(forceMode) {
+    activeView = forceMode || (activeView === "tiers" ? "calendar" : "tiers");
+    const tiersEl = document.getElementById("tiersRoot");
+    const calEl = document.getElementById("calendarRoot");
+    const calBtn = document.getElementById("btnToggleCalendar");
+
+    if (activeView === "calendar") {
+      tiersEl.style.display = "none";
+      calEl.style.display = "block";
+      if (calBtn) {
+        calBtn.classList.add("active");
+        calBtn.innerHTML = "🏛 Вернуться к тирам";
+      }
+      CalendarView.renderCalendar(appData.tiers, (uid, tierId) => {
+        const tier = appData.tiers.find(t => t.id === tierId);
+        const item = tier?.items.find(i => i.uid === uid);
+        if (item && tier) Modals.showAnimeDetails(item, tier);
       });
+    } else {
+      calEl.style.display = "none";
+      tiersEl.style.display = "flex";
+      if (calBtn) {
+        calBtn.classList.remove("active");
+        calBtn.innerHTML = "📅 Календарь";
+      }
+    }
+  }
+
+  function bindGlobalUI() {
+    // Обработчик удаления тайтла из открытой карточки
+    Modals.setDeleteHandler((uid, tierId) => {
+      const tier = appData.tiers.find(t => t.id === tierId);
+      if (!tier) return;
+      const item = tier.items.find(i => i.uid === uid);
+      tier.items = tier.items.filter(i => i.uid !== uid);
+      saveLocalState();
+      render();
+      showToast(`Тайтл «${item?.title || ""}» удалён`);
+    });
+
+    // Кнопка Календаря
+    document.getElementById("btnToggleCalendar")?.addEventListener("click", () => {
+      toggleCalendarView();
+    });
+
+    // Клик по логотипу всегда возвращает к тирам
+    document.getElementById("brandHomeBtn")?.addEventListener("click", () => {
+      toggleCalendarView("tiers");
+    });
+
+    // Кнопка «➕ Добавить тайтл» в верхней шапке
+    document.getElementById("btnAddTitleTop")?.addEventListener("click", () => {
+      Modals.openEditorModal("S", null);
+    });
+
+    // Быстрое добавление жанра из энциклопедии в поле жанров редактора
+    const picker = document.getElementById("genreQuickPicker");
+    picker?.addEventListener("change", () => {
+      const val = picker.value;
+      if (!val) return;
+      const inp = document.getElementById("fGenres");
+      const currentList = inp.value.split(",").map(s => s.trim()).filter(Boolean);
+      if (!currentList.includes(val)) {
+        currentList.push(val);
+        inp.value = currentList.join(", ");
+      }
+      picker.value = "";
     });
 
     document.getElementById("searchInput")?.addEventListener("input", e => {
@@ -299,6 +325,7 @@
       btn.addEventListener("click", () => Modals.addSeasonRow(btn.dataset.addPart));
     });
 
+    // Shikimori Autocomplete
     const shikiInput = document.getElementById("shikiSearchInput");
     const shikiBox = document.getElementById("shikiResults");
     let debounceTimer = 0;
@@ -352,6 +379,7 @@
       }, 320);
     });
 
+    // Сохранение тайтла
     document.getElementById("animeEditorForm")?.addEventListener("submit", e => {
       e.preventDefault();
       const uid = document.getElementById("fUid").value || ("anime-" + Date.now());
@@ -416,18 +444,11 @@
         return;
       }
 
-      showToast("Проверка токена...");
       const user = await GitHubSync.verifyToken(tk);
       document.body.classList.add("is-owner");
-      if (user) {
-        updateOwnerBadge(user);
-        Modals.closeModal("authModal");
-        showToast(`Вход выполнен: ${user.login} (Кнопки «✎ Редактировать тайтл» активны)`, "#38ef7d");
-      } else {
-        updateOwnerBadge({ login: "Owner" });
-        Modals.closeModal("authModal");
-        showToast("Режим владельца включён! Кнопки «✎ Редактировать тайтл» появились на всех карточках.", "#ffd76a");
-      }
+      updateOwnerBadge(user || { login: "Owner" });
+      Modals.closeModal("authModal");
+      showToast("Режим владельца активирован!", "#38ef7d");
     });
 
     document.getElementById("btnSyncGitHub")?.addEventListener("click", async () => {
@@ -444,7 +465,7 @@
       const blob = new Blob([JSON.stringify(appData, null, 2)], { type: "application/json" });
       const a = document.createElement("a");
       a.href = URL.createObjectURL(blob);
-      a.download = `myTierAnime-2026-backup.json`;
+      a.download = `myTierAnime-backup.json`;
       a.click();
       showToast("JSON-база экспортирована");
     });
