@@ -1,11 +1,17 @@
-/* ═══════════════════ MODALS: MULTI-SEASON DOSSIER & DYNAMIC SEASON/DURATION BUILDER ═══════════════════ */
+/* ═══════════════════ MODALS: DETAILS WITH EDIT/DELETE & MULTI-SEASON BUILDER ═══════════════════ */
 const Modals = (() => {
+  let deleteHandler = null;
+
   function openModal(id) {
     document.getElementById(id)?.classList.add("open");
   }
 
   function closeModal(id) {
     document.getElementById(id)?.classList.remove("open");
+  }
+
+  function setDeleteHandler(fn) {
+    deleteHandler = fn;
   }
 
   function showAnimeDetails(item, tier) {
@@ -33,7 +39,7 @@ const Modals = (() => {
         <img src="${esc(item.poster)}" alt="${esc(item.title)}" style="width:100%;border-radius:12px;border:1px solid rgba(255,255,255,0.18);">
         <div>
           <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px;">
-            <span class="canon-pill">ТИР ${esc(tier.id)}</span>
+            <span class="cum-kind">ТИР ${esc(tier.id)}</span>
             <span class="cum-kind">${esc(m.kind)}</span>
             <span style="color:#ffd76a;font-weight:800;">★ ${esc(item.score)}</span>
             <span style="color:var(--ink-soft);font-size:12px;">Релиз: ${esc(item.year)} · Студия: <b>${esc(item.studio || "—")}</b></span>
@@ -65,7 +71,7 @@ const Modals = (() => {
           </div>
 
           <h4 style="margin:10px 0 6px;font-size:12px;text-transform:uppercase;color:var(--ink-soft);">
-            Все просмотренные сезоны, фильмы, OVA, ONA и спешлы (${m.seasons.length}):
+            Просмотренные сезоны, фильмы, OVA, ONA и спешлы (${m.seasons.length}):
           </h4>
           <table class="seasons-table">
             <thead>
@@ -85,11 +91,23 @@ const Modals = (() => {
       </div>
     `;
 
-    const editOwnerBtn = document.getElementById("btnDetailsEditOwner");
-    if (editOwnerBtn) {
-      editOwnerBtn.onclick = () => {
+    // Кнопка Редактировать внутри открытой карточки
+    const editBtn = document.getElementById("btnDetailsEdit");
+    if (editBtn) {
+      editBtn.onclick = () => {
         closeModal("detailsModal");
         openEditorModal(tier.id, item);
+      };
+    }
+
+    // Кнопка Удалить внутри открытой карточки
+    const delBtn = document.getElementById("btnDetailsDelete");
+    if (delBtn) {
+      delBtn.onclick = () => {
+        if (confirm(`Удалить тайтл «${item.title}» из тира ${tier.id}?`)) {
+          closeModal("detailsModal");
+          if (typeof deleteHandler === "function") deleteHandler(item.uid, tier.id);
+        }
       };
     }
 
@@ -104,15 +122,17 @@ const Modals = (() => {
     const eps = part.episodes ?? (type === "Фильм" ? 1 : 12);
     const mins = part.epMinutes ?? defaultMin;
     const dateStr = part.date || new Date().toLocaleDateString("ru-RU");
+    const noteStr = part.note || "";
 
     row.innerHTML = `
-      <input type="text" class="form-control s-title" placeholder="Название (Сезон 1 / Фильм)" value="${esc(part.title || "Сезон 1")}" required>
+      <input type="text" class="form-control s-title" placeholder="Сезон 1 / Фильм" value="${esc(part.title || "Сезон 1")}" required>
       <select class="form-control s-type">
         ${["TV Сериал", "Фильм", "OVA", "ONA", "Спешл"].map(t => `<option value="${t}" ${t === type ? "selected" : ""}>${t}</option>`).join("")}
       </select>
       <input type="number" min="1" class="form-control s-eps" title="Количество серий" value="${eps}" required>
       <input type="number" min="1" step="0.5" class="form-control s-mins" title="Длительность 1 серии (мин)" value="${mins}" required>
       <input type="text" class="form-control s-date" placeholder="ДД.ММ.ГГГГ" value="${esc(dateStr)}" required>
+      <input type="text" class="form-control s-note" placeholder="Заметка к сезону" value="${esc(noteStr)}">
       <span class="s-calc">0 ч.</span>
       <button type="button" class="btn btn-sm s-remove" title="Удалить часть">✕</button>
     `;
@@ -159,7 +179,7 @@ const Modals = (() => {
       sumMins += partMins;
       if (tp === "Фильм") sumMovies += ep;
       else sumEps += ep;
-      r.querySelector(".s-calc").textContent = `${formatHours(partMins / 60)} ч. (${partMins} м)`;
+      r.querySelector(".s-calc").textContent = `${formatHours(partMins / 60)} ч.`;
     });
 
     const preview = document.getElementById("seasonsTotalPreview");
@@ -180,23 +200,23 @@ const Modals = (() => {
       episodes: Math.max(1, parseInt(r.querySelector(".s-eps").value, 10) || 1),
       epMinutes: Math.max(1, parseFloat(r.querySelector(".s-mins").value) || 24),
       date: r.querySelector(".s-date").value.trim() || new Date().toLocaleDateString("ru-RU"),
-      note: ""
+      note: r.querySelector(".s-note")?.value.trim() || ""
     }));
   }
 
   function openEditorModal(tierId = "S", existingItem = null) {
     document.getElementById("editModalTitle").textContent = existingItem
       ? `✎ Редактировать тайтл: ${existingItem.title}`
-      : "Добавить тайтл в Канон";
+      : "➕ Добавить новый тайтл";
     document.getElementById("fUid").value = existingItem ? existingItem.uid : "";
-    document.getElementById("fTier").value = tierId;
+    document.getElementById("fTier").value = tierId || "S";
     document.getElementById("fKind").value = existingItem?.kind || "TV Сериал";
     document.getElementById("fTitle").value = existingItem ? existingItem.title : "";
     document.getElementById("fOrigTitle").value = existingItem ? existingItem.origTitle || "" : "";
     document.getElementById("fYear").value = existingItem ? existingItem.year || 2026 : 2026;
     document.getElementById("fStudio").value = existingItem ? existingItem.studio || "" : "";
     document.getElementById("fScore").value = existingItem ? existingItem.score || 9.0 : 9.0;
-    document.getElementById("fReaction").value = existingItem ? existingItem.reaction || "✨ Канон" : "✨ Канон";
+    document.getElementById("fReaction").value = existingItem ? existingItem.reaction || "✨ Шедевр" : "✨ Шедевр";
     document.getElementById("fPoster").value = existingItem ? existingItem.poster || "" : "";
     document.getElementById("fGenres").value = existingItem ? (existingItem.genres || []).join(", ") : "";
     document.getElementById("fComment").value = existingItem ? existingItem.comment || "" : "";
@@ -205,7 +225,7 @@ const Modals = (() => {
     listHost.innerHTML = "";
     const parts = existingItem
       ? normSeasons(existingItem)
-      : [{ title: "Сезон 1", type: "TV Сериал", episodes: 12, epMinutes: 24, date: new Date().toLocaleDateString("ru-RU") }];
+      : [{ title: "Сезон 1", type: "TV Сериал", episodes: 12, epMinutes: 24, date: new Date().toLocaleDateString("ru-RU"), note: "" }];
 
     parts.forEach(p => listHost.appendChild(createSeasonRowElement(p)));
     recalculateSeasonsPreview();
@@ -222,7 +242,8 @@ const Modals = (() => {
       type,
       episodes: type === "Фильм" ? 1 : 12,
       epMinutes: type === "Фильм" ? 110 : 24,
-      date: new Date().toLocaleDateString("ru-RU")
+      date: new Date().toLocaleDateString("ru-RU"),
+      note: ""
     }));
     recalculateSeasonsPreview();
   }
@@ -230,6 +251,7 @@ const Modals = (() => {
   return {
     openModal,
     closeModal,
+    setDeleteHandler,
     showAnimeDetails,
     openEditorModal,
     addSeasonRow,
