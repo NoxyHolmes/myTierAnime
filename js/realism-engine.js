@@ -1,4 +1,4 @@
-/* ════════════════════ REAL-TIME 3D PBR & VOLUMETRIC SEAL ENGINE (2026) ════════════════════ */
+/* ════════════════════ REAL-TIME 3D PBR & VOLUMETRIC SEAL ENGINE (S · A · B · C · D · E) ════════════════════ */
 (() => {
   let sealCanvases = [];
   let sealRaf = 0;
@@ -14,7 +14,6 @@
   }
   window.__syncRealismCanvases = collectCanvases;
 
-  /* Матрица поворота точки (x, y, z) по трём осям Эйлера (rx, ry, rz) */
   function rot3D(x, y, z, rx, ry, rz) {
     const cx = Math.cos(rx), sx = Math.sin(rx);
     const cy = Math.cos(ry), sy = Math.sin(ry);
@@ -25,20 +24,16 @@
     return [x3, y3, z2];
   }
 
-  /* Перспективная проекция 3D-точки на 2D-холст с возвратом масштаба k и глубины Z */
   function proj(pt, cx, cy, scale, fov = 3.4) {
     const z = pt[2] + fov;
     const k = fov / Math.max(0.4, z);
     return [cx + pt[0] * scale * k, cy + pt[1] * scale * k, k, pt[2]];
   }
 
-  /* ── ТИР S: Астролябия Короны (Solar Reliquary) ── */
   function drawSealS(ctx, w, h, t, hue) {
     const cx = w / 2, cy = h / 2, R = w * 0.38;
     ctx.save();
     ctx.globalCompositeOperation = "lighter";
-
-    // 1. Объёмные солнечные лучи (Volumetric God-Rays)
     for (let i = 0; i < 8; i++) {
       const a = t * 0.35 + (i * Math.PI) / 4;
       const g = ctx.createLinearGradient(cx, cy, cx + Math.cos(a) * R * 1.25, cy + Math.sin(a) * R * 1.25);
@@ -51,8 +46,6 @@
       ctx.lineTo(cx + Math.cos(a) * R * 1.22, cy + Math.sin(a) * R * 1.22);
       ctx.stroke();
     }
-
-    // 2. Три ортогональных 3D-кардана из литого золота и рубина
     const rings = [
       { rad: 1.02, rx: t * 0.7 + 0.9,  ry: t * 0.45,       rz: 0.2,     w: 2.2, hShift: 0 },
       { rad: 0.84, rx: -t * 0.55 + 0.4, ry: t * 0.82 + 1.1, rz: -0.5,    w: 1.6, hShift: -12 },
@@ -75,15 +68,12 @@
         ctx.stroke();
       }
     });
-
-    // 3. Восемь вращающихся в 3D алмазных и рубиновых октаэдров
     for (let i = 0; i < 8; i++) {
       const ang = t * 1.15 + (i * Math.PI) / 4;
       const pt = rot3D(Math.cos(ang) * 1.05, Math.sin(ang) * 1.05, Math.sin(ang * 2 + t) * 0.28, 0.55, t * 0.35, 0.2);
       const pr = proj(pt, cx, cy, R);
       const sz = 4.2 * pr[2];
-      const isRuby = i % 2 === 0;
-      ctx.fillStyle = isRuby ? "rgba(255, 70, 125, 0.92)" : `hsla(${hue}, 100%, 86%, 0.95)`;
+      ctx.fillStyle = i % 2 === 0 ? "rgba(255, 70, 125, 0.92)" : `hsla(${hue}, 100%, 86%, 0.95)`;
       ctx.beginPath();
       ctx.moveTo(pr[0], pr[1] - sz * 1.35);
       ctx.lineTo(pr[0] + sz, pr[1]);
@@ -95,7 +85,6 @@
     ctx.restore();
   }
 
-  /* ── ТИР A: Тессеракт Дисперсии (Chromatic 4D Tesseract) ── */
   const TESS_VERTS = [];
   for (let i = 0; i < 16; i++) {
     TESS_VERTS.push([
@@ -117,18 +106,14 @@
     const cx = w / 2, cy = h / 2, R = w * 0.38;
     ctx.save();
     ctx.globalCompositeOperation = "lighter";
-
     const c4 = Math.cos(t * 0.85), s4 = Math.sin(t * 0.85);
     const pts3D = TESS_VERTS.map(v => {
-      // 4D-вращение в гиперплоскости XW и перспективная 4D->3D проекция
       const x = v[0] * c4 - v[3] * s4;
       const w4 = v[0] * s4 + v[3] * c4;
       const d4 = 1.65 / (2.2 - w4);
       return rot3D(x * d4, v[1] * d4, v[2] * d4, t * 0.55, t * 0.72, 0.3);
     });
     const projected = pts3D.map(p => proj(p, cx, cy, R));
-
-    // Оптическая RGB-дисперсия (3 спектральных прохода на гранях)
     const passes = [
       { dx: -1.6, dy: -0.6, col: `hsla(${(hue + 35) % 360}, 100%, 70%, 0.42)`, lw: 1.3 },
       { dx: 1.6,  dy: 0.6,  col: `hsla(${(hue + 145) % 360}, 100%, 72%, 0.38)`, lw: 1.3 },
@@ -145,8 +130,6 @@
       }
       ctx.stroke();
     });
-
-    // Зеркальные вспышки на 16 вершинах гиперкуба
     for (const p of projected) {
       const r = Math.max(1.2, 2.3 * p[2]);
       ctx.fillStyle = `hsla(${hue}, 100%, 94%, ${Math.min(0.9, (p[3] + 1.4) * 0.45)})`;
@@ -157,7 +140,6 @@
     ctx.restore();
   }
 
-  /* ── ТИР B: Магнитный Тор (Arcane Torus-Knot p=2, q=3) ── */
   function drawSealB(ctx, w, h, t, hue) {
     const cx = w / 2, cy = h / 2, R = w * 0.36;
     ctx.save();
@@ -169,20 +151,12 @@
       const u1 = ((i + 1) / N) * Math.PI * 2;
       const ptAt = u => {
         const r = 0.72 + 0.28 * Math.cos(3 * u);
-        return rot3D(
-          r * Math.cos(2 * u),
-          r * Math.sin(2 * u),
-          0.34 * Math.sin(3 * u),
-          t * 0.6 + 0.5,
-          t * 0.85,
-          -0.3
-        );
+        return rot3D(r * Math.cos(2 * u), r * Math.sin(2 * u), 0.34 * Math.sin(3 * u), t * 0.6 + 0.5, t * 0.85, -0.3);
       };
       const p0 = proj(ptAt(u0), cx, cy, R);
       const p1 = proj(ptAt(u1), cx, cy, R);
       segs.push({ p0, p1, u: u0, z: (p0[3] + p1[3]) * 0.5 });
     }
-    // Сортировка по оси Z для честного перекрытия витков тора
     segs.sort((a, b) => a.z - b.z);
     for (const s of segs) {
       const pulse = 0.5 + 0.5 * Math.sin(s.u * 3 - t * 3.2);
@@ -198,12 +172,10 @@
     ctx.restore();
   }
 
-  /* ── ТИР C: Био-Сфера Росы (Verdant Bio-Helix) ── */
   function drawSealC(ctx, w, h, t, hue) {
     const cx = w / 2, cy = h / 2, R = w * 0.37;
     ctx.save();
     ctx.globalCompositeOperation = "lighter";
-
     const strands = 2, ptsPerStrand = 18;
     const spheres = [];
     for (let s = 0; s < strands; s++) {
@@ -217,7 +189,6 @@
         spheres.push({ pr, k, s, i });
       }
     }
-    // Энергетические мосты между нитями двойной спирали
     ctx.lineWidth = 1.1;
     for (let i = 0; i < ptsPerStrand; i += 2) {
       const a = spheres[i].pr, b = spheres[ptsPerStrand + i].pr;
@@ -227,7 +198,6 @@
       ctx.lineTo(b[0], b[1]);
       ctx.stroke();
     }
-    // Сортировка 36 капель по Z и отрисовка со сферическим Phong-бликом
     spheres.sort((a, b) => a.pr[3] - b.pr[3]);
     for (const sp of spheres) {
       const [x, y, scale, z] = sp.pr;
@@ -245,15 +215,74 @@
     ctx.restore();
   }
 
+  function drawSealD(ctx, w, h, t, hue) {
+    const cx = w / 2, cy = h / 2, R = w * 0.37;
+    ctx.save();
+    ctx.globalCompositeOperation = "lighter";
+    const swing = Math.sin(t * 1.8) * 0.55;
+    const teeth = 24;
+    for (let i = 0; i < teeth; i++) {
+      const a0 = (i / teeth) * Math.PI * 2 + swing;
+      const a1 = ((i + 0.5) / teeth) * Math.PI * 2 + swing;
+      const r0 = i % 2 === 0 ? 0.98 : 0.82;
+      const p0 = proj(rot3D(Math.cos(a0) * r0, Math.sin(a0) * r0, 0, 0.45, swing * 0.7, 0), cx, cy, R);
+      const p1 = proj(rot3D(Math.cos(a1) * r0, Math.sin(a1) * r0, 0, 0.45, swing * 0.7, 0), cx, cy, R);
+      ctx.strokeStyle = `hsla(${hue}, 95%, 68%, 0.78)`;
+      ctx.lineWidth = 2.1 * p0[2];
+      ctx.beginPath();
+      ctx.moveTo(p0[0], p0[1]);
+      ctx.lineTo(p1[0], p1[1]);
+      ctx.stroke();
+    }
+    const bob = proj(rot3D(Math.sin(swing) * 0.85, Math.cos(swing) * 0.85, 0.2, 0.3, t * 0.4, 0), cx, cy, R);
+    ctx.strokeStyle = `hsla(${hue + 15}, 100%, 75%, 0.55)`;
+    ctx.lineWidth = 1.6;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy - R * 0.3);
+    ctx.lineTo(bob[0], bob[1]);
+    ctx.stroke();
+    ctx.fillStyle = `hsla(${hue}, 100%, 82%, 0.92)`;
+    ctx.beginPath();
+    ctx.arc(bob[0], bob[1], 5.5 * bob[2], 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
+
+  function drawSealE(ctx, w, h, t, hue) {
+    const cx = w / 2, cy = h / 2, R = w * 0.36;
+    ctx.save();
+    ctx.globalCompositeOperation = "lighter";
+    const verts = [
+      [0, -1.08, 0], [0, 1.08, 0],
+      [-0.55, 0, -0.55], [0.55, 0, -0.55],
+      [0.55, 0, 0.55], [-0.55, 0, 0.55]
+    ];
+    const edges = [
+      [0,2],[0,3],[0,4],[0,5],
+      [1,2],[1,3],[1,4],[1,5],
+      [2,3],[3,4],[4,5],[5,2]
+    ];
+    const pts = verts.map(v => proj(rot3D(v[0], v[1], v[2], 0.35, t * 0.5, Math.sin(t * 0.7) * 0.15), cx, cy, R));
+    ctx.strokeStyle = `hsla(${hue}, 35%, 78%, 0.68)`;
+    ctx.lineWidth = 1.6;
+    ctx.beginPath();
+    for (const [a, b] of edges) {
+      ctx.moveTo(pts[a][0], pts[a][1]);
+      ctx.lineTo(pts[b][0], pts[b][1]);
+    }
+    ctx.stroke();
+    ctx.restore();
+  }
+
   function drawAllSeals(t) {
-    if (!document.body.classList.contains("emblems-realism")) return;
+    if (!document.body.classList.contains("emblems-realism") && !document.body.classList.contains("emblems-cyber")) return;
     const fxOpen = document.getElementById("fxPanel")?.classList.contains("show");
     for (const cv of sealCanvases) {
       if (!cv.isConnected) continue;
       const inDemo = !!cv.closest("#fxDemo");
       if (inDemo && !fxOpen) continue;
       const tierEl = cv.closest(".tier");
-      if (tierEl && !tierEl.classList.contains("in-view") && !document.body.classList.contains("exporting")) continue;
+      if (tierEl && !tierEl.classList.contains("in-view")) continue;
       const ctx = cv.getContext("2d");
       if (!ctx) continue;
       const W = cv.width, H = cv.height;
@@ -263,7 +292,9 @@
       if (idx === 0) drawSealS(ctx, W, H, t, hue);
       else if (idx === 1) drawSealA(ctx, W, H, t, hue);
       else if (idx === 2) drawSealB(ctx, W, H, t, hue);
-      else drawSealC(ctx, W, H, t, hue);
+      else if (idx === 3) drawSealC(ctx, W, H, t, hue);
+      else if (idx === 4) drawSealD(ctx, W, H, t, hue);
+      else drawSealE(ctx, W, H, t, hue);
     }
   }
 
