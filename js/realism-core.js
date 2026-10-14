@@ -1,39 +1,39 @@
-/* ═══════════════════ 3D LAYER GENERATOR, YEAR CALCULATOR & 14-LAYER EXTRUSION ═══════════════════ */
-const ELEMENT_NAMES = ["Сияние", "Призма", "Тушь", "Сакура"];
-const ELEMENT_ART   = ["radiance", "prism", "ink", "sakura"];
-const ORBIT_NAMES   = ["Солнечная корона", "Двойная орбита", "Кристалл впечатлений", "Световая волна"];
-const REALISM_NAMES = ["Астролябия Короны", "Тессеракт Дисперсии", "Магнитный Тор", "Био-Сфера Росы"];
+/* ═══════════════════ 3D LAYER GENERATOR, YEAR CALCULATOR & 14-LAYER EXTRUSION (S–E) ═══════════════════ */
+const ELEMENT_NAMES = ["Сияние", "Призма", "Тушь", "Сакура", "Янтарь", "Пепел"];
+const ELEMENT_ART   = ["radiance", "prism", "ink", "sakura", "amber", "ash"];
+const ORBIT_NAMES   = ["Солнечная корона", "Двойная орбита", "Кристалл впечатлений", "Световая волна", "Маятник времени", "Кольцо забвения"];
+const REALISM_NAMES = [
+  "Астролябия Короны",
+  "Тессеракт Дисперсии",
+  "Магнитный Тор",
+  "Био-Сфера Росы",
+  "Янтарный Маятник",
+  "Монолит Забвения"
+];
 
-/* Вычисляет год тира по последнему просмотренному аниме или возвращает текущий год (2026) */
 function tierActiveYear(tier) {
   const curYr = new Date().getFullYear();
   if (!tier || !Array.isArray(tier.items)) return curYr;
   let maxYr = 0;
   tier.items.forEach(it => {
-    normWatched(it.watched).forEach(w => {
-      const ms = parseRuDate(w.date);
-      if (ms) {
-        const y = new Date(ms).getFullYear();
-        if (y > maxYr) maxYr = y;
-      }
-    });
+    const m = calcItemMetrics(it);
+    if (m.latestYear && m.latestYear > maxYr) maxYr = m.latestYear;
   });
   return maxYr || curYr;
 }
 
-/* HTML-разметка 3D-холста, карданов и парящей 3D-капсулы года (2026 · 3D) */
 function realismMarkup(index, tier) {
   const yr = tierActiveYear(tier);
-  const hue = tier ? accentHue(tier) : [45, 185, 275, 148][index % 4];
+  const hue = tier ? accentHue(tier) : [45, 185, 275, 148, 28, 215][index % 6];
   return `<div class="realism-system" aria-hidden="true">
-    <canvas class="seal-canvas-3d" width="220" height="220" data-seal-idx="${index % 4}" data-hue="${hue}"></canvas>
+    <canvas class="seal-canvas-3d" width="220" height="220" data-seal-idx="${index % 6}" data-hue="${hue}"></canvas>
     <div class="realism-gimbal"><span class="rg-ring r-outer"></span><span class="rg-ring r-inner"></span></div>
   </div>
   <span class="seal-year-3d" aria-hidden="true"><i class="sy-dot"></i><b class="sy-yr">${yr}</b><small class="sy-tag">3D</small></span>`;
 }
 
 function elementMarkup(index) {
-  const art = ELEMENT_ART[index % 4];
+  const art = ELEMENT_ART[index % 6];
   return `<div class="element-system" data-art="${art}" aria-hidden="true">
     <div class="orbit-ring"></div>
   </div>`;
@@ -46,14 +46,13 @@ function orbitalMarkup() {
   </div>`;
 }
 
-/* 14-слойная PBR-экструзия буквы тира с передней зеркальной фаской .ll.bevel */
 const LETTER_DEPTH = 14;
 function build3DLetter(host, tier, idx) {
   if (!host) return;
   host.innerHTML = "";
   const inner = document.createElement("div");
   inner.className = "l3d-in";
-  inner.style.animationDelay = (-idx * 1.7) + "s";
+  inner.style.animationDelay = (-idx * 1.4) + "s";
   const frag = document.createDocumentFragment();
   for (let i = LETTER_DEPTH; i >= 1; i--) {
     const s = document.createElement("span");
@@ -82,7 +81,6 @@ function build3DLetter(host, tier, idx) {
   host.appendChild(inner);
 }
 
-/* 3D-наклон и передача координат луча и угла для OKLCH-фольги */
 function tiltToward(el, e, vars, amt) {
   const r = el.getBoundingClientRect();
   const ux = (e.clientX - r.left) / r.width;
