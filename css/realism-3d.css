@@ -1,0 +1,407 @@
+/* ═══════════════════ 2026 REALISM 3D EMBLEMS (S · A · B · C) & HOLOGRAPHIC FOIL ═══════════════════ */
+.lstage {
+  position: relative;
+  width: 148px;
+  height: 168px;
+  display: grid;
+  place-items: center;
+  perspective: 780px;
+  transform-style: preserve-3d;
+  margin: 4px auto;
+  user-select: none;
+}
+
+.l3d {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  transform-style: preserve-3d;
+  transition: transform 0.22s cubic-bezier(.2, .8, .2, 1);
+}
+
+.l3d-in {
+  position: relative;
+  width: 90px;
+  height: 90px;
+  display: grid;
+  place-items: center;
+  transform-style: preserve-3d;
+}
+
+.ll {
+  position: absolute;
+  font-family: var(--serif);
+  font-size: 68px;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  user-select: none;
+  pointer-events: none;
+}
+
+.ll.back {
+  color: color-mix(in srgb, var(--t) 42%, #120d24);
+  text-shadow: 0 0 4px rgba(0, 0, 0, 0.65);
+}
+
+.ll.halo {
+  color: transparent;
+  -webkit-text-stroke: 1.5px color-mix(in srgb, var(--t) 70%, #fff);
+  transform: translateZ(-2px) scale(1.05);
+  filter: blur(4px);
+  opacity: 0.55;
+}
+
+.seal-floor {
+  position: absolute;
+  bottom: 12px;
+  width: 86px;
+  height: 22px;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, var(--tg), transparent 78%);
+  transform: rotateX(75deg) translateZ(-28px);
+  filter: blur(6px);
+  pointer-events: none;
+}
+
+/* ── User Provided 2026 Realism System ── */
+.realism-system {
+  display: none;
+  position: absolute;
+  inset: -8px;
+  pointer-events: none;
+  transform-style: preserve-3d;
+  perspective: 720px;
+}
+.emblems-realism .realism-system {
+  display: grid;
+  place-items: center;
+}
+.emblems-realism .orbit-system,
+.emblems-realism .element-system,
+.emblems-realism .lstage > .ring {
+  display: none !important;
+}
+.emblems-realism .lstage {
+  --seal-size: 132px;
+  height: 172px;
+  perspective: 780px;
+  transform-style: preserve-3d;
+}
+.seal-canvas-3d {
+  position: absolute;
+  width: calc(var(--seal-size, 132px) * 1.18);
+  height: calc(var(--seal-size, 132px) * 1.18);
+  left: 50%;
+  top: 46%;
+  transform: translate(-50%, -50%) translateZ(-8px)
+    rotateX(calc(var(--bry, 0deg) * 0.65))
+    rotateY(calc(var(--brx, 0deg) * 0.65));
+  pointer-events: none;
+  filter: drop-shadow(0 0 14px var(--tg));
+  transition: transform 0.22s cubic-bezier(.2, .8, .2, 1);
+}
+
+/* 3D PBR-карданы вокруг буквы */
+.realism-gimbal {
+  position: absolute;
+  width: var(--seal-size, 132px);
+  height: var(--seal-size, 132px);
+  left: 50%;
+  top: 46%;
+  transform: translate(-50%, -50%) rotateX(var(--bry, 0deg)) rotateY(var(--brx, 0deg));
+  transform-style: preserve-3d;
+  pointer-events: none;
+}
+.rg-ring {
+  position: absolute;
+  inset: 4px;
+  border-radius: 50%;
+  transform-style: preserve-3d;
+  border: 1.5px solid color-mix(in srgb, var(--t) 72%, #ffffff);
+  box-shadow:
+    0 0 12px -2px var(--tg),
+    inset 0 0 10px -2px var(--tg),
+    inset 0 1px 0 rgba(255, 255, 255, 0.65);
+}
+.rg-ring::after {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg 40deg,
+    oklch(92% 0.14 85 / 0.85) 65deg,
+    var(--t2) 95deg,
+    transparent 130deg 220deg,
+    oklch(88% 0.16 210 / 0.7) 255deg,
+    var(--t) 285deg,
+    transparent 320deg 360deg
+  );
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 2.5px), #000 calc(100% - 1.5px));
+  mask: radial-gradient(farthest-side, transparent calc(100% - 2.5px), #000 calc(100% - 1.5px));
+}
+.rg-ring.r-outer {
+  animation: rgSpinOuter 14s linear infinite;
+}
+.rg-ring.r-inner {
+  inset: 16px;
+  border-style: dashed;
+  border-width: 1px;
+  opacity: 0.78;
+  animation: rgSpinInner 19s linear infinite reverse;
+}
+@keyframes rgSpinOuter {
+  0%   { transform: rotateX(68deg) rotateY(-22deg) rotateZ(0deg); }
+  50%  { transform: rotateX(52deg) rotateY(24deg) rotateZ(180deg); }
+  100% { transform: rotateX(68deg) rotateY(-22deg) rotateZ(360deg); }
+}
+@keyframes rgSpinInner {
+  0%   { transform: rotateX(-58deg) rotateY(34deg) rotateZ(0deg); }
+  50%  { transform: rotateX(-74deg) rotateY(-28deg) rotateZ(180deg); }
+  100% { transform: rotateX(-58deg) rotateY(34deg) rotateZ(360deg); }
+}
+
+/* Индивидуальная 3D-кинематика для S · A · B · C */
+.emblems-realism .l3d {
+  transform: translateY(-4px) rotateX(var(--bry, 0deg)) rotateY(var(--brx, 0deg));
+}
+.emblems-realism .tier[data-rank="1"] .l3d-in,
+.emblems-realism .fx-demo-seal[data-rank="1"] .l3d-in {
+  animation: sealRealismS 7.2s cubic-bezier(.37, 0, .63, 1) infinite;
+}
+.emblems-realism .tier[data-rank="2"] .l3d-in,
+.emblems-realism .fx-demo-seal[data-rank="2"] .l3d-in {
+  animation: sealRealismA 6.6s cubic-bezier(.37, 0, .63, 1) infinite;
+}
+.emblems-realism .tier[data-rank="3"] .l3d-in,
+.emblems-realism .fx-demo-seal[data-rank="3"] .l3d-in {
+  animation: sealRealismB 7.8s cubic-bezier(.37, 0, .63, 1) infinite;
+}
+.emblems-realism .tier[data-rank="4"] .l3d-in,
+.emblems-realism .fx-demo-seal[data-rank="4"] .l3d-in {
+  animation: sealRealismC 7.4s cubic-bezier(.37, 0, .63, 1) infinite;
+}
+
+/* S: Тяжёлая прецессия королевской реликвии по 3 осям */
+@keyframes sealRealismS {
+  0%, 100% { transform: translate3d(0, 3px, 10px) rotateY(-28deg) rotateX(10deg) rotateZ(-2deg); }
+  25%      { transform: translate3d(2px, -3px, 16px) rotateY(4deg) rotateX(-8deg) rotateZ(1deg); }
+  50%      { transform: translate3d(0, -6px, 12px) rotateY(28deg) rotateX(-10deg) rotateZ(2deg); }
+  75%      { transform: translate3d(-2px, 0px, 15px) rotateY(-6deg) rotateX(7deg) rotateZ(-1deg); }
+}
+/* A: Кристаллический 3D-вальс кварцевой призмы */
+@keyframes sealRealismA {
+  0%, 100% { transform: translate3d(0, -3px, 12px) rotateY(30deg) rotateX(-11deg) rotateZ(-4deg); }
+  50%      { transform: translate3d(0, 5px, 14px) rotateY(-30deg) rotateX(11deg) rotateZ(4deg); }
+}
+/* B: Магнитная левитация и гироскопический крен */
+@keyframes sealRealismB {
+  0%, 100% { transform: translate3d(-2px, 4px, 10px) rotateY(-24deg) rotateX(8deg) rotateZ(-8deg); }
+  50%      { transform: translate3d(2px, -5px, 15px) rotateY(24deg) rotateX(-9deg) rotateZ(8deg); }
+}
+/* C: Невесомое гармоническое покачивание био-сферы */
+@keyframes sealRealismC {
+  0%, 100% { transform: translate3d(-3px, 2px, 9px) rotateY(-22deg) rotateX(9deg) rotateZ(3deg); }
+  50%      { transform: translate3d(3px, -5px, 14px) rotateY(22deg) rotateX(-9deg) rotateZ(-3deg); }
+}
+
+/* Зеркальная PBR-фаска (.ll.bevel) и металлическое лицо (.ll.face) */
+.ll.bevel {
+  background: linear-gradient(135deg, #ffffff 0%, rgba(255, 255, 255, 0.92) 25%, var(--t2) 55%, transparent 85%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  transform: translateZ(4.5px);
+  filter: drop-shadow(0 -1px 1px rgba(255, 255, 255, 0.75));
+  opacity: 0.92;
+  pointer-events: none;
+}
+.emblems-realism .ll.face, .ll.face {
+  background: linear-gradient(
+    145deg,
+    #ffffff 0%,
+    color-mix(in srgb, var(--t2) 82%, #ffffff) 26%,
+    var(--t) 54%,
+    color-mix(in srgb, var(--t) 65%, #090614) 78%,
+    var(--t2) 100%
+  );
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  transform: translateZ(3.5px);
+  filter:
+    drop-shadow(0 1px 0 rgba(255, 255, 255, 0.72))
+    drop-shadow(0 4px 12px var(--tg))
+    drop-shadow(0 0 22px color-mix(in srgb, var(--t) 55%, transparent));
+  animation: pbrMetalSheen 5.2s ease-in-out infinite;
+}
+/* Оптическая RGB-дисперсия (хроматическая аберрация) для тира A */
+.emblems-realism .tier[data-rank="2"] .ll.face,
+.emblems-realism .fx-demo-seal[data-rank="2"] .ll.face {
+  filter:
+    drop-shadow(-1.5px 0 0 rgba(255, 60, 140, 0.55))
+    drop-shadow(1.5px 0 0 rgba(0, 245, 255, 0.65))
+    drop-shadow(0 0 18px var(--tg));
+}
+@keyframes pbrMetalSheen {
+  0%, 100% { background-position: 0% 20%; }
+  50%      { background-position: 100% 80%; }
+}
+
+/* 3D-пластина года (.seal-year-3d) с бегущим бликом на оси Z = 24px */
+.seal-year-3d {
+  position: absolute;
+  bottom: 2px;
+  left: 50%;
+  transform: translateX(-50%) translateZ(24px) rotateX(10deg);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px 3px 7px;
+  border-radius: 999px;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.03)),
+    rgba(12, 10, 24, 0.88);
+  border: 1px solid color-mix(in srgb, var(--t) 65%, rgba(255, 255, 255, 0.35));
+  box-shadow:
+    0 6px 16px -4px rgba(0, 0, 0, 0.85),
+    0 0 16px -3px var(--tg),
+    inset 0 1px 0 rgba(255, 255, 255, 0.45);
+  font-family: var(--sans);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  color: #fff;
+  white-space: nowrap;
+  z-index: 6;
+  pointer-events: none;
+  overflow: hidden;
+  animation: yearPlateFloat 5.6s ease-in-out infinite alternate;
+}
+.seal-year-3d::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(110deg, transparent 25%, rgba(255, 255, 255, 0.55) 48%, transparent 72%);
+  transform: translateX(-130%);
+  animation: yearPlateGlint 6.4s cubic-bezier(.4, 0, .2, 1) infinite;
+}
+@keyframes yearPlateFloat {
+  0%   { transform: translateX(-50%) translateZ(22px) translateY(0px) rotateX(10deg); }
+  100% { transform: translateX(-50%) translateZ(28px) translateY(-2.5px) rotateX(-6deg); }
+}
+@keyframes yearPlateGlint {
+  0%, 72%   { transform: translateX(-130%); }
+  92%, 100% { transform: translateX(130%); }
+}
+.seal-year-3d .sy-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--t);
+  box-shadow: 0 0 8px var(--t), 0 0 3px #fff;
+}
+.seal-year-3d .sy-yr {
+  font-family: var(--serif);
+  font-size: 10.5px;
+  color: var(--t2);
+  letter-spacing: 0.06em;
+  text-shadow: 0 0 10px var(--tg);
+}
+.seal-year-3d .sy-tag {
+  font-size: 7.5px;
+  color: var(--ink-soft);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+.tier[data-tier="S"] .seal-year-3d {
+  background: linear-gradient(135deg, rgba(255, 215, 106, 0.28), rgba(62, 22, 35, 0.92));
+  border-color: #ffe8a3;
+}
+.tier[data-tier="S"] .seal-year-3d .sy-yr {
+  color: #fff4ce;
+}
+
+/* 3D-бейдж года и OKLCH голографическая фольга на карточках постеров */
+.card-year-3d {
+  position: absolute;
+  top: 7px;
+  left: 31px;
+  z-index: 4;
+  padding: 2px 6px;
+  border-radius: 6px;
+  font-family: var(--sans);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  color: #fff;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--t) 55%, rgba(10, 8, 20, 0.82)), rgba(10, 8, 20, 0.88));
+  border: 1px solid color-mix(in srgb, var(--t2) 55%, rgba(255, 255, 255, 0.22));
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.55), 0 0 10px -2px var(--tg);
+  backdrop-filter: blur(6px);
+  pointer-events: none;
+  transform: translateZ(14px);
+}
+.card .holo-foil {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  opacity: 0;
+  mix-blend-mode: color-dodge;
+  background:
+    radial-gradient(
+      circle at var(--px, 50%) var(--py, 50%),
+      rgba(255, 255, 255, 0.38) 0%,
+      oklch(82% 0.18 calc(var(--holo-ang, 0) * 1deg + 40deg) / 0.26) 28%,
+      oklch(76% 0.20 calc(var(--holo-ang, 0) * 1deg + 160deg) / 0.20) 54%,
+      transparent 78%
+    ),
+    repeating-linear-gradient(
+      115deg,
+      transparent 0px,
+      rgba(255, 255, 255, 0.04) 2px,
+      transparent 4px,
+      transparent 9px
+    );
+  transition: opacity 0.28s ease;
+}
+body.fx-tilt:not(.editing) .card:hover .holo-foil {
+  opacity: 0.88;
+}
+.seal-caption > span { display: none; }
+.emblems-realism .seal-caption .caption-realism { display: inline; }
+.emblems-elements .seal-caption .caption-elements { display: inline; }
+.emblems-orbits .seal-caption .caption-orbits { display: inline; }
+.fx-seg.cols-4 { grid-template-columns: repeat(2, 1fr); }
+
+/* Alternative Emblem Modes (Elements & Orbits) */
+.element-system, .orbit-system {
+  display: none;
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  place-items: center;
+}
+.emblems-elements .element-system { display: grid; }
+.emblems-orbits .orbit-system { display: grid; }
+.orbit-ring {
+  position: absolute;
+  width: 118px;
+  height: 118px;
+  border-radius: 50%;
+  border: 1px dashed var(--t);
+  box-shadow: 0 0 15px var(--tg);
+  animation: rgSpinOuter 10s linear infinite;
+}
+.orbit-ring.o2 {
+  width: 94px;
+  height: 94px;
+  border-style: solid;
+  animation: rgSpinInner 14s linear infinite;
+}

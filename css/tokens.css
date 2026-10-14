@@ -1,0 +1,50 @@
+/* ═══════════════════ DESIGN TOKENS & OKLCH PALETTE (2026) ═══════════════════ */
+:root {
+  --bg-deep: #06050c;
+  --bg-surface: #0d0b18;
+  --bg-elevated: rgba(19, 16, 36, 0.78);
+  --bg-glass: rgba(14, 12, 28, 0.68);
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-bright: rgba(255, 255, 255, 0.18);
+
+  --ink: #f5f3ff;
+  --ink-soft: #a6a0c4;
+  --ink-muted: #6c668a;
+
+  --sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --serif: 'Cinzel', 'Playfair Display', Georgia, serif;
+  --mono: 'JetBrains Mono', monospace;
+
+  /* Default Tier Accent Variables (overridden per .tier) */
+  --t: #ffd76a;
+  --t2: #ff8e53;
+  --tg: rgba(255, 215, 106, 0.52);
+
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 22px;
+  --radius-xl: 30px;
+
+  --shadow-lg: 0 20px 50px -12px rgba(0, 0, 0, 0.85);
+}
+
+.tier[data-tier="S"], .fx-demo-seal[data-rank="1"] {
+  --t: #ffd76a;
+  --t2: #ff5e7e;
+  --tg: rgba(255, 215, 106, 0.58);
+}
+.tier[data-tier="A"], .fx-demo-seal[data-rank="2"] {
+  --t: #00f5ff;
+  --t2: #ff3c8c;
+  --tg: rgba(0, 245, 255, 0.52);
+}
+.tier[data-tier="B"], .fx-demo-seal[data-rank="3"] {
+  --t: #b57cff;
+  --t2: #6c5ce7;
+  --tg: rgba(181, 124, 255, 0.52);
+}
+.tier[data-tier="C"], .fx-demo-seal[data-rank="4"] {
+  --t: #38ef7d;
+  --t2: #11998e;
+  --tg: rgba(56, 239, 125, 0.48);
+}

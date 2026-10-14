@@ -1,0 +1,9 @@
+{
+  "name": "myTierAnime · Канон 2026",
+  "short_name": "myTierAnime",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#06050c",
+  "theme_color": "#ffd76a",
+  "description": "Персональный 3D тир-лист аниме с синхронизацией через GitHub API"
+}
