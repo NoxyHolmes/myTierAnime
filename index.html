@@ -4,12 +4,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>myTierAnime · Канон 2026 (3D Realism System)</title>
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+  <link rel="apple-touch-icon" href="assets/favicon.svg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;900&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="manifest" href="manifest.json">
 
-  <!-- Modular Stylesheets -->
   <link rel="stylesheet" href="css/tokens.css">
   <link rel="stylesheet" href="css/realism-3d.css">
   <link rel="stylesheet" href="css/cards-and-tiers.css">
@@ -19,7 +20,6 @@
   <canvas id="bgStarsCanvas" aria-hidden="true"></canvas>
 
   <div class="app-shell">
-    <!-- Top Sticky Navigation Bar -->
     <header class="topbar">
       <div class="topbar-inner">
         <div class="brand">
@@ -29,9 +29,14 @@
               myTierAnime
               <span class="canon-pill">КАНОН 2026 · 3D</span>
             </h1>
-            <div class="brand-sub">Личная 3D-коллекция и тир-лист просмотренных аниме (S · A · B · C)</div>
+            <div class="brand-sub">Личная 3D-коллекция и хронология просмотренных аниме (S · A · B · C · D · E)</div>
           </div>
         </div>
+
+        <nav class="view-switcher" aria-label="Режим просмотра">
+          <button type="button" class="view-tab active" data-switch-view="tiers">🏛 Тир-лист (S–E)</button>
+          <button type="button" class="view-tab" data-switch-view="calendar">📅 Календарь и Месяцы</button>
+        </nav>
 
         <div class="toolbar-controls">
           <div class="search-input-wrap">
@@ -39,53 +44,52 @@
             <input type="search" id="searchInput" class="search-input" placeholder="Поиск тайтла, студии...">
           </div>
 
-          <select id="genreFilter" class="form-control" style="border-radius:999px;padding:7px 14px;">
+          <select id="genreFilter" class="form-control genre-select">
             <option value="ALL">Все жанры</option>
           </select>
 
-          <button type="button" id="btnToggleFx" class="btn" title="Настройки 3D-эмблем и шейдеров">
-            ✨ 3D Сцена (2026)
+          <button type="button" id="btnToggleSettings" class="btn" title="Настройки 3D-сцен, лепестков и скорости">
+            ⚙️ Настройки
           </button>
 
           <button type="button" id="btnExportJson" class="btn" title="Скачать резервную копию JSON">
             ⬇ JSON
           </button>
 
-          <!-- Owner-only Cloud Push Button -->
           <button type="button" id="btnSyncGitHub" class="btn btn-primary owner-only" title="Закоммитить изменения в репозиторий GitHub">
             ☁ Сохранить в GitHub
           </button>
 
-          <!-- Owner Token Login Button -->
           <button type="button" id="btnOwnerAuth" class="btn">
-            🔑 Вход владельца (Token)
+            🔑 Вход владельца
           </button>
         </div>
       </div>
     </header>
 
-    <!-- Live Analytics Ribbon -->
     <section id="statsRibbon" class="stats-ribbon" aria-label="Статистика коллекции"></section>
 
-    <!-- Main S / A / B / C Tiers Container -->
     <main id="tiersRoot" class="tiers-container"></main>
+
+    <section id="calendarRoot" class="calendar-container" style="display:none;"></section>
   </div>
 
-  <!-- Floating 3D FX Inspector Drawer (#fxPanel) -->
-  <aside id="fxPanel" class="fx-drawer" aria-label="Настройки 3D-движка">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-      <strong style="font-family:var(--serif);font-size:15px;">Движок Эмблем S · A · B · C</strong>
+  <aside id="fxPanel" class="fx-drawer" aria-label="Настройки 3D-движка и фона">
+    <div class="fx-drawer-head">
+      <strong>⚙️ Настройки 3D-сцен и Атмосферы</strong>
       <button type="button" class="btn" style="padding:3px 9px;" onclick="document.getElementById('fxPanel').classList.remove('show')">✕</button>
     </div>
-    <div style="font-size:11.5px;color:var(--ink-soft);">Выберите архитектурный режим 3D-печатей тиров:</div>
+
+    <div class="fx-section-title">1. Архитектура 3D-эмблем тиров (S–E):</div>
     <div class="fx-seg">
-      <button type="button" data-emblem-mode="emblems-realism" class="active">Реализм 3D</button>
+      <button type="button" data-emblem-mode="emblems-realism" class="active">Реализм 3D · 2026</button>
       <button type="button" data-emblem-mode="emblems-elements">4 Стихии</button>
-      <button type="button" data-emblem-mode="emblems-orbits">Орбиты</button>
+      <button type="button" data-emblem-mode="emblems-orbits">Орбитальные кольца</button>
+      <button type="button" data-emblem-mode="emblems-cyber">Кибер-Призма</button>
     </div>
 
-    <div id="fxDemo" class="fx-demo-seal" data-rank="1" style="display:grid;place-items:center;padding:10px 0;">
-      <div class="lstage" style="--seal-size:110px;height:140px;">
+    <div id="fxDemo" class="fx-demo-seal" data-rank="1" style="display:grid;place-items:center;padding:6px 0;">
+      <div class="lstage" style="--seal-size:104px;height:132px;">
         <div class="realism-system">
           <canvas class="seal-canvas-3d" width="180" height="180" data-seal-idx="0" data-hue="45"></canvas>
           <div class="realism-gimbal"><span class="rg-ring r-outer"></span><span class="rg-ring r-inner"></span></div>
@@ -94,32 +98,62 @@
       </div>
     </div>
 
-    <div style="display:flex;flex-direction:column;gap:8px;font-size:12.5px;margin-top:8px;">
-      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
-        <input type="checkbox" id="chkTilt" checked>
-        Интерактивный 3D-наклон и OKLCH голографическая фольга
+    <div class="fx-section-title">2. Фоновые частицы и лепестки:</div>
+    <div class="fx-seg">
+      <button type="button" data-bg-effect="sakura" class="active">🌸 Лепестки сакуры</button>
+      <button type="button" data-bg-effect="stars">✨ Звёздная пыль</button>
+      <button type="button" data-bg-effect="embers">🔥 Золотые угли</button>
+      <button type="button" data-bg-effect="rain">🌧 Неоновый дождь</button>
+      <button type="button" data-bg-effect="snow">❄️ Кристальный снег</button>
+      <button type="button" data-bg-effect="none">🚫 Без частиц</button>
+    </div>
+
+    <div class="fx-sliders">
+      <label class="fx-slider-row">
+        <span>Скорость лепестков / частиц: <b id="lblBgSpeed">1.0x</b></span>
+        <input type="range" id="rngBgSpeed" min="0.2" max="3.0" step="0.1" value="1.0">
       </label>
-      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+      <label class="fx-slider-row">
+        <span>Количество частиц на экране: <b id="lblBgCount">65</b></span>
+        <input type="range" id="rngBgCount" min="15" max="160" step="5" value="65">
+      </label>
+      <label class="fx-slider-row">
+        <span>Сила бокового ветра: <b id="lblBgWind">0.5</b></span>
+        <input type="range" id="rngBgWind" min="-2.0" max="2.0" step="0.1" value="0.5">
+      </label>
+      <label class="fx-slider-row">
+        <span>Угол 3D-наклона карточек: <b id="lblTiltPower">14°</b></span>
+        <input type="range" id="rngTiltPower" min="0" max="28" step="1" value="14">
+      </label>
+    </div>
+
+    <div class="fx-toggles">
+      <label class="fx-check-row">
+        <input type="checkbox" id="chkTilt" checked>
+        <span>Интерактивный 3D-наклон и OKLCH голографическая фольга</span>
+      </label>
+      <label class="fx-check-row">
         <input type="checkbox" id="chkMotion" checked>
-        60 FPS физическая анимация 3D-карданов и тессеракта
+        <span>60 FPS физическая анимация 3D-карданов и тессеракта</span>
       </label>
     </div>
   </aside>
 
-  <!-- Modal 1: Anime Details Dossier -->
   <div id="detailsModal" class="modal-backdrop">
-    <div class="modal-box">
+    <div class="modal-box modal-box-wide">
       <div class="modal-header">
         <h3>Досье тайтла · Канон 2026</h3>
-        <button type="button" class="btn" data-close-modal="detailsModal">✕ Закрыть</button>
+        <div style="display:flex;gap:8px;">
+          <button type="button" id="btnDetailsEditOwner" class="btn btn-primary owner-only">✎ Редактировать тайтл</button>
+          <button type="button" class="btn" data-close-modal="detailsModal">✕ Закрыть</button>
+        </div>
       </div>
       <div id="detailsModalBody"></div>
     </div>
   </div>
 
-  <!-- Modal 2: Add / Edit Anime Title (Owner Only) -->
   <div id="editorModal" class="modal-backdrop">
-    <div class="modal-box">
+    <div class="modal-box modal-box-wide">
       <div class="modal-header">
         <h3 id="editModalTitle">Добавить тайтл в Канон</h3>
         <button type="button" class="btn" data-close-modal="editorModal">✕</button>
@@ -135,18 +169,28 @@
         <input type="hidden" id="fUid">
         <div class="form-grid">
           <div class="form-group">
-            <label>Тир (Ранг):</label>
+            <label>Тир (Ранг S–E):</label>
             <select id="fTier" class="form-control">
-              <option value="S">Тир S — Абсолютный Канон (Астролябия)</option>
-              <option value="A">Тир A — Кристалл Спектра (Тессеракт)</option>
-              <option value="B">Тир B — Аметистовый Резонанс (Тор)</option>
-              <option value="C">Тир C — Изумрудная Роса (Био-Сфера)</option>
+              <option value="S">Тир S — Абсолютный Канон (Астролябия Короны)</option>
+              <option value="A">Тир A — Кристалл Спектра (Тессеракт Дисперсии)</option>
+              <option value="B">Тир B — Аметистовый Резонанс (Магнитный Тор)</option>
+              <option value="C">Тир C — Изумрудная Роса (Био-Сфера Росы)</option>
+              <option value="D">Тир D — Янтарный Маятник (Хронометр)</option>
+              <option value="E">Тир E — Монолит Забвения (Обелиск Пепла)</option>
             </select>
           </div>
+
           <div class="form-group">
-            <label>Личная оценка (1–10):</label>
-            <input type="number" step="0.1" min="1" max="10" id="fScore" class="form-control" required>
+            <label>Основной тип тайтла (указывается под карточкой):</label>
+            <select id="fKind" class="form-control">
+              <option value="TV Сериал">TV Сериал</option>
+              <option value="Фильм">Фильм</option>
+              <option value="OVA">OVA</option>
+              <option value="ONA">ONA</option>
+              <option value="Спешл">Спешл</option>
+            </select>
           </div>
+
           <div class="form-group">
             <label>Название (RU):</label>
             <input type="text" id="fTitle" class="form-control" required>
@@ -155,14 +199,16 @@
             <label>Оригинальное название (Romaji / EN):</label>
             <input type="text" id="fOrigTitle" class="form-control">
           </div>
+
           <div class="form-group">
             <label>Год релиза:</label>
             <input type="number" id="fYear" class="form-control" value="2026">
           </div>
           <div class="form-group">
-            <label>Эпизоды:</label>
-            <input type="text" id="fEpisodes" class="form-control" placeholder="12 эп.">
+            <label>Личная оценка (1–10):</label>
+            <input type="number" step="0.1" min="1" max="10" id="fScore" class="form-control" value="9.0" required>
           </div>
+
           <div class="form-group">
             <label>Студия:</label>
             <input type="text" id="fStudio" class="form-control" placeholder="Madhouse, Liden Films...">
@@ -171,28 +217,45 @@
             <label>Бейдж эмоции / реакции:</label>
             <input type="text" id="fReaction" class="form-control" placeholder="👑 Корона ночи">
           </div>
+
           <div class="form-group full">
             <label>URL постера (обложки):</label>
             <input type="url" id="fPoster" class="form-control" placeholder="https://..." required>
           </div>
+
           <div class="form-group full">
             <label>Жанры (через запятую):</label>
             <input type="text" id="fGenres" class="form-control" placeholder="Сверхъестественное, Романтика, Драма">
           </div>
-          <div class="form-group">
-            <label>Дата просмотра (ДД.ММ.ГГГГ) — формирует 3D-маркер года:</label>
-            <input type="text" id="fWatchDate" class="form-control" placeholder="14.10.2026">
-          </div>
-          <div class="form-group">
-            <label>Заметка к просмотру:</label>
-            <input type="text" id="fWatchNote" class="form-control" placeholder="Первый просмотр / Пересмотр">
-          </div>
-          <div class="form-group full">
-            <label>Личная рецензия / комментарий:</label>
-            <textarea id="fComment" rows="3" class="form-control"></textarea>
-          </div>
         </div>
-        <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:12px;">
+
+        <div class="seasons-builder-box">
+          <div class="seasons-builder-head">
+            <div>
+              <strong>🎬 Сезоны, Фильмы, OVA, ONA и Спешлы этого тайтла</strong>
+              <div style="font-size:11px;color:var(--ink-soft);">
+                Укажите время на 1 серию (в минутах) — оно автоматически конвертируется в часы на весь сезон или фильм.
+              </div>
+            </div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;">
+              <button type="button" class="btn btn-sm" data-add-part="TV Сериал">+ Сезон (TV)</button>
+              <button type="button" class="btn btn-sm" data-add-part="Фильм">+ Фильм</button>
+              <button type="button" class="btn btn-sm" data-add-part="OVA">+ OVA</button>
+              <button type="button" class="btn btn-sm" data-add-part="ONA">+ ONA</button>
+              <button type="button" class="btn btn-sm" data-add-part="Спешл">+ Спешл</button>
+            </div>
+          </div>
+
+          <div id="seasonsEditorList" class="seasons-editor-list"></div>
+          <div id="seasonsTotalPreview" class="seasons-total-preview"></div>
+        </div>
+
+        <div class="form-group full" style="margin-top:12px;">
+          <label>Личная рецензия / комментарий:</label>
+          <textarea id="fComment" rows="3" class="form-control"></textarea>
+        </div>
+
+        <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:14px;">
           <button type="button" class="btn" data-close-modal="editorModal">Отмена</button>
           <button type="submit" class="btn btn-primary">💾 Сохранить тайтл</button>
         </div>
@@ -200,7 +263,6 @@
     </div>
   </div>
 
-  <!-- Modal 3: Owner GitHub Token Authentication -->
   <div id="authModal" class="modal-backdrop">
     <div class="modal-box" style="max-width:480px;">
       <div class="modal-header">
@@ -208,7 +270,7 @@
         <button type="button" class="btn" data-close-modal="authModal">✕</button>
       </div>
       <p style="font-size:12.5px;color:var(--ink-soft);line-height:1.5;">
-        Сайт доступен всем по публичной ссылке в режиме просмотра. Для добавления, перетаскивания тайтлов и сохранения базы напрямую в репозиторий укажите ваш <b>GitHub Personal Access Token</b> (с правом <code>repo</code> или <code>contents:write</code>).
+        По публичной ссылке сайт открывается в режиме просмотра. Когда вы входите по своему <b>GitHub Personal Access Token</b>, на всех карточках появляется кнопка <b>«✎ Редактировать тайтл»</b>, добавление сезонов и сохранение напрямую в GitHub.
       </p>
       <form id="authForm">
         <div class="form-group full">
@@ -216,7 +278,7 @@
           <input type="text" id="ghRepoInput" class="form-control" value="geraltschwarzenegger-svg/myTierAnime">
         </div>
         <div class="form-group full">
-          <label>GitHub Personal Access Token (хранится только в вашем браузере):</label>
+          <label>GitHub Personal Access Token (или локальный ключ владельца):</label>
           <input type="password" id="ghTokenInput" class="form-control" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx">
         </div>
         <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:14px;">
@@ -229,7 +291,6 @@
 
   <div id="toastContainer"></div>
 
-  <!-- Modular JavaScript Architecture -->
   <script src="js/utils.js"></script>
   <script src="js/realism-core.js"></script>
   <script src="js/realism-engine.js"></script>
@@ -237,6 +298,7 @@
   <script src="js/shikimori-api.js"></script>
   <script src="js/fx-controller.js"></script>
   <script src="js/stats-engine.js"></script>
+  <script src="js/calendar-view.js"></script>
   <script src="js/drag-drop.js"></script>
   <script src="js/modals.js"></script>
   <script src="js/app.js"></script>
