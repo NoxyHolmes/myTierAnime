@@ -5,5 +5,12 @@
   "display": "standalone",
   "background_color": "#06050c",
   "theme_color": "#ffd76a",
-  "description": "Персональный 3D тир-лист аниме с синхронизацией через GitHub API"
+  "description": "Персональный 3D тир-лист аниме (S-E) с календарём и синхронизацией через GitHub API",
+  "icons": [
+    {
+      "src": "assets/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
 }
