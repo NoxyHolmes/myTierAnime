@@ -1,8 +1,8 @@
-/* ═══════════════════ TIERS & POSTER CARDS ARCHITECTURE ═══════════════════ */
+/* ═══════════════════ TIERS, POSTER CARDS, UNDER-CARD STATS & OWNER EDIT BUTTON ═══════════════════ */
 .tiers-container {
   max-width: 1440px;
   margin: 0 auto;
-  padding: 16px 24px 80px;
+  padding: 14px 24px 80px;
   display: flex;
   flex-direction: column;
   gap: 28px;
@@ -12,7 +12,7 @@
   position: relative;
   display: grid;
   grid-template-columns: 220px 1fr;
-  background: linear-gradient(135deg, rgba(20, 17, 38, 0.82), rgba(10, 9, 20, 0.92));
+  background: linear-gradient(135deg, rgba(20, 17, 38, 0.84), rgba(10, 9, 20, 0.94));
   border: 1px solid color-mix(in srgb, var(--t) 28%, rgba(255,255,255,0.08));
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-lg), 0 0 40px -18px var(--tg);
@@ -25,7 +25,6 @@
   border-color: color-mix(in srgb, var(--t) 55%, rgba(255,255,255,0.2));
 }
 
-/* Left Seal Column */
 .tier-badge {
   position: relative;
   display: flex;
@@ -61,12 +60,11 @@
 }
 
 .tier-meta-sub {
-  font-size: 10px;
-  color: var(--ink-muted);
+  font-size: 11px;
+  color: var(--ink-soft);
   margin-top: 2px;
 }
 
-/* Right Cards Grid */
 .tier-content {
   padding: 20px;
   display: flex;
@@ -106,13 +104,18 @@
 
 .tier-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(168px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(176px, 1fr));
   gap: 18px;
-  min-height: 240px;
+  min-height: 250px;
   align-items: start;
 }
 
-/* Anime Poster Card */
+.card-unit {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
 .card {
   position: relative;
   aspect-ratio: 2 / 3;
@@ -191,7 +194,7 @@
 
 .card-reaction {
   position: absolute;
-  bottom: 64px;
+  bottom: 58px;
   left: 8px;
   z-index: 4;
   padding: 2px 7px;
@@ -234,7 +237,6 @@
   justify-content: space-between;
 }
 
-/* Royal S-Tier Frame */
 .card-coronet {
   position: absolute;
   top: -2px;
@@ -256,41 +258,144 @@
   pointer-events: none;
 }
 
-/* Owner Drag & Edit Controls on Card */
+.card-under-meta {
+  background: rgba(14, 12, 28, 0.85);
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  padding: 7px 9px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 11px;
+}
+
+.cum-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+}
+
+.cum-kind {
+  font-size: 9.5px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 2px 6px;
+  border-radius: 5px;
+  background: color-mix(in srgb, var(--t) 18%, rgba(255,255,255,0.05));
+  color: var(--t);
+  border: 1px solid color-mix(in srgb, var(--t) 40%, transparent);
+}
+
+.cum-seasons-badge {
+  font-size: 10px;
+  color: var(--ink-soft);
+}
+
+.cum-stats {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: var(--ink);
+  font-weight: 600;
+  font-size: 11px;
+  padding-top: 3px;
+  border-top: 1px solid rgba(255,255,255,0.06);
+}
+.cum-hours {
+  color: #00f5ff;
+  font-weight: 700;
+}
+
 .card-owner-bar {
   position: absolute;
   top: 34px;
   right: 7px;
-  z-index: 6;
+  z-index: 7;
   display: none;
   flex-direction: column;
   gap: 5px;
 }
-body.is-owner .card:hover .card-owner-bar {
+body.is-owner .card-owner-bar {
   display: flex;
 }
+
 .card-act-btn {
-  width: 26px;
   height: 26px;
+  padding: 0 8px;
   border-radius: 7px;
-  border: 1px solid rgba(255,255,255,0.25);
-  background: rgba(12, 10, 24, 0.88);
-  color: #fff;
+  border: 1px solid rgba(255, 215, 106, 0.55);
+  background: rgba(12, 10, 24, 0.92);
+  color: #ffd76a;
   cursor: pointer;
-  display: grid;
-  place-items: center;
-  font-size: 12px;
-  transition: background 0.2s, transform 0.2s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.75);
+  transition: background 0.2s, transform 0.2s, color 0.2s;
 }
 .card-act-btn:hover {
   background: var(--t);
   color: #090614;
-  transform: scale(1.08);
+  transform: scale(1.05);
+}
+.card-act-btn.danger {
+  border-color: rgba(255, 82, 82, 0.55);
+  color: #ff6b6b;
+}
+.card-act-btn.danger:hover {
+  background: #ff5252;
+  color: #fff;
 }
 
-.card.dragging {
+.cum-owner-actions {
+  display: none;
+  gap: 5px;
+  margin-top: 3px;
+  padding-top: 5px;
+  border-top: 1px dashed rgba(255,255,255,0.12);
+}
+body.is-owner .cum-owner-actions {
+  display: flex;
+}
+.cum-edit-btn {
+  flex: 1;
+  padding: 5px 8px;
+  border-radius: 6px;
+  border: 1px solid color-mix(in srgb, var(--t) 55%, transparent);
+  background: color-mix(in srgb, var(--t) 16%, rgba(12, 10, 24, 0.9));
+  color: #fff;
+  font-size: 10.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.cum-edit-btn:hover {
+  background: var(--t);
+  color: #090614;
+}
+.cum-del-btn {
+  padding: 5px 8px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 82, 82, 0.45);
+  background: rgba(255, 82, 82, 0.12);
+  color: #ff8787;
+  font-size: 10.5px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.cum-del-btn:hover {
+  background: #ff5252;
+  color: #fff;
+}
+
+.card-unit.dragging {
   opacity: 0.45;
-  transform: scale(0.94);
+  transform: scale(0.95);
 }
 .tier-grid.drag-over {
   background: rgba(255, 255, 255, 0.03);
