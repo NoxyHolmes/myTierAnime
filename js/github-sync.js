@@ -1,4 +1,4 @@
-/* ═══════════════════ GITHUB SYNC ENGINE v9.0 (POSTER TREE BINDING & BLOB RESOLVER) ═══════════════════ */
+/* ═══════════════════ GITHUB SYNC ENGINE v10.0 (DIRECT FILE COMMIT + INLINE YANDEX FALLBACK) ═══════════════════ */
 const GitHubSync = (() => {
   const TOKEN_KEY = "mta_2026_gh_token";
   const REPO_KEY  = "mta_2026_gh_repo";
@@ -11,7 +11,7 @@ const GitHubSync = (() => {
 
   function detectRepoFromLocation() {
     try {
-      const host = window.location.hostname;
+      const host = window.location.hostname; // напр. noxyholmes.github.io
       const pathParts = window.location.pathname.split("/").filter(Boolean);
       if (host.endsWith(".github.io")) {
         const owner = host.replace(".github.io", "");
@@ -19,7 +19,7 @@ const GitHubSync = (() => {
         return `${owner}/${firstSeg}`;
       }
     } catch {}
-    return "geraltschwarzenegger-svg/myTierAnime";
+    return "noxyholmes/myTierAnime";
   }
 
   function getToken() {
@@ -29,7 +29,7 @@ const GitHubSync = (() => {
   function getRepo() {
     const saved = localStorage.getItem(REPO_KEY);
     const detected = detectRepoFromLocation();
-    if (window.location.hostname.endsWith(".github.io") && (!saved || saved === "geraltschwarzenegger-svg/myTierAnime")) {
+    if (window.location.hostname.endsWith(".github.io")) {
       return detected;
     }
     return saved || detected;
@@ -91,6 +91,32 @@ const GitHubSync = (() => {
     });
   }
 
+  /* Создаёт встроенную WebP/JPEG копию картинки, которая сохраняется прямо внутри tiers.json,
+     чтобы Яндекс Браузер показывал фон и обложки МГНОВЕННО без обращения к внешним серверам! */
+  function createInlineDataUrl(file, maxW = 1280, quality = 0.8) {
+    return new Promise(resolve => {
+      const reader = new FileReader();
+      reader.onload = e => {
+        const img = new Image();
+        img.onload = () => {
+          const scale = Math.min(1, maxW / img.width);
+          const cv = document.createElement("canvas");
+          cv.width = Math.round(img.width * scale);
+          cv.height = Math.round(img.height * scale);
+          const ctx = cv.getContext("2d");
+          ctx.drawImage(img, 0, 0, cv.width, cv.height);
+          let out = cv.toDataURL("image/webp", quality);
+          if (!out || out.length < 32) out = cv.toDataURL("image/jpeg", quality);
+          resolve(out);
+        };
+        img.onerror = () => resolve("");
+        img.src = e.target.result;
+      };
+      reader.onerror = () => resolve("");
+      reader.readAsDataURL(file);
+    });
+  }
+
   async function verifyToken(token) {
     const tk = (token ?? getToken()).trim();
     if (!tk) {
@@ -149,6 +175,17 @@ const GitHubSync = (() => {
 
     const candidates = [];
 
+    // 1. Локальный домен GitHub Pages (никогда не блокируется Яндекс Браузером!)
+    try {
+      const localRes = await fetch(`data/tiers.json?_ya_nocache=${Date.now()}_${Math.random()}`, {
+        cache: "no-store"
+      });
+      if (localRes.ok) {
+        candidates.push(await localRes.json());
+      }
+    } catch {}
+
+    // 2. Прямой запрос к GitHub API / raw по SHA последнего коммита (для мгновенного обновления за 1 сек)
     try {
       const branchInfo = await getLatestBranchCommitSha();
       if (branchInfo && branchInfo.commitSha) {
@@ -163,7 +200,7 @@ const GitHubSync = (() => {
           }
         } catch {}
 
-        if (candidates.length === 0 && branchInfo.treeSha) {
+        if (branchInfo.treeSha) {
           const treeRes = await fetch(`https://api.github.com/repos/${repo}/git/trees/${branchInfo.treeSha}?recursive=1&_ya=${Date.now()}`, {
             headers,
             cache: "no-store"
@@ -189,33 +226,14 @@ const GitHubSync = (() => {
       }
     } catch {}
 
-    try {
-      const cRes = await fetch(`https://api.github.com/repos/${repo}/contents/${FILE_PATH}?_ya_nocache=${Date.now()}`, {
-        headers,
-        cache: "no-store"
-      });
-      if (cRes.ok) {
-        const cJson = await cRes.json();
-        if (cJson.content) {
-          candidates.push(JSON.parse(base64ToUtf8(cJson.content)));
-        }
-      }
-    } catch {}
-
-    try {
-      const localRes = await fetch(`data/tiers.json?_ya_nocache=${Date.now()}_${Math.random()}`, {
-        cache: "reload"
-      });
-      if (localRes.ok) {
-        candidates.push(await localRes.json());
-      }
-    } catch {}
-
     if (!candidates.length) return null;
     candidates.sort((a, b) => Number(b?.meta?.revision || 0) - Number(a?.meta?.revision || 0));
     return candidates[0];
   }
 
+  /* ЗАГРУЗКА ОБЛОЖКИ ИЛИ ФОНА:
+     1) Физически сохраняет оригинальный файл без сжатия в папку posters/ или backgrounds/ вашего репозитория.
+     2) Возвращает встроенную DataURL-копию (inlineDataUrl), чтобы Яндекс Браузер показывал картинку даже без внешних запросов! */
   async function uploadAssetFile(file, folder = "posters") {
     const tk = getToken();
     const repo = getRepo();
@@ -224,6 +242,9 @@ const GitHubSync = (() => {
     const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
     const relPath = `${folder}/${Date.now()}_${safeName}`;
     const { base64, blobUrl, mime } = await fileToRawBase64(file);
+    const maxW = folder === "backgrounds" ? 1600 : 600;
+    const qual = folder === "backgrounds" ? 0.78 : 0.84;
+    const inlineDataUrl = await createInlineDataUrl(file, maxW, qual);
 
     const headers = {
       "Authorization": `Bearer ${tk}`,
@@ -231,30 +252,72 @@ const GitHubSync = (() => {
       "Content-Type": "application/json"
     };
 
-    const blobRes = await fetch(`https://api.github.com/repos/${repo}/git/blobs`, {
-      method: "POST",
-      headers,
-      body: JSON.stringify({ content: base64, encoding: "base64" })
-    });
+    // Физически записываем файл в репозиторий через PUT /contents/posters/...
+    let blobSha = "";
+    try {
+      const putRes = await fetch(`https://api.github.com/repos/${repo}/contents/${relPath}`, {
+        method: "PUT",
+        headers,
+        body: JSON.stringify({
+          message: `Upload ${relPath}`,
+          content: base64
+        })
+      });
+      if (putRes.ok) {
+        const putData = await putRes.json();
+        blobSha = putData?.content?.sha || "";
+        if (putData?.commit?.sha) lastKnownCommitSha = putData.commit.sha;
+      }
+    } catch {}
 
-    if (!blobRes.ok) {
-      const err = await blobRes.json().catch(() => ({}));
-      throw new Error(err.message || `Ошибка загрузки файла (${blobRes.status})`);
+    // Если файл очень большой — создаём Git Blob напрямую
+    if (!blobSha) {
+      const blobRes = await fetch(`https://api.github.com/repos/${repo}/git/blobs`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify({ content: base64, encoding: "base64" })
+      });
+      if (blobRes.ok) {
+        const createdBlob = await blobRes.json();
+        blobSha = createdBlob.sha;
+      }
     }
-    const createdBlob = await blobRes.json();
-    const blobSha = createdBlob.sha;
-    blobUrlCache.set(blobSha, blobUrl);
 
-    return { path: relPath, blobSha, mime, instantUrl: blobUrl };
+    if (blobSha) blobUrlCache.set(blobSha, blobUrl);
+
+    return {
+      path: relPath,
+      blobSha,
+      mime,
+      instantUrl: inlineDataUrl || blobUrl,
+      inlineDataUrl
+    };
   }
 
-  async function resolveAssetUrl(pathOrUrl, blobSha, mime = "image/jpeg") {
+  /* РАЗРЕШЕНИЕ КАРТИНКИ ДЛЯ ВСЕХ БРАУЗЕРОВ (ВКЛЮЧАЯ ЯНДЕКС БРАУЗЕР) */
+  async function resolveAssetUrl(pathOrUrl, blobSha, mime = "image/jpeg", inlineDataUrl = "") {
+    // 1. Если есть встроенная копия — Яндекс Браузер, Edge и Opera рисуют её за 0 миллисекунд!
+    if (inlineDataUrl && inlineDataUrl.startsWith("data:")) {
+      return inlineDataUrl;
+    }
     if (!pathOrUrl && !blobSha) return "";
-    if (blobSha && blobUrlCache.has(blobSha)) return blobUrlCache.get(blobSha);
-    if (pathOrUrl && (pathOrUrl.startsWith("http://") || pathOrUrl.startsWith("https://") || pathOrUrl.startsWith("data:") || pathOrUrl.startsWith("blob:"))) {
+    if (pathOrUrl && (pathOrUrl.startsWith("data:") || pathOrUrl.startsWith("blob:") || pathOrUrl.startsWith("http://") || pathOrUrl.startsWith("https://"))) {
       return pathOrUrl;
     }
+    if (blobSha && blobUrlCache.has(blobSha)) {
+      return blobUrlCache.get(blobSha);
+    }
 
+    // 2. Пробуем загрузить с самого домена GitHub Pages (относительный путь posters/... или backgrounds/...)
+    if (pathOrUrl) {
+      const cleanPath = pathOrUrl.replace(/^\.?\//, "");
+      try {
+        const localCheck = await fetch(`${cleanPath}?_ya=${Date.now()}`, { method: "HEAD" });
+        if (localCheck.ok) return cleanPath;
+      } catch {}
+    }
+
+    // 3. Если GitHub Pages ещё пересобирается — грузим через Git Blob API
     const repo = getRepo();
     if (blobSha) {
       try {
@@ -287,7 +350,6 @@ const GitHubSync = (() => {
     return pathOrUrl;
   }
 
-  /* При коммите привязываем в Git Tree не только tiers.json и фон, но и ВСЕ загруженные обложки тайтлов (posterBlobSha)! */
   async function commitTiersToGitHub(payloadObj, commitMsg = "Sync via myTierAnime") {
     const tk = getToken();
     const repo = getRepo();
@@ -321,8 +383,7 @@ const GitHubSync = (() => {
           sha: newBlob.sha
         }];
 
-        // Привязываем фон сайта в дерево коммита
-        if (payloadObj.meta.bgImage && payloadObj.meta.bgBlobSha && !payloadObj.meta.bgImage.startsWith("http")) {
+        if (payloadObj.meta.bgImage && payloadObj.meta.bgBlobSha && !payloadObj.meta.bgImage.startsWith("http") && !payloadObj.meta.bgImage.startsWith("data:")) {
           treeEntries.push({
             path: payloadObj.meta.bgImage.replace(/^\.?\//, ""),
             mode: "100644",
@@ -331,7 +392,6 @@ const GitHubSync = (() => {
           });
         }
 
-        // Привязываем все загруженные обложки тайтлов в папку posters/ дерева репозитория!
         (payloadObj.tiers || []).forEach(tier => {
           (tier.items || []).forEach(it => {
             if (it.poster && it.posterBlobSha && !it.poster.startsWith("http") && !it.poster.startsWith("data:") && !it.poster.startsWith("blob:")) {
@@ -414,6 +474,7 @@ const GitHubSync = (() => {
     verifyToken,
     fetchFreshTiersFromApi,
     fileToRawBase64,
+    createInlineDataUrl,
     uploadAssetFile,
     resolveAssetUrl,
     commitTiersToGitHub,
