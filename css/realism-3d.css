@@ -1,4 +1,4 @@
-/* ═══════════════════ 3D EMBLEMS (10 ARCHITECTURES) & HOLOGRAPHIC FOIL ═══════════════════ */
+/* ═══════════════════ 3D EMBLEMS, 8 LETTER 3D VARIATIONS & HOLO FOIL ═══════════════════ */
 .lstage {
   position: relative;
   width: 140px;
@@ -34,7 +34,7 @@
 .ll {
   position: absolute;
   font-family: var(--serif);
-  font-size: 64px;
+  font-size: var(--letter-font-size, 64px);
   font-weight: 900;
   line-height: 1;
   letter-spacing: -0.02em;
@@ -167,6 +167,7 @@ body.emblems-cyber .realism-system {
   100% { transform: rotateX(-58deg) rotateY(34deg) rotateZ(360deg); }
 }
 
+/* ── КИНЕМАТИКА ДВИЖЕНИЯ 3D-БУКВ ── */
 .l3d {
   transform: translateY(-2px) rotateX(var(--bry, 0deg)) rotateY(var(--brx, 0deg));
 }
@@ -188,6 +189,31 @@ body.emblems-cyber .realism-system {
 }
 .tier[data-rank="6"] .l3d-in {
   animation: sealRealismE 8.6s cubic-bezier(.37, 0, .63, 1) infinite;
+}
+
+/* Альтернативные режимы движения букв из Настроек */
+body.motion-spin360 .l3d-in {
+  animation: letterSpin360 9s linear infinite !important;
+}
+body.motion-float .l3d-in {
+  animation: letterFloatWave 5.4s ease-in-out infinite !important;
+}
+body.motion-pulse .l3d-in {
+  animation: letterEnergyPulse 3.6s ease-in-out infinite !important;
+}
+
+@keyframes letterSpin360 {
+  0%   { transform: translateZ(12px) rotateY(0deg) rotateX(8deg); }
+  50%  { transform: translateZ(16px) rotateY(180deg) rotateX(-8deg); }
+  100% { transform: translateZ(12px) rotateY(360deg) rotateX(8deg); }
+}
+@keyframes letterFloatWave {
+  0%, 100% { transform: translate3d(0, 6px, 8px) rotateX(6deg) rotateY(-12deg); }
+  50%      { transform: translate3d(0, -7px, 18px) rotateX(-6deg) rotateY(12deg); }
+}
+@keyframes letterEnergyPulse {
+  0%, 100% { transform: translateZ(8px) scale(0.95) rotateY(-10deg); }
+  50%      { transform: translateZ(24px) scale(1.08) rotateY(10deg); }
 }
 
 @keyframes sealRealismS {
@@ -217,6 +243,7 @@ body.emblems-cyber .realism-system {
   50%      { transform: translate3d(0, -4px, 12px) rotateY(18deg) rotateX(-12deg) rotateZ(2deg); }
 }
 
+/* ── 8 ВАРИАЦИЙ 3D-МАТЕРИАЛА БУКВ ТИРА ── */
 .ll.bevel {
   background: linear-gradient(135deg, #ffffff 0%, rgba(255, 255, 255, 0.92) 25%, var(--t2) 55%, transparent 85%);
   -webkit-background-clip: text;
@@ -227,6 +254,8 @@ body.emblems-cyber .realism-system {
   opacity: 0.92;
   pointer-events: none;
 }
+
+/* 1. Литое золото и металл (по умолчанию) */
 .ll.face {
   background: linear-gradient(
     145deg,
@@ -243,16 +272,105 @@ body.emblems-cyber .realism-system {
   transform: translateZ(3.5px);
   filter:
     drop-shadow(0 1px 0 rgba(255, 255, 255, 0.72))
-    drop-shadow(0 4px 12px var(--tg))
-    drop-shadow(0 0 22px color-mix(in srgb, var(--t) 55%, transparent));
+    drop-shadow(0 4px calc(12px * var(--seal-glow-mult, 1)) var(--tg))
+    drop-shadow(0 0 calc(22px * var(--seal-glow-mult, 1)) color-mix(in srgb, var(--t) 55%, transparent));
   animation: pbrMetalSheen var(--metal-sheen-dur, 5.2s) ease-in-out infinite;
 }
-.tier[data-rank="2"] .ll.face {
+
+/* 2. Кристальная призма (Хроматическая дисперсия) */
+body.letter-style-prism .ll.face {
+  background: linear-gradient(135deg, #ffffff 0%, #b8fbff 40%, #ff9ff3 80%, #ffffff 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
   filter:
-    drop-shadow(-1.5px 0 0 rgba(255, 60, 140, 0.55))
-    drop-shadow(1.5px 0 0 rgba(0, 245, 255, 0.65))
+    drop-shadow(-2.5px 0 0 rgba(255, 50, 130, 0.78))
+    drop-shadow(2.5px 0 0 rgba(0, 245, 255, 0.82))
     drop-shadow(0 0 18px var(--tg));
 }
+body.letter-style-prism .ll.back {
+  color: rgba(150, 235, 255, 0.25);
+}
+
+/* 3. Кибер-Неон (Полый светящийся контур) */
+body.letter-style-neon .ll.face {
+  background: none;
+  -webkit-text-fill-color: transparent;
+  -webkit-text-stroke: 2.2px #ffffff;
+  filter:
+    drop-shadow(0 0 6px var(--t))
+    drop-shadow(0 0 16px var(--t))
+    drop-shadow(0 0 32px var(--t2));
+}
+body.letter-style-neon .ll.back {
+  color: transparent;
+  -webkit-text-stroke: 1px color-mix(in srgb, var(--t) 55%, transparent);
+}
+
+/* 4. Огненная плазма */
+body.letter-style-plasma .ll.face {
+  background: linear-gradient(180deg, #fffbe6 0%, #ffd76a 30%, #ff5e3a 68%, #9b00e8 100%);
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  filter:
+    drop-shadow(0 0 10px #ff5e3a)
+    drop-shadow(0 0 24px rgba(255, 180, 0, 0.75));
+}
+body.letter-style-plasma .ll.back {
+  color: #4a0e17;
+}
+
+/* 5. Голографический хром */
+body.letter-style-holo .ll.face {
+  background: linear-gradient(
+    125deg,
+    oklch(90% 0.2 350) 0%,
+    oklch(88% 0.2 60) 25%,
+    oklch(88% 0.2 150) 50%,
+    oklch(88% 0.2 230) 75%,
+    oklch(90% 0.2 320) 100%
+  );
+  background-size: 300% 300%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  animation: pbrMetalSheen 3s linear infinite;
+}
+
+/* 6. Тёмный обсидиан с неоновой фаской */
+body.letter-style-obsidian .ll.face {
+  background: linear-gradient(145deg, #2d264c 0%, #090714 55%, #1c1635 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-stroke: 1.4px var(--t);
+  filter: drop-shadow(0 0 16px var(--tg));
+}
+body.letter-style-obsidian .ll.back {
+  color: #05040a;
+}
+
+/* 7. Ледяной кварц */
+body.letter-style-ice .ll.face {
+  background: linear-gradient(160deg, #ffffff 0%, #d2f9ff 45%, #5ce1e6 80%, #0097b2 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  filter:
+    drop-shadow(0 2px 0 #ffffff)
+    drop-shadow(0 0 20px rgba(0, 245, 255, 0.8));
+}
+body.letter-style-ice .ll.back {
+  color: #0f384c;
+}
+
+/* 8. Кибер-Глитч */
+body.letter-style-glitch .ll.face {
+  background: linear-gradient(90deg, #00f5ff 0%, #ffffff 50%, #ff0055 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  filter:
+    drop-shadow(-3px -1px 0 #ff0055)
+    drop-shadow(3px 1px 0 #00f5ff);
+}
+
 @keyframes pbrMetalSheen {
   0%, 100% { background-position: 0% 20%; }
   50%      { background-position: 100% 80%; }
