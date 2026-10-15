@@ -4,12 +4,12 @@
     "owner": "geraltschwarzenegger-svg",
     "repo": "noxyholmes/myTierAnime",
     "branch": "main",
-    "updatedAt": "2026-10-15T10:45:04.047Z",
+    "updatedAt": "2026-10-15T11:11:40.609Z",
     "activeMode": "emblems-realism",
     "bgImage": "backgrounds/1792058756499____________________________________.png",
     "bgDim": 65,
     "bgBlur": 5,
-    "revision": 16,
+    "revision": 17,
     "bgBlobSha": "1de942c76368b8d317071e794ae55fed35d163ad",
     "bgMime": "image/png"
   },
@@ -128,17 +128,20 @@
           "uid": "anime-apothecary-2023",
           "kind": "TV Сериал",
           "title": "Монолог фармацевта",
-          "origTitle": "Kusuriya no Hitorigoto",
+          "origTitle": "OLM, TOHO animation STUDIO",
           "year": 2023,
           "studio": "OLM / TOHO animation",
           "score": 9.3,
           "reaction": "🧪 Интрига",
+          "poster": "posters/1792061753746_1920x__3_.webp",
+          "posterBlobSha": "f0889a22b42dfccd04c8732000302d5613a912b4",
           "genres": [
+            "Сэйнэн",
             "Детектив",
-            "Исторический",
-            "Драма"
+            "Драма",
+            "Комедия",
+            "Исторический"
           ],
-          "poster": "https://shikimori.one/system/animes/original/54492.jpg",
           "comment": "Блестящий детективный сюжет в декорациях императорского двора и великолепная Маомао.",
           "seasons": [
             {
@@ -146,8 +149,38 @@
               "type": "TV Сериал",
               "episodes": 24,
               "epMinutes": 24,
-              "date": "14.03.2026",
-              "note": "1 сезон"
+              "date": "01.04.2026",
+              "note": ""
+            },
+            {
+              "title": "Сезон 2",
+              "type": "TV Сериал",
+              "episodes": 24,
+              "epMinutes": 24,
+              "date": "03.04.2026",
+              "note": ""
+            },
+            {
+              "title": "Сезон 3",
+              "type": "TV Сериал",
+              "episodes": 1,
+              "epMinutes": 24,
+              "date": "2026",
+              "note": ""
+            }
+          ],
+          "watched": [
+            {
+              "date": "01.04.2026",
+              "note": "Сезон 1"
+            },
+            {
+              "date": "03.04.2026",
+              "note": "Сезон 2"
+            },
+            {
+              "date": "2026",
+              "note": "Сезон 3"
             }
           ]
         },
