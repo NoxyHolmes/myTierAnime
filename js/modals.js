@@ -1,4 +1,4 @@
-/* ═══════════════════ MODALS: LARGE POSTER SIDEBAR, VERTICAL SEASONS STACK & GENRE CHIPS ═══════════════════ */
+/* ═══════════════════ MODALS: STRICT COLUMN-ALIGNED SEASONS LIST ═══════════════════ */
 const Modals = (() => {
   let deleteHandler = null;
 
@@ -14,7 +14,6 @@ const Modals = (() => {
     deleteHandler = fn;
   }
 
-  /* Отрисовка интерактивных чипов жанров с крестиком ✕ в окне редактирования */
   function syncEditorGenreChips() {
     const inp = document.getElementById("fGenres");
     const box = document.getElementById("editorGenreChips");
@@ -58,7 +57,7 @@ const Modals = (() => {
       `;
     }
 
-    /* ВЕРТИКАЛЬНЫЙ СПИСОК СЕЗОНОВ ДРУГ ПОД ДРУГОМ (1 СЕЗОН, ПОД НИМ 2 СЕЗОН И Т.Д.) */
+    /* СТРОГО ВЫРОВНЕННЫЙ ПО КОЛОНКАМ ВЕРТИКАЛЬНЫЙ СПИСОК СЕЗОНОВ */
     function renderSeasonsVerticalStack(filterType = "ALL") {
       const filtered = m.seasons.filter(s => {
         if (filterType === "ALL") return true;
@@ -67,47 +66,66 @@ const Modals = (() => {
         return s.type !== "TV Сериал" && s.type !== "Фильм";
       });
 
-      return filtered.map((s, idx) => {
+      const headerRow = `
+        <div class="ds-grid-head">
+          <div>#</div>
+          <div>Сезон / Часть</div>
+          <div>Тип и Год</div>
+          <div>Объём</div>
+          <div>1 серия</div>
+          <div>Время</div>
+          <div>Дата</div>
+        </div>
+      `;
+
+      const rowsHtml = filtered.map((s, idx) => {
         const isUpcoming = Number(s.episodes) === 0;
         const partHours = isUpcoming ? "0" : formatHours((s.episodes * s.epMinutes) / 60);
         const relYr = s.releaseYear || item.year || "2026";
         const volumeText = isUpcoming
-          ? `<span class="s-chip-upcoming">⏳ Анонс (0 ${s.type === "Фильм" ? "ф." : "эп."})</span>`
+          ? `<span class="s-chip-upcoming">⏳ Анонс</span>`
           : `<span class="s-chip-vol">${s.type === "Фильм" ? formatMoviesCount(s.episodes) : formatEpisodesCount(s.episodes)}</span>`;
 
-        const noteText = s.note || (isUpcoming ? "Ожидается" : "");
+        const noteText = s.note ? String(s.note).trim() : "";
 
         return `
           <div class="dossier-season-bar ${isUpcoming ? "is-upcoming" : ""}">
-            <div class="dsb-main">
-              <span class="dsc-num">#${idx + 1}</span>
-              <strong class="dsc-name">${esc(s.title)}</strong>
-              <span class="cum-kind">${esc(s.type)}</span>
-              <span class="dsc-year">${esc(relYr)} г.</span>
-            </div>
+            <div class="ds-grid-row">
+              <div class="ds-col-num">
+                <span class="dsc-num">#${idx + 1}</span>
+              </div>
 
-            <div class="dsb-stats">
-              <div class="dsc-cell">
-                <span class="dsc-lbl">Объём:</span>
+              <div class="ds-col-title" title="${esc(s.title)}">
+                <strong class="dsc-name">${esc(s.title)}</strong>
+                ${noteText ? `<div class="dsb-note-sub">💬 ${esc(noteText)}</div>` : ""}
+              </div>
+
+              <div class="ds-col-type">
+                <span class="cum-kind">${esc(s.type)}</span>
+                <span class="dsc-year">${esc(relYr)} г.</span>
+              </div>
+
+              <div class="ds-col-vol">
                 ${volumeText}
               </div>
-              <div class="dsc-cell">
-                <span class="dsc-lbl">1 серия:</span>
+
+              <div class="ds-col-ep">
                 <b>${isUpcoming ? "—" : `${s.epMinutes} мин.`}</b>
               </div>
-              <div class="dsc-cell">
-                <span class="dsc-lbl">Время:</span>
+
+              <div class="ds-col-time">
                 <b style="color:#00f5ff;">${partHours} ч.</b>
               </div>
-              <div class="dsc-cell">
-                <span class="dsc-lbl">Дата:</span>
-                <b>${esc(s.date || "—")}</b>
+
+              <div class="ds-col-date">
+                <b>${esc(s.date || (isUpcoming ? "Анонс" : "—"))}</b>
               </div>
-              ${noteText ? `<div class="dsb-note-inline">💬 ${esc(noteText)}</div>` : ""}
             </div>
           </div>
         `;
       }).join("");
+
+      return headerRow + rowsHtml;
     }
 
     const hasComment = item.comment && item.comment.trim().length > 0;
@@ -117,7 +135,6 @@ const Modals = (() => {
         <div id="dossierHeroBackdrop" class="dossier-hero-backdrop" style="background-image:url('${esc(displayPoster)}');"></div>
         <div class="dossier-hero-scrim"></div>
 
-        <!-- ЛЕВАЯ КОЛОНКА: КРУПНАЯ И ЧЁТКАЯ ОБЛОЖКА ТАЙТЛА ВО ВСЮ ВЫСОТУ -->
         <aside class="dossier-left-poster-col">
           <div class="dossier-poster-large">
             <img id="dossierMainPosterImg" src="${esc(displayPoster)}" alt="${esc(item.title)}"
@@ -126,7 +143,6 @@ const Modals = (() => {
           </div>
         </aside>
 
-        <!-- ПРАВАЯ КОЛОНКА: ИНФОРМАЦИЯ + СТРОГО ВЕРТИКАЛЬНЫЙ СПИСОК СЕЗОНОВ ДРУГ ПОД ДРУГОМ -->
         <div class="dossier-right-info-col">
           <div class="dossier-head-info">
             <h2 class="dossier-title-main">${esc(item.title)}</h2>
@@ -175,7 +191,6 @@ const Modals = (() => {
               </div>
             </div>
 
-            <!-- Строго вертикальный стек сезонов (1 под другим) -->
             <div id="dossierSeasonsGrid" class="dossier-seasons-vertical-list">
               ${renderSeasonsVerticalStack("ALL")}
             </div>
@@ -234,7 +249,6 @@ const Modals = (() => {
     openModal("detailsModal");
   }
 
-  /* В строках сезонов все поля НЕОБЯЗАТЕЛЬНЫЕ (кроме авто-значений по умолчанию) */
   function createSeasonRowElement(part = {}) {
     const row = document.createElement("div");
     row.className = "season-row";
