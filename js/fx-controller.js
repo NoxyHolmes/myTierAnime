@@ -9,14 +9,10 @@ const FXController = (() => {
   let custom = {
     particleSize: 1.0,
     particleOpacity: 85,
-    particleSway: 1.0,
-    particleSpin: 1.0,
-    particleGlow: 6,
     sealSpeed: 1.0,
     uiBrightness: 100,
     uiContrast: 100,
-    uiSaturate: 100,
-    uiHue: 0
+    uiSaturate: 100
   };
 
   let particles = [];
@@ -265,30 +261,36 @@ const FXController = (() => {
     }
   }
 
+  /* 100% НАДЁЖНОЕ ПРИМЕНЕНИЕ ФОНА ЧЕРЕЗ <img id="globalOwnerBgImg"> */
   function applyGlobalBackground(meta = {}) {
-    const bgEl = document.getElementById("globalOwnerBg");
-    if (!bgEl) return;
-    const url = (meta.bgImage || "").trim();
-    const dim = meta.bgDim ?? 60;
-    const blur = meta.bgBlur ?? 2;
+    const bgWrap = document.getElementById("globalOwnerBg");
+    const bgImg = document.getElementById("globalOwnerBgImg");
+    if (!bgWrap || !bgImg) return;
+
+    const localBg = localStorage.getItem("mta_owner_bg_v8") || "";
+    const src = (meta.bgImage || localBg || "").trim();
+    const dim = meta.bgDim ?? 55;
+    const blur = meta.bgBlur ?? 0;
 
     document.documentElement.style.setProperty("--owner-bg-dim", (dim / 100).toFixed(2));
-    bgEl.style.filter = blur > 0 ? `blur(${blur}px)` : "none";
+    bgImg.style.filter = blur > 0 ? `blur(${blur}px)` : "none";
 
-    if (url) {
-      bgEl.style.backgroundImage = `url("${url}")`;
-      bgEl.classList.add("has-bg");
+    if (src) {
+      if (bgImg.getAttribute("src") !== src) {
+        bgImg.setAttribute("src", src);
+      }
+      bgWrap.classList.add("has-bg");
+      document.body.classList.add("has-custom-bg");
     } else {
-      bgEl.style.backgroundImage = "none";
-      bgEl.classList.remove("has-bg");
+      bgImg.removeAttribute("src");
+      bgWrap.classList.remove("has-bg");
+      document.body.classList.remove("has-custom-bg");
     }
 
-    const urlInp = document.getElementById("ownerBgUrlInput");
     const dimInp = document.getElementById("rngOwnerBgDim");
     const blurInp = document.getElementById("rngOwnerBgBlur");
     const dimLbl = document.getElementById("lblOwnerBgDim");
     const blurLbl = document.getElementById("lblOwnerBgBlur");
-    if (urlInp && !url.startsWith("data:")) urlInp.value = url;
     if (dimInp) dimInp.value = dim;
     if (blurInp) blurInp.value = blur;
     if (dimLbl) dimLbl.textContent = dim + "%";
