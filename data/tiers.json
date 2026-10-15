@@ -4,12 +4,12 @@
     "owner": "geraltschwarzenegger-svg",
     "repo": "noxyholmes/myTierAnime",
     "branch": "main",
-    "updatedAt": "2026-10-15T11:32:11.035Z",
+    "updatedAt": "2026-10-15T11:32:14.870Z",
     "activeMode": "emblems-realism",
     "bgImage": "backgrounds/1792058756499____________________________________.png",
     "bgDim": 65,
     "bgBlur": 5,
-    "revision": 25,
+    "revision": 27,
     "bgBlobSha": "1de942c76368b8d317071e794ae55fed35d163ad",
     "bgMime": "image/png"
   },
@@ -139,35 +139,7 @@
       "name": "Хорошие",
       "subtitle": "Достойные внимания и атмосферные тайтлы",
       "hue": 275,
-      "items": [
-        {
-          "uid": "anime-sololeveling-2024",
-          "kind": "TV Сериал",
-          "title": "Поднятие уровня в одиночку",
-          "origTitle": "Ore dake Level Up na Ken",
-          "year": 2024,
-          "studio": "A-1 Pictures",
-          "score": 8.5,
-          "reaction": "🔥 Экшен",
-          "genres": [
-            "Экшен",
-            "Фэнтези",
-            "Приключения"
-          ],
-          "poster": "https://shikimori.one/system/animes/original/52299.jpg",
-          "comment": "Отличная динамика боёв и музыка Хироюки Савано.",
-          "seasons": [
-            {
-              "title": "Сезон 1",
-              "type": "TV Сериал",
-              "episodes": 12,
-              "epMinutes": 24,
-              "date": "02.02.2026",
-              "note": "Просмотр"
-            }
-          ]
-        }
-      ]
+      "items": []
     },
     {
       "id": "C",
