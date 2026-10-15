@@ -1,4 +1,4 @@
-/* ═══════════════════ PREMIUM DOSSIER MODAL, DISPLAY SWITCHER & CONTROLS ═══════════════════ */
+/* ═══════════════════ PREMIUM GLASS DOSSIER, TOPBAR & CONTROLS ═══════════════════ */
 *, *::before, *::after {
   box-sizing: border-box;
 }
@@ -16,6 +16,7 @@ body {
   overflow-x: hidden;
 }
 
+/* Глобальный фон владельца (исправлено отображение для всех гостей) */
 .global-owner-bg {
   position: fixed;
   inset: 0;
@@ -296,7 +297,6 @@ body.hide-stats-ribbon .stats-ribbon { display: none !important; }
   font-weight: 700;
 }
 
-/* Переключатель видов отображения (Постеры / Чипы / Список) */
 .display-mode-switcher {
   display: inline-flex;
   background: rgba(255,255,255,0.05);
@@ -421,7 +421,7 @@ body.is-owner section.owner-only {
   margin: 18px auto 6px;
   padding: 0 20px;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
   gap: 14px;
 }
 
@@ -709,11 +709,11 @@ body.is-owner section.owner-only {
   border-radius: 6px;
 }
 
-/* ПРЕМИУМ ДИЗАЙН КАРТОЧКИ (ДОСЬЕ ТАЙТЛА) */
+/* ПРЕМИУМ ДИЗАЙН КАРТОЧКИ (ДОСЬЕ ТАЙТЛА) — УСТРАНЕН ЧЁРНЫЙ ФОН */
 .modal-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(4, 3, 10, 0.84);
+  background: rgba(4, 3, 10, 0.82);
   backdrop-filter: blur(12px);
   z-index: 80;
   display: none;
@@ -729,7 +729,7 @@ body.is-owner section.owner-only {
   max-width: 680px;
   max-height: 90vh;
   overflow-y: auto;
-  background: linear-gradient(145deg, rgba(22, 18, 42, 0.98), rgba(12, 10, 24, 0.99));
+  background: linear-gradient(145deg, rgba(25, 20, 48, 0.98), rgba(14, 11, 28, 0.99));
   border: 1px solid rgba(0, 245, 255, 0.35);
   border-radius: 24px;
   padding: 28px;
@@ -781,7 +781,7 @@ body.is-owner section.owner-only {
 .form-control {
   width: 100%;
   min-width: 0;
-  background: #15112b;
+  background: #1b1636;
   border: 1px solid var(--border-subtle);
   border-radius: 9px;
   padding: 8px 11px;
@@ -812,7 +812,6 @@ body.is-owner section.owner-only {
   gap: 8px;
 }
 
-/* ИСПРАВЛЕННАЯ СЕТКА СЕЗОНОВ В РЕДАКТОРЕ (НИЧЕГО НЕ УХОДИТ В ПОЛЯ) */
 .seasons-builder-box {
   margin-top: 10px;
   padding: 14px;
@@ -841,7 +840,7 @@ body.is-owner section.owner-only {
   grid-template-columns: minmax(120px, 1.3fr) minmax(105px, 0.95fr) 68px 74px 110px minmax(100px, 1fr) 72px 32px;
   gap: 6px;
   align-items: center;
-  background: rgba(12, 10, 24, 0.9);
+  background: rgba(18, 14, 36, 0.95);
   padding: 8px;
   border-radius: 9px;
   border: 1px solid rgba(255,255,255,0.09);
@@ -866,7 +865,6 @@ body.is-owner section.owner-only {
   gap: 8px;
 }
 
-/* КОМПАКТНОЕ ОФОРМЛЕНИЕ МНОЖЕСТВА СЕЗОНОВ В ДОСЬЕ */
 .dossier-seasons-header {
   display: flex;
   align-items: center;
@@ -900,7 +898,7 @@ body.is-owner section.owner-only {
   overflow-y: auto;
   border: 1px solid var(--border-subtle);
   border-radius: 10px;
-  background: rgba(8, 6, 18, 0.65);
+  background: rgba(14, 11, 26, 0.85);
 }
 .seasons-table {
   width: 100%;
@@ -910,7 +908,7 @@ body.is-owner section.owner-only {
 .seasons-table thead th {
   position: sticky;
   top: 0;
-  background: #16122c;
+  background: #1b1636;
   color: var(--ink-soft);
   font-size: 10.5px;
   text-transform: uppercase;
@@ -930,7 +928,7 @@ body.is-owner section.owner-only {
   overflow-y: auto;
   border: 1px solid var(--border-subtle);
   border-radius: 10px;
-  background: #0e0b1c;
+  background: #15112b;
   display: none;
 }
 .shiki-results.show {
