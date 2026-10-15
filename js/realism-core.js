@@ -1,15 +1,17 @@
-/* ═══════════════════ 3D LAYER GENERATOR & CLEAN RANK CAPTIONS ═══════════════════ */
-const ELEMENT_NAMES = ["Золотой фонд", "Высшая лига", "Достойный уровень", "На один вечер", "Проходной", "Вне рейтинга"];
+/* ═══════════════════ 3D LAYER GENERATOR & CLEAN TIER NAMES (S–E) ═══════════════════ */
+const ELEMENT_NAMES = ["Шедевры", "Отличные", "Хорошие", "Нормальные", "Слабые", "Плохие"];
 const ELEMENT_ART   = ["radiance", "prism", "ink", "sakura", "amber", "ash"];
-const ORBIT_NAMES   = ["Золотой фонд", "Высшая лига", "Достойный уровень", "На один вечер", "Проходной", "Вне рейтинга"];
+const ORBIT_NAMES   = ["Шедевры", "Отличные", "Хорошие", "Нормальные", "Слабые", "Плохие"];
 const REALISM_NAMES = [
-  "Золотой фонд",
-  "Высшая лига",
-  "Достойный уровень",
-  "На один вечер",
-  "Проходной уровень",
-  "Вне рейтинга"
+  "Шедевры",
+  "Отличные",
+  "Хорошие",
+  "Нормальные",
+  "Слабые",
+  "Плохие"
 ];
+
+window.letterDepthStep = parseFloat(localStorage.getItem("mta_letter_depth_step") || "2.1");
 
 function realismMarkup(index, tier) {
   const hue = tier ? accentHue(tier) : [45, 185, 275, 148, 28, 215][index % 6];
@@ -37,6 +39,7 @@ const LETTER_DEPTH = 14;
 function build3DLetter(host, tier, idx) {
   if (!host) return;
   host.innerHTML = "";
+  const step = window.letterDepthStep || 2.1;
   const inner = document.createElement("div");
   inner.className = "l3d-in";
   inner.style.animationDelay = (-idx * 1.4) + "s";
@@ -45,7 +48,7 @@ function build3DLetter(host, tier, idx) {
     const s = document.createElement("span");
     s.className = "ll back";
     s.textContent = tier.id;
-    s.style.transform = "translateZ(" + (-i * 2.1).toFixed(1) + "px)";
+    s.style.transform = "translateZ(" + (-i * step).toFixed(1) + "px)";
     s.style.opacity = (0.94 - i * 0.052).toFixed(3);
     frag.appendChild(s);
   }
