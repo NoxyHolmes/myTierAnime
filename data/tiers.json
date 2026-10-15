@@ -4,12 +4,12 @@
     "owner": "geraltschwarzenegger-svg",
     "repo": "noxyholmes/myTierAnime",
     "branch": "main",
-    "updatedAt": "2026-10-15T11:32:40.563Z",
+    "updatedAt": "2026-10-15T11:33:47.268Z",
     "activeMode": "emblems-realism",
     "bgImage": "backgrounds/1792058756499____________________________________.png",
     "bgDim": 65,
     "bgBlur": 5,
-    "revision": 31,
+    "revision": 32,
     "bgBlobSha": "1de942c76368b8d317071e794ae55fed35d163ad",
     "bgMime": "image/png"
   },
@@ -36,9 +36,10 @@
             "Детектив",
             "Драма",
             "Комедия",
-            "Исторический"
+            "Исторический",
+            "Романтика"
           ],
-          "comment": "Блестящий детективный сюжет в декорациях императорского двора и великолепная Маомао.",
+          "comment": "",
           "seasons": [
             {
               "title": "Сезон 1",
