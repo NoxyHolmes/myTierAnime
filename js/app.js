@@ -1,4 +1,4 @@
-/* ═══════════════════ MAIN APPLICATION ORCHESTRATOR (myTierAnime v10.0 YANDEX & OPERA GX SYNC) ═══════════════════ */
+/* ═══════════════════ MAIN APPLICATION ORCHESTRATOR (myTierAnime v11.0) ═══════════════════ */
 (() => {
   if (typeof window.pluralRu !== "function") {
     window.pluralRu = function (number, one, few, many) {
@@ -253,24 +253,23 @@
       ? window.formatMoviesCount(m.totalMovies)
       : `${window.formatEpisodesCount(m.totalEpisodes)}${m.totalMovies ? ` + ${window.formatMoviesCount(m.totalMovies)}` : ""}`;
 
-    // Если есть встроенная копия обложки (posterInline), используем её сразу — она мгновенно открывается в Яндекс Браузере!
-    const displayPosterSrc = item.posterInline || item.poster;
+    const displayPosterSrc = item.posterInline || item.poster || "https://placehold.co/400x600/16122b/ffd76a?text=myTierAnime";
 
     return `
       <div class="card-unit" draggable="true" data-uid="${esc(item.uid)}" data-tier-id="${esc(tierId)}">
         <article class="card" data-uid="${esc(item.uid)}" data-tier-id="${esc(tierId)}">
-          <img class="card-poster" draggable="false" src="${esc(displayPosterSrc)}" data-raw-path="${esc(item.poster)}" data-blob-sha="${esc(item.posterBlobSha || "")}" alt="${esc(item.title)}" loading="lazy"
+          <img class="card-poster" draggable="false" src="${esc(displayPosterSrc)}" data-raw-path="${esc(item.poster || "")}" data-blob-sha="${esc(item.posterBlobSha || "")}" alt="${esc(item.title)}" loading="lazy"
                onerror="this.src='https://placehold.co/400x600/16122b/ffd76a?text=myTierAnime'">
           <div class="scrim"></div>
           <span class="holo-foil" aria-hidden="true"></span>
           ${tierId === "S" ? floralFrame() + `<span class="card-coronet" aria-hidden="true">${royalCrown("card" + item.uid)}</span>` : ""}
           <span class="rank">${idx + 1}</span>
           ${yearBadgeHtml}
-          <span class="card-score-badge">★ ${esc(item.score)}</span>
+          ${item.score ? `<span class="card-score-badge">★ ${esc(item.score)}</span>` : ""}
 
           <div class="card-info">
             <h3 class="card-title">${esc(item.title)}</h3>
-            <div class="card-sub">${esc(item.year || "")} · ${esc(item.studio || "")}</div>
+            <div class="card-sub">${esc(item.year || "")}${item.studio ? ` · ${esc(item.studio)}` : ""}</div>
           </div>
         </article>
 
@@ -303,6 +302,13 @@
     }
   }
 
+  function updateFilterClearButtons() {
+    const gClear = document.getElementById("btnClearGenreFilter");
+    const stClear = document.getElementById("btnClearStudioFilter");
+    if (gClear) gClear.style.display = selectedGenre === "ALL" ? "none" : "inline-flex";
+    if (stClear) stClear.style.display = selectedStudio === "ALL" ? "none" : "inline-flex";
+  }
+
   function render() {
     const host = document.getElementById("tiersRoot");
     if (!host || !appData || !Array.isArray(appData.tiers)) return;
@@ -310,6 +316,8 @@
     if (typeof FXController !== "undefined" && typeof FXController.applyGlobalBackground === "function") {
       FXController.applyGlobalBackground(appData.meta || {});
     }
+
+    updateFilterClearButtons();
 
     let grandTotal = 0;
     appData.tiers.forEach(t => grandTotal += (t.items || []).length);
@@ -571,6 +579,44 @@
       await saveAndAutoSync("Manual owner full sync", true);
     });
 
+    /* Крестики быстрого сброса фильтров Жанра и Студии в верхней панели */
+    document.getElementById("btnClearGenreFilter")?.addEventListener("click", e => {
+      e.stopPropagation();
+      selectedGenre = "ALL";
+      const lbl = document.getElementById("genreDropdownLabel");
+      if (lbl) lbl.textContent = "Все жанры";
+      render();
+    });
+
+    document.getElementById("btnClearStudioFilter")?.addEventListener("click", e => {
+      e.stopPropagation();
+      selectedStudio = "ALL";
+      const lbl = document.getElementById("studioDropdownLabel");
+      if (lbl) lbl.textContent = "Все студии";
+      render();
+    });
+
+    /* Крестики быстрой очистки Студии, Постера и всех Жанров внутри окна редактирования */
+    document.getElementById("btnClearEditorStudio")?.addEventListener("click", () => {
+      const stInp = document.getElementById("fStudio");
+      if (stInp) { stInp.value = ""; stInp.focus(); }
+    });
+
+    document.getElementById("btnClearEditorPoster")?.addEventListener("click", () => {
+      const pInp = document.getElementById("fPoster");
+      if (pInp) { pInp.value = ""; pInp.dataset.existingBlobSha = ""; }
+    });
+
+    document.getElementById("btnClearAllEditorGenres")?.addEventListener("click", () => {
+      const gInp = document.getElementById("fGenres");
+      if (gInp) gInp.value = "";
+      if (typeof Modals.syncEditorGenreChips === "function") Modals.syncEditorGenreChips();
+    });
+
+    document.getElementById("fGenres")?.addEventListener("input", () => {
+      if (typeof Modals.syncEditorGenreChips === "function") Modals.syncEditorGenreChips();
+    });
+
     document.addEventListener("click", e => {
       const gMenu = document.getElementById("genreDropdownMenu");
       const stMenu = document.getElementById("studioDropdownMenu");
@@ -645,9 +691,9 @@
         inp.value = currentList.join(", ");
       }
       picker.value = "";
+      if (typeof Modals.syncEditorGenreChips === "function") Modals.syncEditorGenreChips();
     });
 
-    /* Загрузка обложки с сохранением встроенной копии (posterInline) для Яндекс Браузера */
     const posterFileInp = document.getElementById("fPosterFile");
     let pendingPosterBlobSha = "";
     let pendingPosterInline = "";
@@ -668,7 +714,6 @@
       }
     });
 
-    /* Загрузка фона с сохранением встроенной копии (bgInline) для Яндекс Браузера */
     const ownerBgFile = document.getElementById("ownerBgFileInput");
     ownerBgFile?.addEventListener("change", async () => {
       const file = ownerBgFile.files?.[0];
@@ -776,6 +821,7 @@
             pendingPosterInline = "";
             document.getElementById("fStudio").value = picked.studio;
             document.getElementById("fGenres").value = (picked.genres || []).join(", ");
+            if (typeof Modals.syncEditorGenreChips === "function") Modals.syncEditorGenreChips();
 
             const firstRow = document.querySelector("#seasonsEditorList .season-row");
             if (firstRow) {
@@ -791,6 +837,7 @@
       }, 320);
     });
 
+    /* СОХРАНЕНИЕ ТАЙТЛА: ПРОВЕРЯЕТСЯ ТОЛЬКО РУССКОЕ НАЗВАНИЕ, ОСТАЛЬНОЕ НЕОБЯЗАТЕЛЬНО! */
     document.getElementById("animeEditorForm")?.addEventListener("submit", e => {
       e.preventDefault();
       if (!GitHubSync.isOwner()) {
@@ -798,13 +845,20 @@
         return;
       }
 
+      const ruTitle = document.getElementById("fTitle").value.trim();
+      if (!ruTitle) {
+        showToast("Пожалуйста, укажите Название (RU)!", "#ff3c8c");
+        document.getElementById("fTitle")?.focus();
+        return;
+      }
+
       const uid = document.getElementById("fUid").value || ("anime-" + Date.now());
       const targetTierId = document.getElementById("fTier").value;
       const seasons = Modals.readSeasonsFromEditor();
       const posterInp = document.getElementById("fPoster");
+      const rawPosterVal = posterInp.value.trim() || "https://placehold.co/400x600/16122b/ffd76a?text=myTierAnime";
       const finalBlobSha = pendingPosterBlobSha || posterInp.dataset.existingBlobSha || undefined;
 
-      // Сохраняем уже имеющуюся встроенную копию обложки, если картинку не меняли
       let existingInline = "";
       appData.tiers.forEach(t => {
         const found = (t.items || []).find(i => i.uid === uid);
@@ -813,15 +867,18 @@
         }
       });
 
+      const parsedScore = parseFloat(document.getElementById("fScore").value);
+      const parsedYear = parseInt(document.getElementById("fYear").value, 10);
+
       const newItem = {
         uid,
         kind: document.getElementById("fKind").value,
-        title: document.getElementById("fTitle").value.trim(),
+        title: ruTitle,
         origTitle: document.getElementById("fOrigTitle").value.trim(),
-        year: parseInt(document.getElementById("fYear").value, 10) || 2026,
+        year: isNaN(parsedYear) ? "" : parsedYear,
         studio: document.getElementById("fStudio").value.trim(),
-        score: parseFloat(document.getElementById("fScore").value) || 9.0,
-        poster: posterInp.value.trim(),
+        score: isNaN(parsedScore) ? 0 : parsedScore,
+        poster: rawPosterVal,
         posterBlobSha: finalBlobSha,
         posterInline: pendingPosterInline || existingInline || undefined,
         genres: document.getElementById("fGenres").value.split(",").map(s => s.trim()).filter(Boolean),
