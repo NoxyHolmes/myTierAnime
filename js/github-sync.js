@@ -1,4 +1,4 @@
-/* ═══════════════════ GITHUB SYNC ENGINE v8.0 (YANDEX BROWSER CACHE-BUSTING & MULTI-CHANNEL) ═══════════════════ */
+/* ═══════════════════ GITHUB SYNC ENGINE v9.0 (POSTER TREE BINDING & BLOB RESOLVER) ═══════════════════ */
 const GitHubSync = (() => {
   const TOKEN_KEY = "mta_2026_gh_token";
   const REPO_KEY  = "mta_2026_gh_repo";
@@ -125,7 +125,6 @@ const GitHubSync = (() => {
 
     for (const br of [detectedBranch, "main", "master"]) {
       try {
-        // Уникальный query-параметр обходит кэш Яндекс Браузера!
         const res = await fetch(`https://api.github.com/repos/${repo}/commits/${br}?_ya_bust=${Date.now()}_${Math.random()}`, {
           headers,
           cache: "no-store"
@@ -142,8 +141,7 @@ const GitHubSync = (() => {
     return null;
   }
 
-  /* МНОГОКАНАЛЬНОЕ ЧТЕНИЕ С ВЫБОРОМ САМОЙ СВЕЖЕЙ РЕВИЗИИ (ДЛЯ ЯНДЕКС БРАУЗЕРА И CHROME) */
-  async function fetchFreshTiersFromApi(force = false) {
+  async function fetchFreshTiersFromApi() {
     const repo = getRepo();
     const tk = getToken();
     const headers = { "Accept": "application/vnd.github+json" };
@@ -151,7 +149,6 @@ const GitHubSync = (() => {
 
     const candidates = [];
 
-    // Канал 1: Через прямой SHA последнего коммита (мгновенно)
     try {
       const branchInfo = await getLatestBranchCommitSha();
       if (branchInfo && branchInfo.commitSha) {
@@ -192,7 +189,6 @@ const GitHubSync = (() => {
       }
     } catch {}
 
-    // Канал 2: Прямой запрос к contents API с анти-кэш штампом (не блокируется Антитрекингом Яндекса)
     try {
       const cRes = await fetch(`https://api.github.com/repos/${repo}/contents/${FILE_PATH}?_ya_nocache=${Date.now()}`, {
         headers,
@@ -206,7 +202,6 @@ const GitHubSync = (() => {
       }
     } catch {}
 
-    // Канал 3: Через jsDelivr CDN (с автосбросом) + локальный файл со случайным штампом
     try {
       const localRes = await fetch(`data/tiers.json?_ya_nocache=${Date.now()}_${Math.random()}`, {
         cache: "reload"
@@ -217,8 +212,6 @@ const GitHubSync = (() => {
     } catch {}
 
     if (!candidates.length) return null;
-
-    // Из всех полученных ответов выбираем тот, у которого самая высокая ревизия (revision)!
     candidates.sort((a, b) => Number(b?.meta?.revision || 0) - Number(a?.meta?.revision || 0));
     return candidates[0];
   }
@@ -294,6 +287,7 @@ const GitHubSync = (() => {
     return pathOrUrl;
   }
 
+  /* При коммите привязываем в Git Tree не только tiers.json и фон, но и ВСЕ загруженные обложки тайтлов (posterBlobSha)! */
   async function commitTiersToGitHub(payloadObj, commitMsg = "Sync via myTierAnime") {
     const tk = getToken();
     const repo = getRepo();
@@ -327,6 +321,7 @@ const GitHubSync = (() => {
           sha: newBlob.sha
         }];
 
+        // Привязываем фон сайта в дерево коммита
         if (payloadObj.meta.bgImage && payloadObj.meta.bgBlobSha && !payloadObj.meta.bgImage.startsWith("http")) {
           treeEntries.push({
             path: payloadObj.meta.bgImage.replace(/^\.?\//, ""),
@@ -335,6 +330,20 @@ const GitHubSync = (() => {
             sha: payloadObj.meta.bgBlobSha
           });
         }
+
+        // Привязываем все загруженные обложки тайтлов в папку posters/ дерева репозитория!
+        (payloadObj.tiers || []).forEach(tier => {
+          (tier.items || []).forEach(it => {
+            if (it.poster && it.posterBlobSha && !it.poster.startsWith("http") && !it.poster.startsWith("data:") && !it.poster.startsWith("blob:")) {
+              treeEntries.push({
+                path: it.poster.replace(/^\.?\//, ""),
+                mode: "100644",
+                type: "blob",
+                sha: it.posterBlobSha
+              });
+            }
+          });
+        });
 
         const treeRes = await fetch(`https://api.github.com/repos/${repo}/git/trees`, {
           method: "POST",
@@ -363,7 +372,6 @@ const GitHubSync = (() => {
             });
             if (refRes.ok) {
               lastKnownCommitSha = createdCommit.sha;
-              // Дополнительно сбрасываем внешний CDN-кэш
               fetch(`https://purge.jsdelivr.net/gh/${repo}@${detectedBranch}/${FILE_PATH}`).catch(() => {});
               return createdCommit;
             }
