@@ -1,4 +1,4 @@
-/* ═══════════════════ MAIN APPLICATION ORCHESTRATOR (myTierAnime v12.1 FIXED SAVE & BGM UPLOAD) ═══════════════════ */
+/* ═══════════════════ MAIN APPLICATION ORCHESTRATOR (myTierAnime v12.2 CLEAN MUSIC BADGE) ═══════════════════ */
 (() => {
   if (typeof window.pluralRu !== "function") {
     window.pluralRu = function (number, one, few, many) {
@@ -30,7 +30,6 @@
   let activeView = "tiers";
   let lastRenderedSignature = "";
 
-  /* Переменные загружаемых файлов объявлены на верхнем уровне, чтобы кнопка Сохранить никогда не падала с ошибкой! */
   let pendingPosterBlobSha = "";
   let pendingPosterInline = "";
   let pendingBgmBlobSha = "";
@@ -218,6 +217,7 @@
     }
   }
 
+  /* Значок музыки убран из названия и перенесён в аккуратный мини-бейдж в верхней части карточки рядом с оценкой */
   function cardEl(item, idx, tierId) {
     const m = calcItemMetrics(item);
     const yr = m.latestYear || item.year || "";
@@ -226,7 +226,11 @@
       ? window.formatMoviesCount(m.totalMovies)
       : `${window.formatEpisodesCount(m.totalEpisodes)}${m.totalMovies ? ` + ${window.formatMoviesCount(m.totalMovies)}` : ""}`;
     const displayPosterSrc = item.posterInline || item.poster || "https://placehold.co/400x600/16122b/ffd76a?text=myTierAnime";
-    const hasMusicBadge = (item.bgmUrl || item.bgmBlobSha) ? `<span title="Есть фоновая музыка" style="color:#ffd76a;">🎵</span> ` : "";
+
+    const hasMusic = !!(item.bgmUrl || item.bgmBlobSha);
+    const musicCornerBadge = hasMusic
+      ? `<span title="В карточке играет фоновая музыка" style="position:absolute;top:28px;right:6px;z-index:4;padding:1.5px 5px;border-radius:5px;font-size:8.5px;background:rgba(14,11,28,0.88);border:1px solid rgba(0,245,255,0.45);color:#00f5ff;pointer-events:none;">🎵 OST</span>`
+      : "";
 
     return `
       <div class="card-unit" draggable="true" data-uid="${esc(item.uid)}" data-tier-id="${esc(tierId)}">
@@ -239,9 +243,10 @@
           <span class="rank">${idx + 1}</span>
           ${yearBadgeHtml}
           ${item.score ? `<span class="card-score-badge">★ ${esc(item.score)}</span>` : ""}
+          ${musicCornerBadge}
 
           <div class="card-info">
-            <h3 class="card-title">${hasMusicBadge}${esc(item.title)}</h3>
+            <h3 class="card-title">${esc(item.title)}</h3>
             <div class="card-sub">${esc(item.year || "")}${item.studio ? ` · ${esc(item.studio)}` : ""}</div>
           </div>
         </article>
@@ -672,7 +677,6 @@
       if (typeof Modals.syncEditorGenreChips === "function") Modals.syncEditorGenreChips();
     });
 
-    /* Загрузка обложки с ПК */
     const posterFileInp = document.getElementById("fPosterFile");
     posterFileInp?.addEventListener("change", async () => {
       const file = posterFileInp.files?.[0];
@@ -694,7 +698,6 @@
       }
     });
 
-    /* ИСПРАВЛЕННАЯ ЗАГРУЗКА МУЗЫКИ ТАЙТЛА (MP3 / WAV / OGG) */
     const bgmFileInp = document.getElementById("fBgmFile");
     bgmFileInp?.addEventListener("change", async () => {
       const file = bgmFileInp.files?.[0];
@@ -733,7 +736,6 @@
       }
     });
 
-    /* Настройка громкости фоновой музыки (сохраняется глобально для всех зрителей) */
     const rngBgmVol = document.getElementById("rngBgmVol");
     const lblBgmVol = document.getElementById("lblBgmVol");
     if (rngBgmVol) {
@@ -745,6 +747,9 @@
         const volVal = pct / 100;
         if (lblBgmVol) lblBgmVol.textContent = pct + "%";
         localStorage.setItem("mta_bgm_volume", String(volVal));
+        if (typeof Modals.setLiveBgmVolume === "function") {
+          Modals.setLiveBgmVolume(volVal);
+        }
         if (appData?.meta) {
           appData.meta.bgmVolume = pct;
         }
@@ -874,7 +879,6 @@
       }, 320);
     });
 
-    /* ИСПРАВЛЕННОЕ СОХРАНЕНИЕ КАРТОЧКИ ТАЙТЛА */
     document.getElementById("animeEditorForm")?.addEventListener("submit", async e => {
       e.preventDefault();
       if (!GitHubSync.isOwner()) {
