@@ -14,10 +14,10 @@
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;900&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&family=Montserrat:wght@500;700;800&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
   <link rel="manifest" href="manifest.json">
 
-  <link rel="stylesheet" href="css/tokens.css?v=11.0">
-  <link rel="stylesheet" href="css/realism-3d.css?v=11.0">
-  <link rel="stylesheet" href="css/cards-and-tiers.css?v=11.0">
-  <link rel="stylesheet" href="css/modals-and-panels.css?v=11.0">
+  <link rel="stylesheet" href="css/tokens.css?v=12.0">
+  <link rel="stylesheet" href="css/realism-3d.css?v=12.0">
+  <link rel="stylesheet" href="css/cards-and-tiers.css?v=12.0">
+  <link rel="stylesheet" href="css/modals-and-panels.css?v=12.0">
 </head>
 <body class="emblems-realism letter-style-gold motion-precession fx-tier-motion fx-tilt">
   <div id="globalOwnerBg" class="global-owner-bg" aria-hidden="true">
@@ -45,7 +45,6 @@
             <input type="search" id="searchInput" class="search-input" placeholder="Поиск тайтла...">
           </div>
 
-          <!-- Фильтр Жанров с кнопкой-крестиком быстрого сброса -->
           <div class="genre-dropdown" id="genreDropdown">
             <button type="button" class="genre-dropdown-btn" id="genreDropdownBtn">
               <span>🎭</span>
@@ -54,14 +53,13 @@
             </button>
             <button type="button" id="btnClearGenreFilter" class="filter-clear-x" style="display:none;" title="Сбросить фильтр жанра">✕</button>
             <div class="genre-dropdown-menu" id="genreDropdownMenu">
-              <div class="genre-search-box" style="position:relative;">
+              <div class="genre-search-box">
                 <input type="search" id="genreSearchInput" class="form-control" placeholder="🔎 Поиск жанра...">
               </div>
               <div class="genre-options-list" id="genreOptionsList"></div>
             </div>
           </div>
 
-          <!-- Фильтр Студий с кнопкой-крестиком быстрого сброса -->
           <div class="genre-dropdown" id="studioDropdown">
             <button type="button" class="genre-dropdown-btn" id="studioDropdownBtn" style="border-color:rgba(0,245,255,0.5);box-shadow:0 0 16px -4px rgba(0,245,255,0.35);">
               <span>🎬</span>
@@ -70,7 +68,7 @@
             </button>
             <button type="button" id="btnClearStudioFilter" class="filter-clear-x cyan" style="display:none;" title="Сбросить фильтр студии">✕</button>
             <div class="genre-dropdown-menu" id="studioDropdownMenu" style="border-color:rgba(0,245,255,0.45);">
-              <div class="genre-search-box" style="position:relative;">
+              <div class="genre-search-box">
                 <input type="search" id="studioSearchInput" class="form-control" placeholder="🔎 Поиск студии (Madhouse, MAPPA...)">
               </div>
               <div class="genre-options-list" id="studioOptionsList"></div>
@@ -85,7 +83,7 @@
             ➕ Добавить тайтл
           </button>
 
-          <button type="button" id="btnSyncNowOwner" class="btn btn-primary owner-only" title="Опубликовать все изменения, обложки и фон для всех браузеров по ссылке">
+          <button type="button" id="btnSyncNowOwner" class="btn btn-primary owner-only" title="Опубликовать все изменения, музыку и фон для всех по ссылке">
             🔄 Синхронизировать со всеми
           </button>
 
@@ -110,7 +108,7 @@
     <section id="calendarRoot" class="calendar-container" style="display:none;"></section>
   </div>
 
-  <!-- Панель «⚙️ Настройки» -->
+  <!-- Панель «⚙️ Настройки» (с ползунком громкости фоновой музыки) -->
   <aside id="fxPanel" class="fx-drawer" aria-label="Настройки">
     <div class="fx-drawer-head">
       <strong>⚙️ Студия Кастомизации</strong>
@@ -322,7 +320,7 @@
     <div class="fx-tab-pane" id="tabOwnerBg">
       <div class="fx-section-title">🖼 Глобальный фон сайта:</div>
       <p style="font-size:11px;color:var(--ink-soft);line-height:1.45;margin:0 0 10px;">
-        Выберите картинку с компьютера — она автоматически встроится в базу и появится во всех браузерах!
+        Выберите картинку с компьютера — после загрузки нажмите <b>«🔄 Синхронизировать со всеми»</b> в шапке, чтобы этот фон появился у всех по ссылке!
       </p>
       <div class="form-group">
         <label>Загрузить картинку фона с компьютера:</label>
@@ -337,6 +335,11 @@
           <span>Размытие фона (Blur): <b id="lblOwnerBgBlur">0px</b></span>
           <input type="range" id="rngOwnerBgBlur" min="0" max="20" step="1" value="0">
         </label>
+        <!-- НОВОЕ: Настройка громкости фоновой музыки для владельца -->
+        <label class="fx-slider-row" style="margin-top:10px;">
+          <span>🔊 Громкость фоновой музыки тайтлов: <b id="lblBgmVol">30%</b></span>
+          <input type="range" id="rngBgmVol" min="0" max="100" step="5" value="30">
+        </label>
       </div>
       <div style="display:flex;gap:8px;margin-top:8px;">
         <button type="button" id="btnClearOwnerBg" class="btn btn-danger" style="width:100%;justify-content:center;">✕ Сбросить на стандартный фон</button>
@@ -344,12 +347,14 @@
     </div>
   </aside>
 
-  <!-- Модальное окно 1: Личная карточка тайтла -->
+  <!-- Модальное окно 1: Карточка тайтла (с кнопкой управления звуком 🔊/🔇) -->
   <div id="detailsModal" class="modal-backdrop">
     <div class="modal-box modal-box-wide dossier-cinema-box">
       <div class="dossier-sticky-topbar">
         <div id="dossierTopBadges" class="dossier-badges-row" style="margin:0;"></div>
         <div class="dossier-top-btns">
+          <!-- НОВОЕ: Кнопка включения / выключения музыки в карточке -->
+          <button type="button" id="btnBgmToggle" class="btn btn-sm btn-neon-cyan" style="display:none;" title="Включить / отключить фоновую музыку">🔊 Музыка</button>
           <button type="button" id="btnDetailsEdit" class="btn btn-sm btn-neon-gold owner-only">✎ Редактировать тайтл</button>
           <button type="button" id="btnDetailsDelete" class="btn btn-sm btn-danger owner-only">🗑 Удалить</button>
           <button type="button" id="btnDetailsClose" class="btn btn-sm" data-close-modal="detailsModal">✕ Закрыть</button>
@@ -359,7 +364,7 @@
     </div>
   </div>
 
-  <!-- Модальное окно 2: Добавление / Редактирование тайтла (Обязательное поле ТОЛЬКО Название на русском!) -->
+  <!-- Модальное окно 2: Добавление / Редактирование тайтла (с полем для загрузки фоновой музыки) -->
   <div id="editorModal" class="modal-backdrop">
     <div class="modal-box modal-box-wide">
       <div class="modal-header">
@@ -368,12 +373,12 @@
       </div>
 
       <div class="form-group full" style="position:relative;">
-        <label>⚡ Автозаполнение из базы Shikimori / MyAnimeList (по желанию):</label>
+        <label>⚡ Автозаполнение из базы Shikimori / MyAnimeList:</label>
         <input type="search" id="shikiSearchInput" class="form-control" placeholder="Например: Песнь ночных сов, Фрирен, Oshi no Ko...">
         <div id="shikiResults" class="shiki-results"></div>
       </div>
 
-      <form id="animeEditorForm" novalidate>
+      <form id="animeEditorForm">
         <input type="hidden" id="fUid">
         <div class="form-grid">
           <div class="form-group">
@@ -399,12 +404,10 @@
             </select>
           </div>
 
-          <!-- ЕДИНСТВЕННОЕ ОБЯЗАТЕЛЬНОЕ ПОЛЕ -->
           <div class="form-group">
             <label style="color:#ffd76a;">Название (RU) * (обязательно):</label>
             <input type="text" id="fTitle" class="form-control" placeholder="Введите русское название..." required>
           </div>
-
           <div class="form-group">
             <label>Оригинальное название (необязательно):</label>
             <input type="text" id="fOrigTitle" class="form-control" placeholder="Romaji / English">
@@ -414,13 +417,11 @@
             <label>Год релиза (необязательно):</label>
             <input type="number" id="fYear" class="form-control" placeholder="2026">
           </div>
-
           <div class="form-group">
             <label>Личная оценка 1–10 (необязательно):</label>
             <input type="number" step="0.1" min="0" max="10" id="fScore" class="form-control" placeholder="9.0">
           </div>
 
-          <!-- Поле Студии с кнопкой-крестиком ✕ для быстрой очистки -->
           <div class="form-group full">
             <label>🎬 Студия (необязательно — выберите из списка или введите):</label>
             <div class="input-with-clear">
@@ -447,7 +448,16 @@
             </div>
           </div>
 
-          <!-- Жанры с интерактивными чипами и крестиком ✕ на каждом жанре -->
+          <!-- НОВОЕ: Загрузка фоновой музыки для тайтла (необязательно) -->
+          <div class="form-group full poster-upload-box" style="border-color:rgba(181,124,255,0.45);background:rgba(181,124,255,0.04);">
+            <label>🎵 Фоновая музыка тайтла (необязательно — загрузите MP3/WAV файл с ПК):</label>
+            <div style="display:flex;gap:8px;align-items:center;">
+              <input type="file" id="fBgmFile" accept="audio/*" class="form-control" style="flex:1;">
+              <input type="hidden" id="fBgmUrl">
+              <span id="bgmFileNameLabel" style="font-size:11.5px;color:#ffd76a;">Музыка не выбрана</span>
+            </div>
+          </div>
+
           <div class="form-group full">
             <div style="display:flex;justify-content:space-between;align-items:center;">
               <label>🎭 Жанры (необязательно — удаляйте лишние нажатием на ✕):</label>
@@ -459,7 +469,6 @@
                 <option value="">+ Нажмите, чтобы добавить жанр...</option>
               </select>
             </div>
-            <!-- Визуальные плашки выбранных жанров с крестиком ✕ -->
             <div id="editorGenreChips" class="editor-chips-wrap"></div>
             <input type="text" id="fGenres" class="form-control" placeholder="Или введите через запятую..." style="margin-top:4px;">
           </div>
@@ -470,7 +479,7 @@
             <div>
               <strong>🎬 Сезоны, Фильмы, OVA, ONA и Спешлы</strong>
               <div style="font-size:11px;color:var(--ink-soft);">
-                Дату просмотра можно указать полностью (<b>03.04.2026</b>), только месяц и год (<b>04.2026</b> или <b>Апрель 2026</b>) или просто год (<b>2026</b>). Для анонса укажите <b>0</b> серий.
+                Укажите кол-во серий и минут на 1 серию — время конвертируется автоматически.
               </div>
             </div>
             <div style="display:flex;gap:6px;flex-wrap:wrap;">
@@ -528,16 +537,17 @@
 
   <div id="toastContainer"></div>
 
-  <script src="js/utils.js?v=11.0"></script>
-  <script src="js/realism-core.js?v=11.0"></script>
-  <script src="js/realism-engine.js?v=11.0"></script>
-  <script src="js/github-sync.js?v=11.0"></script>
-  <script src="js/shikimori-api.js?v=11.0"></script>
-  <script src="js/fx-controller.js?v=11.0"></script>
-  <script src="js/stats-engine.js?v=11.0"></script>
-  <script src="js/calendar-view.js?v=11.0"></script>
-  <script src="js/drag-drop.js?v=11.0"></script>
-  <script src="js/modals.js?v=11.0"></script>
-  <script src="js/app.js?v=11.0"></script>
+  <script src="js/utils.js?v=12.0"></script>
+  <script src="js/realism-core.js?v=12.0"></script>
+  <script src="js/realism-engine.js?v=12.0"></script>
+  <script src="js/github-sync.js?v=12.0"></script>
+  <script src="js/shikimori-api.js?v=12.0"></script>
+  <script src="js/fx-controller.js?v=12.0"></script>
+  <script src="js/stats-engine.js?v=12.0"></script>
+  <script src="js/calendar-view.js?v=12.0"></script>
+  <script src="js/drag-dir.js?v=12.0" onerror=""></script>
+  <script src="js/drag-drop.js?v=12.0"></script>
+  <script src="js/modals.js?v=12.0"></script>
+  <script src="js/app.js?v=12.0"></script>
 </body>
 </html>
