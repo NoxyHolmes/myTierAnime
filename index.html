@@ -16,7 +16,7 @@
   <link rel="stylesheet" href="css/cards-and-tiers.css">
   <link rel="stylesheet" href="css/modals-and-panels.css">
 </head>
-<body class="emblems-realism fx-tier-motion fx-tilt view-mode-posters">
+<body class="emblems-realism letter-style-gold fx-tier-motion fx-tilt">
   <div id="globalOwnerBg" class="global-owner-bg" aria-hidden="true"></div>
   <div id="screenFxOverlay" class="screen-fx-overlay" aria-hidden="true"></div>
   <canvas id="bgStarsCanvas" aria-hidden="true"></canvas>
@@ -33,11 +33,13 @@
         </div>
 
         <div class="toolbar-controls">
+          <!-- Поиск -->
           <div class="search-input-wrap">
             <span class="search-icon">🔍</span>
             <input type="search" id="searchInput" class="search-input" placeholder="Поиск тайтла, студии...">
           </div>
 
+          <!-- Жанры с живым поиском (3 лишние кнопки после жанров убраны!) -->
           <div class="genre-dropdown" id="genreDropdown">
             <button type="button" class="genre-dropdown-btn" id="genreDropdownBtn">
               <span>🎭</span>
@@ -52,17 +54,12 @@
             </div>
           </div>
 
-          <!-- Переключатель видов отображения (Постеры / Чипы / Список) -->
-          <div class="display-mode-switcher" aria-label="Вид отображения">
-            <button type="button" class="dmode-btn active" data-dmode="posters" title="Постеры">🃏</button>
-            <button type="button" class="dmode-btn" data-dmode="chips" title="Чипы">🏷</button>
-            <button type="button" class="dmode-btn" data-dmode="list" title="Список">📋</button>
-          </div>
-
+          <!-- Кнопка Календаря (сразу открывает календарную сетку) -->
           <button type="button" id="btnToggleCalendar" class="btn btn-neon-purple">
             📅 Календарь
           </button>
 
+          <!-- Кнопка Добавить тайтл (только для владельца) -->
           <button type="button" id="btnAddTitleTop" class="btn btn-neon-gold owner-only">
             ➕ Добавить тайтл
           </button>
@@ -71,13 +68,9 @@
             ⚙️ Настройки
           </button>
 
-          <!-- Кнопки экспорта и GitHub видны ТОЛЬКО владельцу -->
-          <button type="button" id="btnExportJson" class="btn owner-only" title="Скачать JSON">
+          <!-- Скачать резервную копию (только для владельца, кнопка Сохранить убрана — всё сохраняется автоматически) -->
+          <button type="button" id="btnExportJson" class="btn owner-only" title="Скачать резервную копию JSON">
             ⬇ JSON
-          </button>
-
-          <button type="button" id="btnSyncGitHub" class="btn btn-primary owner-only" title="Сохранить в GitHub">
-            ☁ Сохранить
           </button>
 
           <button type="button" id="btnOwnerAuth" class="btn">
@@ -87,13 +80,13 @@
       </div>
     </header>
 
-    <!-- Переработанная лента статистики (без S-ранга, со средним баллом в тайтлах) -->
     <section id="statsRibbon" class="stats-ribbon" aria-label="Статистика"></section>
 
     <main id="tiersRoot" class="tiers-container"></main>
     <section id="calendarRoot" class="calendar-container" style="display:none;"></section>
   </div>
 
+  <!-- Мега-панель «⚙️ Настройки» (с новой кастомизацией 3D-букв тира) -->
   <aside id="fxPanel" class="fx-drawer" aria-label="Настройки">
     <div class="fx-drawer-head">
       <strong>⚙️ Студия Кастомизации</strong>
@@ -104,7 +97,7 @@
     </div>
 
     <div class="fx-tabs-nav">
-      <button type="button" class="fx-tab-btn active" data-fx-tab="tab3d">🔮 3D</button>
+      <button type="button" class="fx-tab-btn active" data-fx-tab="tab3d">🔮 3D и Буквы</button>
       <button type="button" class="fx-tab-btn" data-fx-tab="tabParticles">🌸 Частицы</button>
       <button type="button" class="fx-tab-btn" data-fx-tab="tabCards">🃏 Карточки</button>
       <button type="button" class="fx-tab-btn" data-fx-tab="tabTheme">🎨 Палитра</button>
@@ -112,17 +105,38 @@
       <button type="button" class="fx-tab-btn owner-only" data-fx-tab="tabOwnerBg">🖼 Фон сайта</button>
     </div>
 
+    <!-- ВКЛАДКА 1: 3D-эмблемы и 8 вариаций 3D-букв тира -->
     <div class="fx-tab-pane active" id="tab3d">
-      <div class="fx-section-title">Архитектура 3D-эмблем тиров:</div>
+      <div class="fx-section-title">1. 3D-стиль букв тира (S · A · B · C · D · E):</div>
+      <div class="fx-seg">
+        <button type="button" data-letter-style="letter-style-gold" class="active">👑 Литое золото</button>
+        <button type="button" data-letter-style="letter-style-prism">💎 Кристалл-Призма</button>
+        <button type="button" data-letter-style="letter-style-neon">⚡ Кибер-Неон</button>
+        <button type="button" data-letter-style="letter-style-plasma">🔥 Огненная плазма</button>
+        <button type="button" data-letter-style="letter-style-holo">🌈 Голограмма</button>
+        <button type="button" data-letter-style="letter-style-obsidian">🌑 Тёмный обсидиан</button>
+        <button type="button" data-letter-style="letter-style-ice">❄️ Ледяной кварц</button>
+        <button type="button" data-letter-style="letter-style-glitch">👾 Кибер-Глитч</button>
+      </div>
+
+      <div class="fx-section-title">2. Кинематика движения 3D-букв:</div>
+      <div class="fx-seg">
+        <button type="button" data-letter-motion="motion-precession" class="active">🪐 Прецессия 3D</button>
+        <button type="button" data-letter-motion="motion-spin360">🔄 Полный оборот 360°</button>
+        <button type="button" data-letter-motion="motion-float">🌊 Плавная левитация</button>
+        <button type="button" data-letter-motion="motion-pulse">💓 Энерго-Пульс</button>
+      </div>
+
+      <div class="fx-section-title">3. Архитектура 3D-эмблем вокруг буквы:</div>
       <div class="fx-seg">
         <button type="button" data-emblem-mode="emblems-realism" class="active">👑 Королевский</button>
-        <button type="button" data-emblem-mode="emblems-quantum">🌀 Квант</button>
-        <button type="button" data-emblem-mode="emblems-crystal">💎 Кристалл</button>
+        <button type="button" data-emblem-mode="emblems-quantum">🌀 Квантовый Вихрь</button>
+        <button type="button" data-emblem-mode="emblems-crystal">💎 Кристалл-Сфера</button>
         <button type="button" data-emblem-mode="emblems-eclipse">🌑 Затмение</button>
         <button type="button" data-emblem-mode="emblems-runic">🔯 Геометрия</button>
         <button type="button" data-emblem-mode="emblems-synth">🌆 Ретровейв</button>
         <button type="button" data-emblem-mode="emblems-galaxy">🌌 Галактика</button>
-        <button type="button" data-emblem-mode="emblems-cyber">⚡ Кибер</button>
+        <button type="button" data-emblem-mode="emblems-cyber">⚡ Кибер-Куб</button>
         <button type="button" data-emblem-mode="emblems-elements">🌸 Импульс</button>
         <button type="button" data-emblem-mode="emblems-orbits">🪐 Орбита</button>
       </div>
@@ -139,27 +153,37 @@
 
       <div class="fx-sliders">
         <label class="fx-slider-row">
-          <span>Скорость вращения: <b data-val="sealSpeed">1.0x</b></span>
-          <input type="range" data-setting="sealSpeed" min="0.1" max="3.0" step="0.1" value="1.0">
+          <span>Размер 3D-буквы тира: <b data-val="letterFontSize">64px</b></span>
+          <input type="range" data-setting="letterFontSize" min="44" max="88" step="2" value="64">
         </label>
         <label class="fx-slider-row">
-          <span>Масштаб эмблемы: <b data-val="sealScale">100%</b></span>
+          <span>Глубина 3D-экструзии буквы (объём): <b data-val="letterDepthStep">2.1px</b></span>
+          <input type="range" data-setting="letterDepthStep" min="0.5" max="4.5" step="0.2" value="2.1">
+        </label>
+        <label class="fx-slider-row">
+          <span>Масштаб всей 3D-эмблемы: <b data-val="sealScale">100%</b></span>
           <input type="range" data-setting="sealScale" min="70" max="130" step="2" value="100">
         </label>
         <label class="fx-slider-row">
-          <span>Яркость свечения: <b data-val="sealGlow">100%</b></span>
-          <input type="range" data-setting="sealGlow" min="0" max="200" step="5" value="100">
+          <span>Яркость свечения буквы и эмблемы: <b data-val="sealGlow">100%</b></span>
+          <input type="range" data-setting="sealGlow" min="0" max="220" step="5" value="100">
+        </label>
+        <label class="fx-slider-row">
+          <span>Скорость перелива металла букв: <b data-val="metalSheenSpeed">5.2с</b></span>
+          <input type="range" data-setting="metalSheenSpeed" min="1.5" max="12.0" step="0.5" value="5.2">
         </label>
       </div>
 
       <div class="fx-toggles">
-        <label class="fx-check-row"><input type="checkbox" data-toggle="showGimbalRings" checked><span>Внешние карданные кольца</span></label>
+        <label class="fx-check-row"><input type="checkbox" data-toggle="showGimbalRings" checked><span>Внешние карданные 3D-кольца</span></label>
         <label class="fx-check-row"><input type="checkbox" data-toggle="showSealFloor" checked><span>Световое отражение под буквой</span></label>
         <label class="fx-check-row"><input type="checkbox" data-toggle="showLetterHalo" checked><span>Неоновый ореол буквы</span></label>
-        <label class="fx-check-row"><input type="checkbox" data-toggle="showSealCaption" checked><span>Подпись ранга</span></label>
+        <label class="fx-check-row"><input type="checkbox" data-toggle="showSealCaption" checked><span>Подпись названия под буквой</span></label>
+        <label class="fx-check-row"><input type="checkbox" id="chkMotion" checked><span>60 FPS физическая анимация 3D-сцен</span></label>
       </div>
     </div>
 
+    <!-- ВКЛАДКА 2: Частицы -->
     <div class="fx-tab-pane" id="tabParticles">
       <div class="fx-section-title">Тип фоновых частиц:</div>
       <div class="fx-seg">
@@ -187,12 +211,17 @@
           <input type="range" id="rngBgCount" min="10" max="220" step="5" value="65">
         </label>
         <label class="fx-slider-row">
+          <span>Размер частиц: <b data-val="particleSize">1.0x</b></span>
+          <input type="range" data-setting="particleSize" min="0.4" max="2.6" step="0.1" value="1.0">
+        </label>
+        <label class="fx-slider-row">
           <span>Ветер: <b id="lblBgWind">0.5</b></span>
           <input type="range" id="rngBgWind" min="-2.5" max="2.5" step="0.1" value="0.5">
         </label>
       </div>
     </div>
 
+    <!-- ВКЛАДКА 3: Карточки -->
     <div class="fx-tab-pane" id="tabCards">
       <div class="fx-sliders">
         <label class="fx-slider-row">
@@ -202,6 +231,10 @@
         <label class="fx-slider-row">
           <span>Отступ между карточками: <b data-val="gridGap">10px</b></span>
           <input type="range" data-setting="gridGap" min="4" max="26" step="1" value="10">
+        </label>
+        <label class="fx-slider-row">
+          <span>Скругление карточек: <b data-val="cardRadius">10px</b></span>
+          <input type="range" data-setting="cardRadius" min="0" max="26" step="1" value="10">
         </label>
         <label class="fx-slider-row">
           <span>Угол 3D-наклона: <b id="lblTiltPower">14°</b></span>
@@ -219,8 +252,9 @@
       </div>
     </div>
 
+    <!-- ВКЛАДКА 4: Палитра -->
     <div class="fx-tab-pane" id="tabTheme">
-      <div class="fx-section-title">Шрифт:</div>
+      <div class="fx-section-title">Шрифт заголовков:</div>
       <div class="fx-seg">
         <button type="button" data-font-serif="Cinzel" class="active">Cinzel</button>
         <button type="button" data-font-serif="Playfair Display">Playfair</button>
@@ -229,72 +263,82 @@
       </div>
       <div class="fx-sliders">
         <label class="fx-slider-row">
+          <span>Прозрачность блоков тиров: <b data-val="tierBgAlpha">88%</b></span>
+          <input type="range" data-setting="tierBgAlpha" min="35" max="98" step="2" value="88">
+        </label>
+        <label class="fx-slider-row">
+          <span>Размытие стекла (Blur): <b data-val="glassBlur">16px</b></span>
+          <input type="range" data-setting="glassBlur" min="0" max="36" step="2" value="16">
+        </label>
+        <label class="fx-slider-row">
           <span>Ширина контейнера: <b data-val="containerWidth">1780px</b></span>
           <input type="range" data-setting="containerWidth" min="1200" max="2400" step="40" value="1780">
         </label>
       </div>
     </div>
 
+    <!-- ВКЛАДКА 5: Экран -->
     <div class="fx-tab-pane" id="tabScreen">
       <div class="fx-sliders">
         <label class="fx-slider-row">
           <span>Яркость: <b data-val="uiBrightness">100%</b></span>
           <input type="range" data-setting="uiBrightness" min="75" max="130" step="5" value="100">
         </label>
+        <label class="fx-slider-row">
+          <span>Контрастность: <b data-val="uiContrast">100%</b></span>
+          <input type="range" data-setting="uiContrast" min="80" max="135" step="5" value="100">
+        </label>
+        <label class="fx-slider-row">
+          <span>Насыщенность: <b data-val="uiSaturate">100%</b></span>
+          <input type="range" data-setting="uiSaturate" min="50" max="170" step="5" value="100">
+        </label>
       </div>
       <div class="fx-toggles">
         <label class="fx-check-row"><input type="checkbox" data-toggle="showTopRainbow" checked><span>Неоновая линия в шапке</span></label>
         <label class="fx-check-row"><input type="checkbox" data-toggle="showStatsRibbon" checked><span>Верхняя панель статистики</span></label>
+        <label class="fx-check-row"><input type="checkbox" data-toggle="showCyberGrid"><span>Фоновая кибер-сетка</span></label>
+        <label class="fx-check-row"><input type="checkbox" data-toggle="showScanlines"><span>CRT-сканлайны</span></label>
       </div>
     </div>
 
-    <!-- ВКЛАДКА 6: Фон сайта (ТОЛЬКО для владельца, видят все по ссылке) -->
+    <!-- ВКЛАДКА 6: Фон сайта (Мгновенная установка с ПК или по ссылке, сохраняется автоматически!) -->
     <div class="fx-tab-pane owner-only" id="tabOwnerBg">
-      <div class="fx-section-title">🖼 Глобальный фон сайта:</div>
+      <div class="fx-section-title">🖼 Глобальный фон сайта (Видят все по ссылке):</div>
       <p style="font-size:11px;color:var(--ink-soft);line-height:1.45;margin:0 0 10px;">
-        Загрузите файл фона с компьютера (сохранится в папку <code>backgrounds/</code> в GitHub) или укажите URL. После сохранения фон увидят все посетители по ссылке!
+        Выберите картинку с компьютера или вставьте прямую ссылку — фон применится и сохранится <b>моментально за долю секунды</b>!
       </p>
       <div class="form-group">
-        <label>Загрузить файл с ПК:</label>
+        <label>1. Выбрать картинку с компьютера (применится мгновенно):</label>
         <input type="file" id="ownerBgFileInput" accept="image/*" class="form-control">
       </div>
       <div class="form-group">
-        <label>Или путь / URL:</label>
-        <input type="text" id="ownerBgUrlInput" class="form-control" placeholder="backgrounds/bg.jpg или https://...">
+        <label>2. Или вставить URL / путь к картинке:</label>
+        <input type="text" id="ownerBgUrlInput" class="form-control" placeholder="https://... или backgrounds/bg.jpg">
       </div>
       <div class="fx-sliders">
         <label class="fx-slider-row">
-          <span>Затемнение фона: <b id="lblOwnerBgDim">65%</b></span>
-          <input type="range" id="rngOwnerBgDim" min="10" max="95" step="5" value="65">
+          <span>Затемнение поверх фона: <b id="lblOwnerBgDim">60%</b></span>
+          <input type="range" id="rngOwnerBgDim" min="5" max="92" step="5" value="60">
         </label>
         <label class="fx-slider-row">
-          <span>Размытие (Blur): <b id="lblOwnerBgBlur">4px</b></span>
-          <input type="range" id="rngOwnerBgBlur" min="0" max="24" step="1" value="4">
+          <span>Размытие фона (Blur): <b id="lblOwnerBgBlur">2px</b></span>
+          <input type="range" id="rngOwnerBgBlur" min="0" max="24" step="1" value="2">
         </label>
       </div>
       <div style="display:flex;gap:8px;margin-top:8px;">
-        <button type="button" id="btnApplyOwnerBg" class="btn btn-neon-gold" style="flex:1;">✔ Применить</button>
-        <button type="button" id="btnClearOwnerBg" class="btn btn-danger">✕ Убрать</button>
+        <button type="button" id="btnClearOwnerBg" class="btn btn-danger" style="width:100%;justify-content:center;">✕ Убрать картинку фона</button>
       </div>
     </div>
   </aside>
 
-  <!-- Переработанное модальное окно карточки тайтла (стильный дизайн, премиум досье) -->
+  <!-- Модальное окно 1: НОВЫЙ КИНЕМАТОГРАФИЧНЫЙ ДИЗАЙН КАРТОЧКИ ТАЙТЛА -->
   <div id="detailsModal" class="modal-backdrop">
-    <div class="modal-box modal-box-wide dossier-modal-box">
-      <div class="modal-header">
-        <h3>Досье тайтла</h3>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;">
-          <button type="button" id="btnDetailsEdit" class="btn btn-neon-gold owner-only">✎ Редактировать</button>
-          <button type="button" id="btnDetailsDelete" class="btn btn-danger owner-only">🗑 Удалить</button>
-          <button type="button" class="btn" data-close-modal="detailsModal">✕ Закрыть</button>
-        </div>
-      </div>
+    <div class="modal-box modal-box-wide dossier-cinema-box">
       <div id="detailsModalBody"></div>
     </div>
   </div>
 
-  <!-- Модальное окно 2: Добавление / Редактирование тайтла (Только владелец) -->
+  <!-- Модальное окно 2: Добавление / Редактирование тайтла -->
   <div id="editorModal" class="modal-backdrop">
     <div class="modal-box modal-box-wide">
       <div class="modal-header">
@@ -314,12 +358,12 @@
           <div class="form-group">
             <label>Тир (Ранг S–E):</label>
             <select id="fTier" class="form-control">
-              <option value="S">Тир S — Золотой фонд</option>
-              <option value="A">Тир A — Высшая лига</option>
-              <option value="B">Тир B — Достойный уровень</option>
-              <option value="C">Тир C — На один вечер</option>
-              <option value="D">Тир D — Проходной уровень</option>
-              <option value="E">Тир E — Вне рейтинга</option>
+              <option value="S">Тир S — Шедевры</option>
+              <option value="A">Тир A — Отличные</option>
+              <option value="B">Тир B — Хорошие</option>
+              <option value="C">Тир C — Нормальные</option>
+              <option value="D">Тир D — Слабые</option>
+              <option value="E">Тир E — Плохие</option>
             </select>
           </div>
 
@@ -362,14 +406,14 @@
           </div>
 
           <div class="form-group full poster-upload-box">
-            <label>🖼 Обложка (папка <code>posters/</code> или файл с ПК):</label>
+            <label>🖼 Обложка (выберите файл с ПК или укажите путь в папке <code>posters/</code>):</label>
             <div class="poster-upload-grid">
               <div>
                 <div style="font-size:11px;color:var(--ink-soft);margin-bottom:4px;">1. Загрузить файл с ПК:</div>
                 <input type="file" id="fPosterFile" accept="image/*" class="form-control">
               </div>
               <div>
-                <div style="font-size:11px;color:var(--ink-soft);margin-bottom:4px;">2. Или путь в posters/:</div>
+                <div style="font-size:11px;color:var(--ink-soft);margin-bottom:4px;">2. Путь в posters/ или ссылка:</div>
                 <input type="text" id="fPoster" class="form-control" placeholder="posters/my-anime.jpg" required>
               </div>
             </div>
@@ -387,7 +431,6 @@
           </div>
         </div>
 
-        <!-- Конструктор сезонов (дата больше не уходит в поля благодаря исправленной сетке) -->
         <div class="seasons-builder-box">
           <div class="seasons-builder-head">
             <div>
@@ -416,7 +459,7 @@
 
         <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:14px;">
           <button type="button" class="btn" data-close-modal="editorModal">Отмена</button>
-          <button type="submit" class="btn btn-primary">💾 Сохранить тайтл</button>
+          <button type="submit" class="btn btn-primary">✔ Готово (Автосохранение)</button>
         </div>
       </form>
     </div>
@@ -430,7 +473,7 @@
         <button type="button" class="btn" data-close-modal="authModal">✕</button>
       </div>
       <p style="font-size:12.5px;color:var(--ink-soft);line-height:1.5;">
-        Обычные пользователи по ссылке имеют только права на просмотр. Для внесения изменений введите ваш <b>GitHub Personal Access Token</b>.
+        Обычные посетители по ссылке могут только просматривать коллекцию. Введите ваш <b>GitHub Personal Access Token</b> — и любое ваше редактирование будет <b>моментально</b> сохраняться на сайте и в репозитории.
       </p>
       <form id="authForm">
         <div class="form-group full">
