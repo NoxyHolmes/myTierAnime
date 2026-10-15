@@ -1,4 +1,4 @@
-/* ═══════════════════ CUSTOM SLIDERS, GENRE SEARCH DROPDOWN, OWNER BG & MODALS ═══════════════════ */
+/* ═══════════════════ PREMIUM DOSSIER MODAL, DISPLAY SWITCHER & CONTROLS ═══════════════════ */
 *, *::before, *::after {
   box-sizing: border-box;
 }
@@ -16,7 +16,6 @@ body {
   overflow-x: hidden;
 }
 
-/* Глобальный фон владельца (виден всем, у кого есть ссылка) */
 .global-owner-bg {
   position: fixed;
   inset: 0;
@@ -38,7 +37,6 @@ body {
   background: rgba(6, 5, 12, var(--owner-bg-dim, 0.65));
 }
 
-/* Экранные оверлеи (Виньетка, Кибер-сетка, Сканлайны) */
 .screen-fx-overlay {
   position: fixed;
   inset: 0;
@@ -64,7 +62,6 @@ body.fx-scanlines .screen-fx-overlay::after {
   );
 }
 
-/* КАСТОМНЫЕ ПОЛЗУНКИ (БЕЗ БЕЛОЙ ПОЛОСЫ!) */
 input[type="range"] {
   -webkit-appearance: none;
   appearance: none;
@@ -98,20 +95,6 @@ input[type="range"]::-webkit-slider-thumb {
 input[type="range"]::-webkit-slider-thumb:hover {
   transform: scale(1.15);
   box-shadow: 0 0 18px #00f5ff;
-}
-input[type="range"]::-moz-range-track {
-  height: 8px;
-  border-radius: 999px;
-  background: linear-gradient(90deg, #1b1438, #2a1f54, #152b3d);
-  border: 1px solid rgba(0, 245, 255, 0.35);
-}
-input[type="range"]::-moz-range-thumb {
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #ffd76a, #ff5e7e);
-  border: 2px solid #ffffff;
-  box-shadow: 0 0 12px rgba(255, 215, 106, 0.85);
 }
 
 select,
@@ -232,7 +215,7 @@ body.hide-stats-ribbon .stats-ribbon { display: none !important; }
   color: #fff;
   font-size: 13px;
   font-weight: 500;
-  width: 210px;
+  width: 200px;
   box-shadow: 0 0 16px -4px rgba(0, 245, 255, 0.25);
   transition: all 0.25s ease;
 }
@@ -240,7 +223,7 @@ body.hide-stats-ribbon .stats-ribbon { display: none !important; }
   outline: none;
   border-color: #00f5ff;
   box-shadow: 0 0 22px -2px rgba(0, 245, 255, 0.55);
-  width: 255px;
+  width: 240px;
 }
 .search-icon {
   position: absolute;
@@ -251,7 +234,6 @@ body.hide-stats-ribbon .stats-ribbon { display: none !important; }
   pointer-events: none;
 }
 
-/* ВЫПАДАЮЩИЙ СПИСОК ЖАНРОВ С ЖИВЫМ ПОИСКОМ */
 .genre-dropdown {
   position: relative;
 }
@@ -312,6 +294,34 @@ body.hide-stats-ribbon .stats-ribbon { display: none !important; }
   background: rgba(255, 60, 140, 0.22);
   color: #ffd76a;
   font-weight: 700;
+}
+
+/* Переключатель видов отображения (Постеры / Чипы / Список) */
+.display-mode-switcher {
+  display: inline-flex;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--border-subtle);
+  border-radius: 999px;
+  padding: 3px;
+  gap: 3px;
+}
+.dmode-btn {
+  border: none;
+  background: transparent;
+  color: var(--ink-soft);
+  width: 32px;
+  height: 30px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.dmode-btn.active {
+  background: linear-gradient(135deg, rgba(255,215,106,0.25), rgba(0,245,255,0.22));
+  color: #fff;
+  border: 1px solid rgba(255,215,106,0.5);
 }
 
 .btn {
@@ -395,7 +405,6 @@ body.hide-stats-ribbon .stats-ribbon { display: none !important; }
   background: rgba(56, 239, 125, 0.14);
 }
 
-/* СТРОГОЕ СКРЫТИЕ КНОПОК ВЛАДЕЛЬЦА ДЛЯ ОБЫЧНЫХ ПОЛЬЗОВАТЕЛЕЙ */
 .owner-only {
   display: none !important;
 }
@@ -407,7 +416,6 @@ body.is-owner section.owner-only {
   display: block !important;
 }
 
-/* Аналитическая лента с крупным блоком Серий и Фильмов */
 .stats-ribbon {
   max-width: var(--container-width, 1780px);
   margin: 18px auto 6px;
@@ -448,7 +456,6 @@ body.is-owner section.owner-only {
   font-weight: 600;
 }
 
-/* Двойной яркий блок для Серий и Фильмов */
 .stat-dual-split {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -469,7 +476,6 @@ body.is-owner section.owner-only {
   box-shadow: 0 0 16px -4px rgba(255, 60, 140, 0.35);
 }
 
-/* Студия кастомизации (#fxPanel) с вкладками */
 .fx-drawer {
   position: fixed;
   top: 72px;
@@ -591,7 +597,6 @@ body.is-owner section.owner-only {
   cursor: pointer;
 }
 
-/* Календарь */
 .calendar-container {
   max-width: var(--container-width, 1780px);
   margin: 16px auto 80px;
@@ -704,12 +709,12 @@ body.is-owner section.owner-only {
   border-radius: 6px;
 }
 
-/* Модальные окна и исправленная сетка сезонов */
+/* ПРЕМИУМ ДИЗАЙН КАРТОЧКИ (ДОСЬЕ ТАЙТЛА) */
 .modal-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(4, 3, 10, 0.82);
-  backdrop-filter: blur(10px);
+  background: rgba(4, 3, 10, 0.84);
+  backdrop-filter: blur(12px);
   z-index: 80;
   display: none;
   place-items: center;
@@ -724,14 +729,14 @@ body.is-owner section.owner-only {
   max-width: 680px;
   max-height: 90vh;
   overflow-y: auto;
-  background: #120f24;
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  border-radius: 22px;
-  padding: 24px;
-  box-shadow: var(--shadow-lg);
+  background: linear-gradient(145deg, rgba(22, 18, 42, 0.98), rgba(12, 10, 24, 0.99));
+  border: 1px solid rgba(0, 245, 255, 0.35);
+  border-radius: 24px;
+  padding: 28px;
+  box-shadow: 0 25px 70px rgba(0, 0, 0, 0.9), 0 0 40px -10px rgba(0, 245, 255, 0.25);
 }
 .modal-box-wide {
-  max-width: 920px;
+  max-width: 960px;
 }
 
 .modal-header {
@@ -739,14 +744,18 @@ body.is-owner section.owner-only {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  margin-bottom: 16px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid var(--border-subtle);
+  margin-bottom: 20px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 .modal-header h3 {
   margin: 0;
   font-family: var(--serif);
-  font-size: 19px;
+  font-size: 21px;
+  background: linear-gradient(135deg, #fff, #ffd76a);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 .form-grid {
@@ -803,7 +812,7 @@ body.is-owner section.owner-only {
   gap: 8px;
 }
 
-/* ИСПРАВЛЕННАЯ СТРОКА СЕЗОНА (НИЧЕГО НЕ ВЫЛЕЗАЕТ ЗА КРАЯ!) */
+/* ИСПРАВЛЕННАЯ СЕТКА СЕЗОНОВ В РЕДАКТОРЕ (НИЧЕГО НЕ УХОДИТ В ПОЛЯ) */
 .seasons-builder-box {
   margin-top: 10px;
   padding: 14px;
@@ -857,7 +866,7 @@ body.is-owner section.owner-only {
   gap: 8px;
 }
 
-/* КОМПАКТНОЕ ОФОРМЛЕНИЕ МНОЖЕСТВА СЕЗОНОВ В КАРТОЧКЕ ТАЙТЛА */
+/* КОМПАКТНОЕ ОФОРМЛЕНИЕ МНОЖЕСТВА СЕЗОНОВ В ДОСЬЕ */
 .dossier-seasons-header {
   display: flex;
   align-items: center;
