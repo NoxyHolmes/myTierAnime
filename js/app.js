@@ -1,4 +1,4 @@
-/* ═══════════════════ MAIN APPLICATION ORCHESTRATOR (myTierAnime v8.0 YANDEX BROWSER & CARD META FIX) ═══════════════════ */
+/* ═══════════════════ MAIN APPLICATION ORCHESTRATOR (myTierAnime v8.1 ZERO-FLICKER ON RELOAD) ═══════════════════ */
 (() => {
   if (typeof window.pluralRu !== "function") {
     window.pluralRu = function (number, one, few, many) {
@@ -30,7 +30,11 @@
     ];
   }
 
-  const LOCAL_STORAGE_KEY = "mta_2026_owner_draft_v15";
+  /* Единый ключ мгновенного снимка состояния (и для владельца, и для зрителей),
+     чтобы при нажатии F5 сразу открывалась последняя актуальная расстановка без прыжков! */
+  const SNAPSHOT_STORAGE_KEY = "mta_2026_instant_snapshot_v16";
+  const LEGACY_KEYS = ["mta_2026_owner_draft_v15", "mta_2026_owner_draft_v14", "mta_2026_owner_draft_v12"];
+
   let appData = null;
   let searchQuery = "";
   let selectedGenre = "ALL";
@@ -40,92 +44,11 @@
   let activeView = "tiers";
   let lastRenderedSignature = "";
 
-  const BUILTIN_FALLBACK_TIERS = [
-    {
-      id: "S", rank: 1, name: "Шедевры", subtitle: "Лучшие и незабываемые тайтлы на все времена", hue: 45,
-      items: [
-        {
-          uid: "anime-cotn-2022", kind: "TV Сериал", title: "Песнь ночных сов", origTitle: "Yofukashi no Uta",
-          year: 2022, studio: "Liden Films", score: 10.0, reaction: "👑 Шедевр",
-          genres: ["Сверхъестественное", "Романтика", "Вампиры"],
-          poster: "https://shikimori.one/system/animes/original/48926.jpg",
-          comment: "Неоновая эстетика ночного города, потрясающий саундтрек Creepy Nuts и харизма Надзуны Нанакусы.",
-          seasons: [
-            { title: "Сезон 1", type: "TV Сериал", episodes: 13, epMinutes: 23, date: "12.08.2024", note: "Первый просмотр" },
-            { title: "Сезон 1 (Rewatch)", type: "TV Сериал", episodes: 13, epMinutes: 23, date: "18.06.2026", note: "Пересмотр" }
-          ]
-        },
-        {
-          uid: "anime-frieren-2023", kind: "TV Сериал", title: "Провожающая в последний путь Фрирен", origTitle: "Sousou no Frieren",
-          year: 2023, studio: "Madhouse", score: 9.9, reaction: "💎 Эталон",
-          genres: ["Фэнтези", "Приключения", "Драма"],
-          poster: "https://shikimori.one/system/animes/original/52991.jpg",
-          comment: "Глубокая, меланхоличная и невероятно красивая история о течении времени и памяти о товарищах.",
-          seasons: [
-            { title: "Сезон 1", type: "TV Сериал", episodes: 28, epMinutes: 24, date: "24.04.2026", note: "Полный просмотр" }
-          ]
-        },
-        {
-          uid: "anime-oshinoko-2023", kind: "TV Сериал", title: "Звёздное дитя", origTitle: "Oshi no Ko",
-          year: 2023, studio: "Doga Kobo", score: 9.8, reaction: "✨ Фаворит",
-          genres: ["Драма", "Музыка", "Триллер"],
-          poster: "https://shikimori.one/system/animes/original/52034.jpg",
-          comment: "Феноменальная режиссура, пронзительный пролог и легендарный трек Idol от YOASOBI.",
-          seasons: [
-            { title: "Пролог", type: "Спешл", episodes: 1, epMinutes: 82, date: "10.05.2025", note: "Премьера" },
-            { title: "Сезон 1", type: "TV Сериал", episodes: 10, epMinutes: 24, date: "15.05.2025", note: "1 сезон" },
-            { title: "Сезон 2", type: "TV Сериал", episodes: 13, epMinutes: 24, date: "05.10.2026", note: "2 сезон" }
-          ]
-        }
-      ]
-    },
-    {
-      id: "A", rank: 2, name: "Отличные", subtitle: "Яркие и очень качественные работы", hue: 185,
-      items: [
-        {
-          uid: "anime-apothecary-2023", kind: "TV Сериал", title: "Монолог фармацевта", origTitle: "Kusuriya no Hitorigoto",
-          year: 2023, studio: "OLM / TOHO animation", score: 9.3, reaction: "🧪 Интрига",
-          genres: ["Детектив", "Исторический", "Драма"],
-          poster: "https://shikimori.one/system/animes/original/54492.jpg",
-          comment: "Блестящий детективный сюжет в декорациях императорского двора.",
-          seasons: [{ title: "Сезон 1", type: "TV Сериал", episodes: 24, epMinutes: 24, date: "14.03.2026", note: "1 сезон" }]
-        },
-        {
-          uid: "anime-yourname-2016", kind: "Фильм", title: "Твоё имя", origTitle: "Kimi no Na wa.",
-          year: 2016, studio: "CoMix Wave Films", score: 9.4, reaction: "☄️ Классика",
-          genres: ["Романтика", "Драма", "Сверхъестественное"],
-          poster: "https://shikimori.one/system/animes/original/32281.jpg",
-          comment: "Визуальный шедевр Макото Синкая с музыкой RADWIMPS.",
-          seasons: [{ title: "Полнометражный фильм", type: "Фильм", episodes: 1, epMinutes: 106, date: "19.01.2026", note: "4K" }]
-        }
-      ]
-    },
-    {
-      id: "B", rank: 3, name: "Хорошие", subtitle: "Достойные внимания и атмосферные тайтлы", hue: 275,
-      items: [
-        {
-          uid: "anime-sololeveling-2024", kind: "TV Сериал", title: "Поднятие уровня в одиночку", origTitle: "Ore dake Level Up na Ken",
-          year: 2024, studio: "A-1 Pictures", score: 8.5, reaction: "🔥 Экшен",
-          genres: ["Экшен", "Фэнтези", "Приключения"],
-          poster: "https://shikimori.one/system/animes/original/52299.jpg",
-          comment: "Отличная динамика боёв и музыка Хироюки Савано.",
-          seasons: [{ title: "Сезон 1", type: "TV Сериал", episodes: 12, epMinutes: 24, date: "02.02.2026", note: "Просмотр" }]
-        }
-      ]
-    },
-    {
-      id: "C", rank: 4, name: "Нормальные", subtitle: "Средние тайтлы на один вечер", hue: 148,
-      items: [
-        {
-          uid: "anime-bartender-2024", kind: "TV Сериал", title: "Бармен: Бокал бога", origTitle: "Bartender: Kami no Glass",
-          year: 2024, studio: "Liber", score: 7.9, reaction: "🍸 Уют",
-          genres: ["Повседневность", "Драма"],
-          poster: "https://shikimori.one/system/animes/original/53407.jpg",
-          comment: "Спокойный вечерний сериал с приятной атмосферой камерного бара.",
-          seasons: [{ title: "Сезон 1", type: "TV Сериал", episodes: 12, epMinutes: 24, date: "11.05.2026", note: "Вечерний отдых" }]
-        }
-      ]
-    },
+  const EMPTY_TIERS_SKELETON = [
+    { id: "S", rank: 1, name: "Шедевры", subtitle: "Лучшие и незабываемые тайтлы на все времена", hue: 45, items: [] },
+    { id: "A", rank: 2, name: "Отличные", subtitle: "Яркие и очень качественные работы", hue: 185, items: [] },
+    { id: "B", rank: 3, name: "Хорошие", subtitle: "Достойные внимания и атмосферные тайтлы", hue: 275, items: [] },
+    { id: "C", rank: 4, name: "Нормальные", subtitle: "Средние тайтлы на один вечер", hue: 148, items: [] },
     { id: "D", rank: 5, name: "Слабые", subtitle: "Проходные или скучные проекты", hue: 28, items: [] },
     { id: "E", rank: 6, name: "Плохие", subtitle: "Разочарования и брошенные тайтлы", hue: 215, items: [] }
   ];
@@ -142,13 +65,13 @@
   function ensureSixTiers(data) {
     if (!data || !Array.isArray(data.tiers) || data.tiers.length === 0) {
       return {
-        meta: { title: "myTierAnime", bgImage: "", bgBlobSha: "", bgDim: 55, bgBlur: 0, revision: 1 },
-        tiers: JSON.parse(JSON.stringify(BUILTIN_FALLBACK_TIERS))
+        meta: { title: "myTierAnime", bgImage: "", bgBlobSha: "", bgDim: 55, bgBlur: 0, revision: 0 },
+        tiers: JSON.parse(JSON.stringify(EMPTY_TIERS_SKELETON))
       };
     }
     data.meta = data.meta || {};
     data.meta.revision = Number(data.meta.revision || 1);
-    BUILTIN_FALLBACK_TIERS.forEach(def => {
+    EMPTY_TIERS_SKELETON.forEach(def => {
       if (!data.tiers.find(t => t.id === def.id)) {
         data.tiers.push(JSON.parse(JSON.stringify(def)));
       }
@@ -163,24 +86,45 @@
   }
 
   function computeStateSignature(data) {
-    if (!data) return "";
-    return `${data.meta?.updatedAt || ""}_${data.meta?.revision || 0}_${data.meta?.bgBlobSha || ""}_${data.meta?.bgImage || ""}_${data.meta?.bgDim}_${data.meta?.bgBlur}`;
+    if (!data || !Array.isArray(data.tiers)) return "";
+    const tierSummary = data.tiers.map(t => `${t.id}:${(t.items || []).map(i => `${i.uid}_${i.score}_${(i.seasons || []).length}`).join(",")}`).join("|");
+    return `${data.meta?.revision || 0}_${tierSummary}_${data.meta?.bgBlobSha || ""}_${data.meta?.bgImage || ""}_${data.meta?.bgDim}_${data.meta?.bgBlur}`;
   }
 
-  async function loadInitialState() {
-    appData = ensureSixTiers(null);
-
-    const hasOwnerToken = typeof GitHubSync !== "undefined" && !!GitHubSync.getToken();
-    let localObj = null;
-
-    if (hasOwnerToken) {
-      const cached = localStorage.getItem(LOCAL_STORAGE_KEY);
-      if (cached) {
+  function readCachedSnapshot() {
+    for (const key of [SNAPSHOT_STORAGE_KEY, ...LEGACY_KEYS]) {
+      const raw = localStorage.getItem(key);
+      if (raw) {
         try {
-          localObj = ensureSixTiers(JSON.parse(cached));
-          appData = localObj;
+          const parsed = JSON.parse(raw);
+          if (parsed && Array.isArray(parsed.tiers) && parsed.tiers.length > 0) {
+            return ensureSixTiers(parsed);
+          }
         } catch {}
       }
+    }
+    return null;
+  }
+
+  function writeCachedSnapshot(data) {
+    if (!data) return;
+    try {
+      localStorage.setItem(SNAPSHOT_STORAGE_KEY, JSON.stringify(data));
+    } catch {}
+  }
+
+  /* БЕСШОВНАЯ ЗАГРУЗКА БЕЗ ВРЕМЕННОГО ПРЫЖКА КАРТОЧЕК:
+     1. Если в браузере уже есть сохранённый снимок (SNAPSHOT_STORAGE_KEY), он рисуется в 0-ю миллисекунду.
+     2. Затем в фоне проверяется GitHub: если там более новая ревизия (или если мы зритель и вышло обновление),
+        данные мягко актуализируются. Старый зашитый шаблон больше НИКОГДА не рисуется поверх ваших данных! */
+  async function loadInitialState() {
+    const hasOwnerToken = typeof GitHubSync !== "undefined" && !!GitHubSync.getToken();
+    const cachedSnapshot = readCachedSnapshot();
+
+    if (cachedSnapshot) {
+      appData = cachedSnapshot;
+      lastRenderedSignature = computeStateSignature(appData);
+      render();
     }
 
     try {
@@ -194,14 +138,23 @@
 
       if (remoteRaw) {
         const remoteObj = ensureSixTiers(remoteRaw);
-        if (!hasOwnerToken) {
+        const localRev = Number(cachedSnapshot?.meta?.revision || 0);
+        const remoteRev = Number(remoteObj?.meta?.revision || 0);
+
+        if (!cachedSnapshot) {
           appData = remoteObj;
-        } else {
-          const localRev = Number(localObj?.meta?.revision || 0);
-          const remoteRev = Number(remoteObj?.meta?.revision || 0);
-          if (!localObj || remoteRev >= localRev) {
+          writeCachedSnapshot(appData);
+        } else if (!hasOwnerToken) {
+          // У зрителя обновляем снимок, если на сервере ревизия >= локальной
+          if (remoteRev >= localRev) {
             appData = remoteObj;
-            localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(appData));
+            writeCachedSnapshot(appData);
+          }
+        } else {
+          // У владельца обновляем только если на сервере ревизия строго выше локальной
+          if (remoteRev > localRev) {
+            appData = remoteObj;
+            writeCachedSnapshot(appData);
           }
         }
       }
@@ -209,13 +162,19 @@
       console.warn("Remote load fallback:", e);
     }
 
-    lastRenderedSignature = computeStateSignature(appData);
-    if (typeof FXController !== "undefined" && typeof FXController.applyGlobalBackground === "function") {
-      await FXController.applyGlobalBackground(appData.meta || {});
+    if (!appData) {
+      appData = ensureSixTiers(null);
+    }
+
+    const newSig = computeStateSignature(appData);
+    if (newSig !== lastRenderedSignature || !cachedSnapshot) {
+      lastRenderedSignature = newSig;
+      render();
+    } else if (typeof FXController !== "undefined" && typeof FXController.applyGlobalBackground === "function") {
+      FXController.applyGlobalBackground(appData.meta || {});
     }
   }
 
-  /* Усиленный фоновый опрос для Яндекс Браузера и всех зрителей */
   function startLiveViewerPolling() {
     async function checkRemote() {
       if (document.hidden || (typeof GitHubSync !== "undefined" && GitHubSync.isOwner())) return;
@@ -228,6 +187,7 @@
         if (newSig && newSig !== lastRenderedSignature) {
           appData = remoteObj;
           lastRenderedSignature = newSig;
+          writeCachedSnapshot(appData);
           if (typeof FXController !== "undefined" && typeof FXController.applyGlobalBackground === "function") {
             await FXController.applyGlobalBackground(appData.meta || {});
           }
@@ -264,9 +224,7 @@
     appData.meta.updatedAt = new Date().toISOString();
     lastRenderedSignature = computeStateSignature(appData);
 
-    try {
-      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(appData));
-    } catch {}
+    writeCachedSnapshot(appData);
 
     if (typeof StatsEngine !== "undefined" && typeof StatsEngine.updateStats === "function") {
       StatsEngine.updateStats(appData.tiers);
@@ -289,7 +247,7 @@
       setSyncIndicator(`☁ Синхронизировано (${new Date().toLocaleTimeString("ru-RU")})`, "#38ef7d");
       if (syncBtn) syncBtn.textContent = "🔄 Синхронизировать со всеми";
       if (showSuccessToast) {
-        showToast("✔ Вся информация и фон успешно синхронизированы со всеми браузерами по ссылке!", "#38ef7d");
+        showToast("✔ Вся информация и фон успешно синхронизированы!", "#38ef7d");
       }
     } catch (err) {
       setSyncIndicator("⚠ Ошибка синхронизации: проверьте токен/репозиторий", "#ff5e7e");
@@ -304,7 +262,6 @@
     }
   }
 
-  /* Карточка тайтла с просторной 3-строчной нижней плашкой (серии + фильмы и часы на разных уровнях!) */
   function cardEl(item, idx, tierId) {
     const m = calcItemMetrics(item);
     const yr = m.latestYear || item.year || "";
@@ -333,7 +290,6 @@
           </div>
         </article>
 
-        <!-- ИСПРАВЛЕННАЯ 3-СТРОЧНАЯ НИЖНЯЯ ПЛАШКА (БЕЗ НАЛОЖЕНИЯ ЧАСОВ!) -->
         <div class="card-under-meta">
           <div class="cum-row">
             <span class="cum-kind">${esc(m.kind)}</span>
@@ -952,6 +908,7 @@
     }
   }
 
+  /* ИСПРАВЛЕННЫЙ ЗАПУСК БЕЗ МИГАНИЯ СТАРОГО ШАБЛОНА */
   async function bootstrapApp() {
     try {
       if (typeof FXController !== "undefined" && typeof FXController.init === "function") {
@@ -963,9 +920,6 @@
       bindGlobalUI();
     } catch {}
 
-    appData = ensureSixTiers(null);
-    render();
-
     if (typeof GitHubSync !== "undefined" && GitHubSync.getToken()) {
       document.body.classList.add("is-owner");
       GitHubSync.verifyToken().then(u => {
@@ -974,8 +928,8 @@
       });
     }
 
+    // Сразу загружаем сохранённый снимок и проверяем GitHub (без промежуточной отрисовки старого дефолтного списка!)
     await loadInitialState();
-    render();
     startLiveViewerPolling();
   }
 
