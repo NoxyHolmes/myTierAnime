@@ -4,14 +4,15 @@
     "owner": "geraltschwarzenegger-svg",
     "repo": "noxyholmes/myTierAnime",
     "branch": "main",
-    "updatedAt": "2026-10-15T21:26:19.545Z",
+    "updatedAt": "2026-10-15T21:26:53.601Z",
     "activeMode": "emblems-realism",
     "bgImage": "backgrounds/1792058756499____________________________________.png",
     "bgDim": 65,
     "bgBlur": 5,
-    "revision": 63,
+    "revision": 64,
     "bgBlobSha": "1de942c76368b8d317071e794ae55fed35d163ad",
-    "bgMime": "image/png"
+    "bgMime": "image/png",
+    "bgmVolume": 20
   },
   "tiers": [
     {
