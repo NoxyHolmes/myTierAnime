@@ -1,8 +1,7 @@
-/* ═══════════════════ CORE UTILITIES, FULL GENRES & ANIME STUDIOS CATALOG ═══════════════════ */
+/* ═══════════════════ CORE UTILITIES, 0-EPISODE UPCOMING SEASONS & CATALOGS ═══════════════════ */
 window.reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 window.tiltPower = 14;
 
-/* Полный объединённый каталог всех жанров, включая все запрошенные пользователем */
 window.ALL_ANIME_GENRES = [
   "Авангард", "Автомобили", "Азартные игры", "Айдолы (Жен.)", "Айдолы (Муж.)", "Актрисы",
   "Альтернативная история", "Альтернативная реальность", "Ангелы", "Андроиды", "Антивойна",
@@ -36,7 +35,6 @@ window.ALL_ANIME_GENRES = [
   "Эротика", "Этти", "Юри", "Яой", "Японский фольклор"
 ];
 
-/* Каталог популярных аниме-студий для быстрого поиска и фильтрации */
 window.ALL_ANIME_STUDIOS = [
   "A-1 Pictures", "AIC", "Arms", "Artland", "Asread", "Bandai Namco Pictures", "Bibury Animation Studios",
   "Bones", "Brain's Base", "BUG FILMS", "C2C", "CloverWorks", "CoMix Wave Films", "CyberConnect2",
@@ -103,19 +101,27 @@ function normWatched(w) {
   return [];
 }
 
+/* РАЗРЕШЕНО 0 СЕРИЙ И 0 ФИЛЬМОВ (ДЛЯ ОЖИДАЕМЫХ / АНОНСИРОВАННЫХ СЕЗОНОВ И ФИЛЬМОВ) */
 function normSeasons(item) {
   if (!item) return [];
   if (Array.isArray(item.seasons) && item.seasons.length > 0) {
-    return item.seasons.map((s, idx) => ({
-      title: s.title || `Сезон ${idx + 1}`,
-      type: s.type || item.kind || "TV Сериал",
-      episodes: Math.max(1, parseInt(s.episodes, 10) || 1),
-      epMinutes: Math.max(1, parseFloat(s.epMinutes) || (s.type === "Фильм" ? 110 : 24)),
-      date: s.date || "14.10.2026",
-      note: s.note || ""
-    }));
+    return item.seasons.map((s, idx) => {
+      const parsedEp = parseInt(s.episodes, 10);
+      const eps = isNaN(parsedEp) ? 1 : Math.max(0, parsedEp);
+      const parsedMin = parseFloat(s.epMinutes);
+      const epMin = isNaN(parsedMin) ? (s.type === "Фильм" ? 110 : 24) : Math.max(0, parsedMin);
+      return {
+        title: s.title || `Сезон ${idx + 1}`,
+        type: s.type || item.kind || "TV Сериал",
+        episodes: eps,
+        epMinutes: epMin,
+        date: s.date || "2026",
+        note: s.note || ""
+      };
+    });
   }
-  const parsedEps = parseInt(String(item.episodes || "12").replace(/\D/g, ""), 10) || 12;
+  const rawEps = parseInt(String(item.episodes ?? "12").replace(/\D/g, ""), 10);
+  const parsedEps = isNaN(rawEps) ? 12 : Math.max(0, rawEps);
   const kind = item.kind || "TV Сериал";
   const defaultMin = kind === "Фильм" ? 110 : 24;
   const w = normWatched(item.watched);
@@ -131,6 +137,7 @@ function normSeasons(item) {
   ];
 }
 
+/* ЕСЛИ У СЕЗОНА ИЛИ ФИЛЬМА УКАЗАНО 0 СЕРИЙ/ФИЛЬМОВ — ОН НЕ ПРИБАВЛЯЕТСЯ В ПОДСЧЕТ СЕРИЙ, ФИЛЬМОВ И ЧАСОВ */
 function calcItemMetrics(item) {
   const seasons = normSeasons(item);
   let totalEpisodes = 0;
@@ -139,15 +146,20 @@ function calcItemMetrics(item) {
   let latestMs = 0;
 
   seasons.forEach(s => {
-    const eps = Math.max(1, parseInt(s.episodes, 10) || 1);
-    const mins = Math.max(1, parseFloat(s.epMinutes) || (s.type === "Фильм" ? 110 : 24));
-    const partMinutes = eps * mins;
-    totalMinutes += partMinutes;
+    const rawEp = parseInt(s.episodes, 10);
+    const eps = isNaN(rawEp) ? 0 : Math.max(0, rawEp);
+    const rawMin = parseFloat(s.epMinutes);
+    const mins = isNaN(rawMin) ? (s.type === "Фильм" ? 110 : 24) : Math.max(0, rawMin);
 
-    if (s.type === "Фильм") {
-      totalMovies += eps;
-    } else {
-      totalEpisodes += eps;
+    if (eps > 0) {
+      const partMinutes = eps * mins;
+      totalMinutes += partMinutes;
+
+      if (s.type === "Фильм") {
+        totalMovies += eps;
+      } else {
+        totalEpisodes += eps;
+      }
     }
 
     const ms = parseRuDate(s.date);
@@ -200,9 +212,9 @@ function royalCrown(uid) {
   </svg>`;
 }
 
-function reactionHtml(item) {
-  if (!item.reaction) return "";
-  return `<span class="card-reaction">${esc(item.reaction)}</span>`;
+/* Бейдж реакции полностью отключён по запросу пользователя */
+function reactionHtml() {
+  return "";
 }
 
 function showToast(msg, borderCol = "#ffd76a") {
