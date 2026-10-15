@@ -1,4 +1,4 @@
-/* ═══════════════════ GITHUB SYNC ENGINE v12.1 (FULL AUDIO MP3/WAV & IMAGE SUPPORT) ═══════════════════ */
+/* ═══════════════════ GITHUB SYNC ENGINE v12.2 (FAST AUDIO STREAMING & INSTANT DOSSIER) ═══════════════════ */
 const GitHubSync = (() => {
   const TOKEN_KEY = "mta_2026_gh_token";
   const REPO_KEY  = "mta_2026_gh_repo";
@@ -91,7 +91,6 @@ const GitHubSync = (() => {
     });
   }
 
-  /* Сжимает только изображения (для аудиофайлов сразу возвращает пустую строку без зависаний!) */
   function createInlineDataUrl(file, maxW = 1280, quality = 0.8) {
     if (!file || !file.type || !file.type.startsWith("image/")) {
       return Promise.resolve("");
@@ -231,7 +230,6 @@ const GitHubSync = (() => {
     return candidates[0];
   }
 
-  /* Загрузка обложек, фонов и MP3/WAV аудиофайлов любого размера */
   async function uploadAssetFile(file, folder = "posters") {
     const tk = getToken();
     const repo = getRepo();
@@ -255,7 +253,6 @@ const GitHubSync = (() => {
     };
 
     let blobSha = "";
-    // 1. Сначала создаём Git Blob (поддерживает тяжёлые MP3 и 4K картинки до 100 МБ)
     try {
       const blobRes = await fetch(`https://api.github.com/repos/${repo}/git/blobs`, {
         method: "POST",
@@ -268,7 +265,6 @@ const GitHubSync = (() => {
       }
     } catch {}
 
-    // 2. Если файл небольшой (< 25 МБ), также пробуем записать через PUT /contents/
     if (!blobSha) {
       const putRes = await fetch(`https://api.github.com/repos/${repo}/contents/${relPath}`, {
         method: "PUT",
@@ -298,6 +294,7 @@ const GitHubSync = (() => {
     };
   }
 
+  /* БЫСТРОЕ РАЗРЕШЕНИЕ ССЫЛОК (ДЛЯ АУДИО — ПОТОКОВЫЙ STREAMING URL БЕЗ ТОРМОЗОВ!) */
   async function resolveAssetUrl(pathOrUrl, blobSha, mime = "image/jpeg", inlineDataUrl = "") {
     if (inlineDataUrl && inlineDataUrl.startsWith("data:")) {
       return inlineDataUrl;
@@ -310,15 +307,16 @@ const GitHubSync = (() => {
       return blobUrlCache.get(blobSha);
     }
 
-    if (pathOrUrl) {
+    const repo = getRepo();
+    const isAudio = mime.startsWith("audio/") || (pathOrUrl && pathOrUrl.startsWith("audio/"));
+
+    // Для аудиофайлов сначала отдаём прямую потоковую ссылку (чтобы музыка начинала играть за 0.1 сек без ожидания скачивания всего MP3 в Base64!)
+    if (isAudio && pathOrUrl) {
       const cleanPath = pathOrUrl.replace(/^\.?\//, "");
-      try {
-        const localCheck = await fetch(`${cleanPath}?_ya=${Date.now()}`, { method: "HEAD" });
-        if (localCheck.ok) return cleanPath;
-      } catch {}
+      const ref = lastKnownCommitSha || detectedBranch || "main";
+      return `https://raw.githubusercontent.com/${repo}/${ref}/${cleanPath}`;
     }
 
-    const repo = getRepo();
     if (blobSha) {
       try {
         const tk = getToken();
@@ -350,7 +348,6 @@ const GitHubSync = (() => {
     return pathOrUrl;
   }
 
-  /* При коммите привязываем в дерево репозитория tiers.json, фон, постеры И все загруженные MP3 аудиофайлы! */
   async function commitTiersToGitHub(payloadObj, commitMsg = "Sync via myTierAnime") {
     const tk = getToken();
     const repo = getRepo();
@@ -403,7 +400,6 @@ const GitHubSync = (() => {
                 sha: it.posterBlobSha
               });
             }
-            // Привязываем загруженную музыку тайтла в папку audio/ дерева репозитория!
             if (it.bgmUrl && it.bgmBlobSha && !it.bgmUrl.startsWith("http") && !it.bgmUrl.startsWith("data:") && !it.bgmUrl.startsWith("blob:")) {
               treeEntries.push({
                 path: it.bgmUrl.replace(/^\.?\//, ""),
