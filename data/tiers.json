@@ -4,12 +4,12 @@
     "owner": "geraltschwarzenegger-svg",
     "repo": "noxyholmes/myTierAnime",
     "branch": "main",
-    "updatedAt": "2026-10-15T12:48:24.056Z",
+    "updatedAt": "2026-10-15T12:55:16.427Z",
     "activeMode": "emblems-realism",
     "bgImage": "backgrounds/1792058756499____________________________________.png",
     "bgDim": 65,
     "bgBlur": 5,
-    "revision": 44,
+    "revision": 45,
     "bgBlobSha": "1de942c76368b8d317071e794ae55fed35d163ad",
     "bgMime": "image/png"
   },
@@ -21,6 +21,96 @@
       "subtitle": "Лучшие и незабываемые тайтлы на все времена",
       "hue": 45,
       "items": [
+        {
+          "uid": "anime-1792068916421",
+          "kind": "TV Сериал",
+          "title": "Добро пожаловать в класс превосходства",
+          "origTitle": "Classroom of the Elite",
+          "year": 2017,
+          "studio": "Lerche",
+          "score": 10,
+          "poster": "posters/1792068891680_563082781703827373.jpg",
+          "posterBlobSha": "1795ae7238086e063a69eeb8567644450a597115",
+          "genres": [
+            "Сэйнэн",
+            "Драма",
+            "Романтика",
+            "Триллер",
+            "Повседневность",
+            "Школьная жизнь",
+            "Психология"
+          ],
+          "comment": "",
+          "seasons": [
+            {
+              "title": "Сезон 1",
+              "type": "TV Сериал",
+              "releaseYear": 2017,
+              "episodes": 12,
+              "epMinutes": 24,
+              "date": "2018",
+              "note": ""
+            },
+            {
+              "title": "Сезон 2",
+              "type": "TV Сериал",
+              "releaseYear": 2022,
+              "episodes": 13,
+              "epMinutes": 24,
+              "date": "15.10.2026",
+              "note": ""
+            },
+            {
+              "title": "Сезон 3",
+              "type": "TV Сериал",
+              "releaseYear": 2024,
+              "episodes": 13,
+              "epMinutes": 24,
+              "date": "15.10.2026",
+              "note": ""
+            },
+            {
+              "title": "Сезон 4",
+              "type": "TV Сериал",
+              "releaseYear": 2026,
+              "episodes": 16,
+              "epMinutes": 24,
+              "date": "30.06.2026",
+              "note": ""
+            },
+            {
+              "title": "Сезон 5",
+              "type": "TV Сериал",
+              "releaseYear": 2028,
+              "episodes": 0,
+              "epMinutes": 24,
+              "date": "2028",
+              "note": ""
+            }
+          ],
+          "watched": [
+            {
+              "date": "2018",
+              "note": "Сезон 1"
+            },
+            {
+              "date": "15.10.2026",
+              "note": "Сезон 2"
+            },
+            {
+              "date": "15.10.2026",
+              "note": "Сезон 3"
+            },
+            {
+              "date": "30.06.2026",
+              "note": "Сезон 4"
+            },
+            {
+              "date": "2028",
+              "note": "Сезон 5"
+            }
+          ]
+        },
         {
           "uid": "anime-apothecary-2023",
           "kind": "TV Сериал",
