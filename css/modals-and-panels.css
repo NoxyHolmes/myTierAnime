@@ -1224,8 +1224,15 @@ body.is-owner .owner-only {
     margin: 0 auto;
   }
   .season-row {
-    grid-template-columns: 1fr 1fr;
-  }
+  display: grid;
+  grid-template-columns: minmax(115px, 1.25fr) minmax(100px, 0.9fr) 74px 64px 70px 104px minmax(90px, 0.95fr) 72px 32px;
+  gap: 6px;
+  align-items: center;
+  background: rgba(18, 14, 36, 0.95);
+  padding: 8px;
+  border-radius: 9px;
+  border: 1px solid rgba(255,255,255,0.09);
+}
   .poster-upload-grid, .editor-genre-bar {
     grid-template-columns: 1fr;
   }
