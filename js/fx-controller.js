@@ -1,4 +1,4 @@
-/* ═══════════════════ SETTINGS STUDIO, 8 LETTER 3D STYLES & INSTANT OWNER BG ═══════════════════ */
+/* ═══════════════════ SETTINGS STUDIO, 8 LETTER 3D STYLES & INSTANT BLOB BACKGROUND ═══════════════════ */
 const FXController = (() => {
   let io = null;
   let bgEffect = localStorage.getItem("mta_bg_effect") || "sakura";
@@ -16,6 +16,7 @@ const FXController = (() => {
   };
 
   let particles = [];
+  let currentBgSignature = "";
 
   const ALL_EMBLEM_CLASSES = [
     "emblems-realism", "emblems-quantum", "emblems-crystal", "emblems-eclipse",
@@ -261,31 +262,17 @@ const FXController = (() => {
     }
   }
 
-  /* 100% НАДЁЖНОЕ ПРИМЕНЕНИЕ ФОНА ЧЕРЕЗ <img id="globalOwnerBgImg"> */
-  function applyGlobalBackground(meta = {}) {
+  /* МГНОВЕННОЕ ОТОБРАЖЕНИЕ ФОНА И У ВЛАДЕЛЬЦА, И У ВСЕХ ЗРИТЕЛЕЙ ПО ССЫЛКЕ (ЧЕРЕЗ GIT BLOB SHA) */
+  async function applyGlobalBackground(meta = {}, instantBlobUrl = "") {
     const bgWrap = document.getElementById("globalOwnerBg");
     const bgImg = document.getElementById("globalOwnerBgImg");
     if (!bgWrap || !bgImg) return;
 
-    const localBg = localStorage.getItem("mta_owner_bg_v8") || "";
-    const src = (meta.bgImage || localBg || "").trim();
     const dim = meta.bgDim ?? 55;
     const blur = meta.bgBlur ?? 0;
 
     document.documentElement.style.setProperty("--owner-bg-dim", (dim / 100).toFixed(2));
     bgImg.style.filter = blur > 0 ? `blur(${blur}px)` : "none";
-
-    if (src) {
-      if (bgImg.getAttribute("src") !== src) {
-        bgImg.setAttribute("src", src);
-      }
-      bgWrap.classList.add("has-bg");
-      document.body.classList.add("has-custom-bg");
-    } else {
-      bgImg.removeAttribute("src");
-      bgWrap.classList.remove("has-bg");
-      document.body.classList.remove("has-custom-bg");
-    }
 
     const dimInp = document.getElementById("rngOwnerBgDim");
     const blurInp = document.getElementById("rngOwnerBgBlur");
@@ -295,6 +282,36 @@ const FXController = (() => {
     if (blurInp) blurInp.value = blur;
     if (dimLbl) dimLbl.textContent = dim + "%";
     if (blurLbl) blurLbl.textContent = blur + "px";
+
+    if (instantBlobUrl) {
+      bgImg.src = instantBlobUrl;
+      bgWrap.classList.add("has-bg");
+      document.body.classList.add("has-custom-bg");
+      return;
+    }
+
+    const rawPath = (meta.bgImage || "").trim();
+    const blobSha = (meta.bgBlobSha || "").trim();
+    const mime = meta.bgMime || "image/jpeg";
+
+    if (!rawPath && !blobSha) {
+      bgImg.removeAttribute("src");
+      bgWrap.classList.remove("has-bg");
+      document.body.classList.remove("has-custom-bg");
+      currentBgSignature = "";
+      return;
+    }
+
+    const sig = `${rawPath}_${blobSha}`;
+    if (sig === currentBgSignature && bgWrap.classList.contains("has-bg")) return;
+    currentBgSignature = sig;
+
+    const resolvedUrl = await GitHubSync.resolveAssetUrl(rawPath, blobSha, mime);
+    if (resolvedUrl) {
+      bgImg.src = resolvedUrl;
+      bgWrap.classList.add("has-bg");
+      document.body.classList.add("has-custom-bg");
+    }
   }
 
   function setEmblemMode(mode, save = true) {
