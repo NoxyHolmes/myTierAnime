@@ -1,17 +1,29 @@
-/* ═══════════════════ MODALS: SYNCHRONIZED COLUMNS WITH INLINE LABELS (AS ON SCREENSHOT) ═══════════════════ */
+/* ═══════════════════ MODALS: DOSSIER WITH BGM MUSIC PLAYER & WIDE POSTER ═══════════════════ */
 const Modals = (() => {
   let deleteHandler = null;
+  let activeAudio = null;
 
   function openModal(id) {
     document.getElementById(id)?.classList.add("open");
   }
 
   function closeModal(id) {
+    if (id === "detailsModal") stopActiveBgm();
     document.getElementById(id)?.classList.remove("open");
   }
 
   function setDeleteHandler(fn) {
     deleteHandler = fn;
+  }
+
+  function stopActiveBgm() {
+    if (activeAudio) {
+      try {
+        activeAudio.pause();
+        activeAudio.currentTime = 0;
+      } catch {}
+      activeAudio = null;
+    }
   }
 
   function syncEditorGenreChips() {
@@ -43,8 +55,10 @@ const Modals = (() => {
   }
 
   async function showAnimeDetails(item, tier) {
+    stopActiveBgm();
     const body = document.getElementById("detailsModalBody");
     const topBadges = document.getElementById("dossierTopBadges");
+    const bgmBtn = document.getElementById("btnBgmToggle");
     if (!body) return;
 
     const m = calcItemMetrics(item);
@@ -57,8 +71,7 @@ const Modals = (() => {
       `;
     }
 
-    /* Оформление один в один как на скриншоте, но все ячейки связаны общей сеткой:
-       если сдвигается "Объём:" или название в одной строке — оно синхронно сдвигается во всех строках! */
+    /* ВЕРТИКАЛЬНАЯ СЕТКА СЕЗОНОВ (СИНХРОННЫЕ КОЛОНКИ) */
     function renderSeasonsVerticalStack(filterType = "ALL") {
       const filtered = m.seasons.filter(s => {
         if (filterType === "ALL") return true;
@@ -67,50 +80,66 @@ const Modals = (() => {
         return s.type !== "TV Сериал" && s.type !== "Фильм";
       });
 
-      return filtered.map((s, idx) => {
+      const headerRow = `
+        <div class="ds-grid-head">
+          <div>#</div>
+          <div>Сезон / Часть</div>
+          <div>Тип и Год</div>
+          <div>Объём</div>
+          <div>1 серия</div>
+          <div>Время</div>
+          <div>Дата</div>
+        </div>
+      `;
+
+      const rowsHtml = filtered.map((s, idx) => {
         const isUpcoming = Number(s.episodes) === 0;
         const partHours = isUpcoming ? "0" : formatHours((s.episodes * s.epMinutes) / 60);
         const relYr = s.releaseYear || item.year || "2026";
         const volumeText = isUpcoming
-          ? `<span class="s-chip-upcoming">⏳ Анонс (0 ${s.type === "Фильм" ? "ф." : "эп."})</span>`
-          : `<b class="s-chip-vol">${s.type === "Фильм" ? formatMoviesCount(s.episodes) : formatEpisodesCount(s.episodes)}</b>`;
+          ? `<span class="s-chip-upcoming">⏳ Анонс</span>`
+          : `<span class="s-chip-vol">${s.type === "Фильм" ? formatMoviesCount(s.episodes) : formatEpisodesCount(s.episodes)}</span>`;
 
         const noteText = s.note ? String(s.note).trim() : "";
 
         return `
           <div class="dossier-season-bar ${isUpcoming ? "is-upcoming" : ""}">
-            <div class="dsb-col-left">
-              <span class="dsc-num">#${idx + 1}</span>
-              <div class="dsc-title-wrap">
-                <strong class="dsc-name">${esc(s.title)}</strong>
-                ${noteText ? `<span class="dsb-note-inline">💬 ${esc(noteText)}</span>` : ""}
+            <div class="ds-grid-row">
+              <div class="ds-col-num">
+                <span class="dsc-num">#${idx + 1}</span>
               </div>
-              <span class="cum-kind">${esc(s.type)}</span>
-              <span class="dsc-year">${esc(relYr)} г.</span>
-            </div>
 
-            <div class="dsb-col-stat">
-              <span class="dsc-lbl">Объём:</span>
-              ${volumeText}
-            </div>
+              <div class="ds-col-title" title="${esc(s.title)}">
+                <strong class="dsc-name">${esc(s.title)}</strong>
+                ${noteText ? `<div class="dsb-note-sub">💬 ${esc(noteText)}</div>` : ""}
+              </div>
 
-            <div class="dsb-col-stat">
-              <span class="dsc-lbl">1 серия:</span>
-              <b>${isUpcoming ? "—" : `${s.epMinutes} мин.`}</b>
-            </div>
+              <div class="ds-col-type">
+                <span class="cum-kind">${esc(s.type)}</span>
+                <span class="dsc-year">${esc(relYr)} г.</span>
+              </div>
 
-            <div class="dsb-col-stat">
-              <span class="dsc-lbl">Время:</span>
-              <b style="color:#00f5ff;">${partHours} ч.</b>
-            </div>
+              <div class="ds-col-vol">
+                ${volumeText}
+              </div>
 
-            <div class="dsb-col-stat">
-              <span class="dsc-lbl">Дата:</span>
-              <b>${esc(s.date || (isUpcoming ? "Анонс" : "—"))}</b>
+              <div class="ds-col-ep">
+                <b>${isUpcoming ? "—" : `${s.epMinutes} мин.`}</b>
+              </div>
+
+              <div class="ds-col-time">
+                <b style="color:#00f5ff;">${partHours} ч.</b>
+              </div>
+
+              <div class="ds-col-date">
+                <b>${esc(s.date || (isUpcoming ? "Анонс" : "—"))}</b>
+              </div>
             </div>
           </div>
         `;
       }).join("");
+
+      return headerRow + rowsHtml;
     }
 
     const hasComment = item.comment && item.comment.trim().length > 0;
@@ -183,6 +212,37 @@ const Modals = (() => {
         </div>
       </div>
     `;
+
+    // Автоматическое воспроизведение загруженной фоновой музыки с регулировкой громкости
+    if (item.bgmUrl || item.bgmBlobSha) {
+      if (bgmBtn) bgmBtn.style.display = "inline-flex";
+      const resolvedBgm = await GitHubSync.resolveAssetUrl(item.bgmUrl, item.bgmBlobSha, "audio/mpeg");
+      if (resolvedBgm) {
+        activeAudio = new Audio(resolvedBgm);
+        activeAudio.loop = true;
+        const globalVol = parseFloat(localStorage.getItem("mta_bgm_volume") || "0.3");
+        activeAudio.volume = globalVol;
+        activeAudio.play().then(() => {
+          if (bgmBtn) bgmBtn.innerHTML = "🔊 Музыка вкл.";
+        }).catch(() => {
+          if (bgmBtn) bgmBtn.innerHTML = "🔇 Включить музыку";
+        });
+
+        if (bgmBtn) {
+          bgmBtn.onclick = () => {
+            if (activeAudio.paused) {
+              activeAudio.play();
+              bgmBtn.innerHTML = "🔊 Музыка вкл.";
+            } else {
+              activeAudio.pause();
+              bgmBtn.innerHTML = "🔇 Музыка выкл.";
+            }
+          };
+        }
+      }
+    } else {
+      if (bgmBtn) bgmBtn.style.display = "none";
+    }
 
     if (!item.posterInline && typeof GitHubSync !== "undefined" && typeof GitHubSync.resolveAssetUrl === "function") {
       GitHubSync.resolveAssetUrl(item.poster, item.posterBlobSha, "image/jpeg", item.posterInline).then(resolvedUrl => {
@@ -333,7 +393,7 @@ const Modals = (() => {
       const mn = isNaN(rawMn) ? 24 : Math.max(0, rawMn);
       const relYr = parseInt(r.querySelector(".s-rel-year")?.value, 10) || fallbackYr;
       return {
-        title: r.querySelector(".s-title").value.trim() || `Сезон ${i + 1}`,
+        title: r.querySelector(".s-title").value.trim() || `Часть ${i + 1}`,
         type: r.querySelector(".s-type").value,
         releaseYear: relYr,
         episodes: ep,
@@ -369,6 +429,15 @@ const Modals = (() => {
 
     const fileInp = document.getElementById("fPosterFile");
     if (fileInp) fileInp.value = "";
+
+    const bgmUrlInp = document.getElementById("fBgmUrl");
+    if (bgmUrlInp) {
+      bgmUrlInp.value = existingItem ? existingItem.bgmUrl || "" : "";
+      bgmUrlInp.dataset.existingBlobSha = existingItem?.bgmBlobSha || "";
+    }
+    const bgmFileLbl = document.getElementById("bgmFileNameLabel");
+    if (bgmFileLbl) bgmFileLbl.textContent = existingItem?.bgmUrl ? "Музыка загружена" : "Музыка не выбрана";
+
     document.getElementById("fGenres").value = existingItem ? (existingItem.genres || []).join(", ") : "";
     document.getElementById("fComment").value = existingItem ? existingItem.comment || "" : "";
 
