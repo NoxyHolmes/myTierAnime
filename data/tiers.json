@@ -4,12 +4,12 @@
     "owner": "geraltschwarzenegger-svg",
     "repo": "noxyholmes/myTierAnime",
     "branch": "main",
-    "updatedAt": "2026-10-15T11:35:01.813Z",
+    "updatedAt": "2026-10-15T11:35:42.508Z",
     "activeMode": "emblems-realism",
     "bgImage": "backgrounds/1792058756499____________________________________.png",
     "bgDim": 65,
     "bgBlur": 5,
-    "revision": 35,
+    "revision": 36,
     "bgBlobSha": "1de942c76368b8d317071e794ae55fed35d163ad",
     "bgMime": "image/png"
   },
@@ -28,6 +28,14 @@
       "name": "Отличные",
       "subtitle": "Яркие и очень качественные работы",
       "hue": 185,
+      "items": []
+    },
+    {
+      "id": "B",
+      "rank": 3,
+      "name": "Хорошие",
+      "subtitle": "Достойные внимания и атмосферные тайтлы",
+      "hue": 275,
       "items": [
         {
           "uid": "anime-apothecary-2023",
@@ -106,14 +114,6 @@
           ]
         }
       ]
-    },
-    {
-      "id": "B",
-      "rank": 3,
-      "name": "Хорошие",
-      "subtitle": "Достойные внимания и атмосферные тайтлы",
-      "hue": 275,
-      "items": []
     },
     {
       "id": "C",
