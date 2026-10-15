@@ -1,4 +1,4 @@
-/* ═══════════════════ MODALS: PREMIUM GLASS DOSSIER & MULTI-SEASON BUILDER ═══════════════════ */
+/* ═══════════════════ MODALS: CINEMATIC HERO DOSSIER & MULTI-SEASON BUILDER ═══════════════════ */
 const Modals = (() => {
   let deleteHandler = null;
 
@@ -34,7 +34,7 @@ const Modals = (() => {
           <tr>
             <td><b>#${idx + 1}</b> ${esc(s.title)}</td>
             <td><span class="cum-kind">${esc(s.type)}</span></td>
-            <td>${s.episodes} ${s.type === "Фильм" ? formatMoviesCount(s.episodes) : formatEpisodesCount(s.episodes)}</td>
+            <td>${s.type === "Фильм" ? formatMoviesCount(s.episodes) : formatEpisodesCount(s.episodes)}</td>
             <td>${s.epMinutes} мин.</td>
             <td style="color:#00f5ff;font-weight:700;">${partHours} ч.</td>
             <td><b>${esc(s.date)}</b></td>
@@ -45,71 +45,97 @@ const Modals = (() => {
     }
 
     body.innerHTML = `
-      <div style="display:grid;grid-template-columns:200px 1fr;gap:22px;align-items:start;">
-        <img src="${esc(item.poster)}" alt="${esc(item.title)}"
-             onerror="this.src='https://placehold.co/400x600/16122b/ffd76a?text=myTierAnime'"
-             style="width:100%;border-radius:12px;border:1px solid rgba(255,255,255,0.18);">
-        <div style="min-width:0;">
-          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px;">
-            <span class="cum-kind">ТИР ${esc(tier.id)}</span>
-            <span class="cum-kind">${esc(m.kind)}</span>
-            <span style="color:#ffd76a;font-weight:800;">★ ${esc(item.score)}</span>
-            <span style="color:var(--ink-soft);font-size:12px;">Релиз: ${esc(item.year)} · Студия: <b>${esc(item.studio || "—")}</b></span>
-          </div>
-          <h2 style="margin:0 0 4px;font-family:var(--serif);">${esc(item.title)}</h2>
-          <div style="font-size:12px;color:var(--ink-soft);margin-bottom:12px;">${esc(item.origTitle || "")}</div>
+      <!-- Верхний кинематографичный баннер с размытым постером аниме -->
+      <div class="dossier-hero-banner">
+        <div class="dossier-hero-backdrop" style="background-image:url('${esc(item.poster)}');"></div>
+        <div class="dossier-hero-scrim"></div>
 
-          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px;background:rgba(255,255,255,0.03);padding:10px 14px;border-radius:10px;border:1px solid var(--border-subtle);">
-            <div>
-              <div style="font-size:10px;color:var(--ink-soft);text-transform:uppercase;">Серии / Фильмы</div>
-              <div style="font-size:15px;font-weight:800;color:#ffd76a;">${formatEpisodesCount(m.totalEpisodes)} ${m.totalMovies ? `+ <span style="color:#ff5e7e;">${formatMoviesCount(m.totalMovies)}</span>` : ""}</div>
+        <div class="dossier-top-actions">
+          <div class="dossier-badges-row" style="margin:0;">
+            <span class="dossier-badge-pill gold">РАНГ ${esc(tier.id)} · ${esc(tier.name)}</span>
+            <span class="dossier-badge-pill">${esc(m.kind)}</span>
+            ${item.reaction ? `<span class="dossier-badge-pill">${esc(item.reaction)}</span>` : ""}
+          </div>
+
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button type="button" id="btnDetailsEdit" class="btn btn-sm btn-neon-gold owner-only">✎ Редактировать</button>
+            <button type="button" id="btnDetailsDelete" class="btn btn-sm btn-danger owner-only">🗑 Удалить</button>
+            <button type="button" id="btnDetailsClose" class="btn btn-sm">✕ Закрыть</button>
+          </div>
+        </div>
+
+        <div class="dossier-hero-grid">
+          <div class="dossier-poster-wrap">
+            <img src="${esc(item.poster)}" alt="${esc(item.title)}"
+                 onerror="this.src='https://placehold.co/400x600/16122b/ffd76a?text=myTierAnime'">
+            <span class="dossier-score-orb">★ ${esc(item.score)}</span>
+          </div>
+
+          <div style="min-width:0;">
+            <h2 class="dossier-title-main">${esc(item.title)}</h2>
+            <div class="dossier-title-orig">
+              ${esc(item.origTitle || "")}
+              ${item.year ? ` · <b>${esc(item.year)} г.</b>` : ""}
+              ${item.studio ? ` · Студия: <b style="color:#ffd76a;">${esc(item.studio)}</b>` : ""}
             </div>
-            <div>
-              <div style="font-size:10px;color:var(--ink-soft);text-transform:uppercase;">Общее время</div>
-              <div style="font-size:15px;font-weight:800;color:#00f5ff;">${formatHours(m.totalHours)} часов</div>
+
+            <div class="dossier-metrics-row">
+              <div class="dossier-metric-card">
+                <div class="dm-lbl">🎞 Серии и Фильмы</div>
+                <div class="dm-val" style="color:#ffd76a;">
+                  ${formatEpisodesCount(m.totalEpisodes)} ${m.totalMovies ? `+ <span style="color:#ff5e7e;">${formatMoviesCount(m.totalMovies)}</span>` : ""}
+                </div>
+              </div>
+              <div class="dossier-metric-card">
+                <div class="dm-lbl">⏱ Затрачено часов</div>
+                <div class="dm-val" style="color:#00f5ff;">${formatHours(m.totalHours)} ч.</div>
+              </div>
+              <div class="dossier-metric-card">
+                <div class="dm-lbl">⏳ В пересчёте на дни</div>
+                <div class="dm-val">${m.totalDays.toFixed(2)} дн.</div>
+              </div>
             </div>
-            <div>
-              <div style="font-size:10px;color:var(--ink-soft);text-transform:uppercase;">В пересчёте на дни</div>
-              <div style="font-size:15px;font-weight:800;color:#fff;">${m.totalDays.toFixed(2)} дн.</div>
+
+            <div class="dossier-comment-card">
+              ${esc(item.comment || "Личный комментарий к этому тайтлу ещё не добавлен.")}
             </div>
-          </div>
 
-          <p style="font-size:13px;line-height:1.5;color:var(--ink);background:rgba(255,255,255,0.04);padding:10px 12px;border-radius:10px;margin:0 0 10px;">
-            ${esc(item.comment || "Комментарий не добавлен.")}
-          </p>
-
-          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;">
-            ${(item.genres || []).map(g => `<span class="tier-count-pill">${esc(g)}</span>`).join("")}
-          </div>
-
-          <div class="dossier-seasons-header">
-            <strong style="font-size:11.5px;text-transform:uppercase;color:var(--ink-soft);">
-              Хронология сезонов и частей (${m.seasons.length}):
-            </strong>
-            <div class="dossier-filter-pills">
-              <button type="button" class="dossier-pill-btn active" data-s-filter="ALL">Все (${m.seasons.length})</button>
-              <button type="button" class="dossier-pill-btn" data-s-filter="TV">Сериалы</button>
-              <button type="button" class="dossier-pill-btn" data-s-filter="MOVIE">Фильмы</button>
-              <button type="button" class="dossier-pill-btn" data-s-filter="OTHER">OVA / ONA / Спешлы</button>
+            <div class="dossier-genres-wrap">
+              ${(item.genres || []).map(g => `<span class="dossier-genre-tag">${esc(g)}</span>`).join("")}
             </div>
           </div>
+        </div>
+      </div>
 
-          <div class="seasons-scroll-box">
-            <table class="seasons-table">
-              <thead>
-                <tr>
-                  <th>Часть</th>
-                  <th>Тип</th>
-                  <th>Кол-во</th>
-                  <th>1 серия</th>
-                  <th>Часы</th>
-                  <th>Дата</th>
-                  <th>Заметка</th>
-                </tr>
-              </thead>
-              <tbody id="dossierSeasonsTbody">${renderSeasonsRows("ALL")}</tbody>
-            </table>
+      <!-- Нижняя секция: таблица всех сезонов, фильмов, OVA, ONA -->
+      <div class="dossier-body-section">
+        <div class="dossier-seasons-header">
+          <strong style="font-size:12px;text-transform:uppercase;color:#d6d0f5;letter-spacing:0.06em;">
+            🎬 Хронология просмотренных сезонов и частей (${m.seasons.length}):
+          </strong>
+          <div class="dossier-filter-pills">
+            <button type="button" class="dossier-pill-btn active" data-s-filter="ALL">Все (${m.seasons.length})</button>
+            <button type="button" class="dossier-pill-btn" data-s-filter="TV">Сериалы</button>
+            <button type="button" class="dossier-pill-btn" data-s-filter="MOVIE">Фильмы</button>
+            <button type="button" class="dossier-pill-btn" data-s-filter="OTHER">OVA / ONA / Спешлы</button>
           </div>
+        </div>
+
+        <div class="seasons-scroll-box">
+          <table class="seasons-table">
+            <thead>
+              <tr>
+                <th>Сезон / Часть</th>
+                <th>Тип</th>
+                <th>Объём</th>
+                <th>1 серия</th>
+                <th>Всего времени</th>
+                <th>Дата просмотра</th>
+                <th>Заметка</th>
+              </tr>
+            </thead>
+            <tbody id="dossierSeasonsTbody">${renderSeasonsRows("ALL")}</tbody>
+          </table>
         </div>
       </div>
     `;
@@ -122,31 +148,27 @@ const Modals = (() => {
       });
     });
 
-    const editBtn = document.getElementById("btnDetailsEdit");
-    if (editBtn) {
-      editBtn.onclick = () => {
-        if (!GitHubSync.isOwner()) {
-          showToast("Редактирование доступно только владельцу", "#ff3c8c");
-          return;
-        }
-        closeModal("detailsModal");
-        openEditorModal(tier.id, item);
-      };
-    }
+    body.querySelector("#btnDetailsClose")?.addEventListener("click", () => closeModal("detailsModal"));
 
-    const delBtn = document.getElementById("btnDetailsDelete");
-    if (delBtn) {
-      delBtn.onclick = () => {
-        if (!GitHubSync.isOwner()) {
-          showToast("Удаление доступно только владельцу", "#ff3c8c");
-          return;
-        }
-        if (confirm(`Удалить тайтл «${item.title}» из тира ${tier.id}?`)) {
-          closeModal("detailsModal");
-          if (typeof deleteHandler === "function") deleteHandler(item.uid, tier.id);
-        }
-      };
-    }
+    body.querySelector("#btnDetailsEdit")?.addEventListener("click", () => {
+      if (!GitHubSync.isOwner()) {
+        showToast("Редактирование доступно только владельцу", "#ff3c8c");
+        return;
+      }
+      closeModal("detailsModal");
+      openEditorModal(tier.id, item);
+    });
+
+    body.querySelector("#btnDetailsDelete")?.addEventListener("click", () => {
+      if (!GitHubSync.isOwner()) {
+        showToast("Удаление доступно только владельцу", "#ff3c8c");
+        return;
+      }
+      if (confirm(`Удалить тайтл «${item.title}» из тира ${tier.id}?`)) {
+        closeModal("detailsModal");
+        if (typeof deleteHandler === "function") deleteHandler(item.uid, tier.id);
+      }
+    });
 
     openModal("detailsModal");
   }
@@ -259,7 +281,7 @@ const Modals = (() => {
     document.getElementById("fYear").value = existingItem ? existingItem.year || 2026 : 2026;
     document.getElementById("fStudio").value = existingItem ? existingItem.studio || "" : "";
     document.getElementById("fScore").value = existingItem ? existingItem.score || 9.0 : 9.0;
-    document.getElementById("fReaction").value = existingItem ? existingItem.reaction || "✨ Шедевр" : "✨ Шедевр";
+    document.getElementById("fReaction").value = existingItem ? existingItem.reaction || "👑 Шедевр" : "👑 Шедевр";
     document.getElementById("fPoster").value = existingItem ? existingItem.poster || "" : "";
     const fileInp = document.getElementById("fPosterFile");
     if (fileInp) fileInp.value = "";
