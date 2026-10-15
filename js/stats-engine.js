@@ -1,4 +1,4 @@
-/* ═══════════════════ STATS RIBBON: AVERAGE SCORE & PROMINENT MOVIES/EPISODES ═══════════════════ */
+/* ═══════════════════ STATS RIBBON: AVERAGE SCORE IN TITLES & MOVIES ═══════════════════ */
 const StatsEngine = (() => {
   function updateStats(tiers) {
     const host = document.getElementById("statsRibbon");
@@ -31,7 +31,7 @@ const StatsEngine = (() => {
         <div>
           <div class="stat-label">Всего просмотрено</div>
           <div class="stat-val">${totalTitles} <span style="font-size:13px;color:var(--ink-soft);">${titlesStr.replace(/^\d+\s*/, "")}</span></div>
-          <div class="stat-sub">Средний балл коллекции: <b style="color:#ffd76a;">★ ${avgScore}</b></div>
+          <div class="stat-sub">Средний балл: <b style="color:#ffd76a;">★ ${avgScore}</b></div>
         </div>
         <span style="font-size:26px;">📚</span>
       </div>
