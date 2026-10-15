@@ -1,14 +1,368 @@
-/* ═══════════════════ MODALS: INSTANT OPEN & SINGLETON BGM PLAYER (NO OVERLAP) ═══════════════════ */
+/* ═══════════════════ MODALS: SELF-HEALING DOSSIER STYLES & SINGLETON BGM PLAYER ═══════════════════ */
 const Modals = (() => {
   let deleteHandler = null;
 
-  /* Единый глобальный аудио-плеер (Singleton): физически исключает наложение двух треков друг на друга! */
   const bgmPlayer = new Audio();
   bgmPlayer.loop = true;
   bgmPlayer.preload = "auto";
   let bgmSessionId = 0;
 
+  /* Гарантированная инжекция стилей карточки: защищает от обрезки или кэширования CSS в любом браузере */
+  function ensureDossierStyles() {
+    if (document.getElementById("dossierSelfContainedStyles")) return;
+    const st = document.createElement("style");
+    st.id = "dossierSelfContainedStyles";
+    st.textContent = `
+      .dossier-cinema-box {
+        padding: 0 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        max-width: 1280px !important;
+        max-height: calc(100vh - 28px) !important;
+        overflow: hidden !important;
+        border: 1px solid rgba(255, 215, 106, 0.45) !important;
+        background: #140f2d !important;
+      }
+      .dossier-sticky-topbar {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        gap: 12px !important;
+        flex-wrap: wrap !important;
+        padding: 12px 24px !important;
+        background: #120e26 !important;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.14) !important;
+        z-index: 10 !important;
+        flex-shrink: 0 !important;
+      }
+      .dossier-badges-row {
+        display: flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+        flex-wrap: wrap !important;
+      }
+      .dossier-badge-pill {
+        display: inline-flex !important;
+        align-items: center !important;
+        padding: 4px 12px !important;
+        border-radius: 999px !important;
+        font-size: 11px !important;
+        font-weight: 800 !important;
+        letter-spacing: 0.04em !important;
+        text-transform: uppercase !important;
+        background: rgba(255, 255, 255, 0.1) !important;
+        border: 1px solid rgba(255, 255, 255, 0.22) !important;
+        color: #ffffff !important;
+      }
+      .dossier-badge-pill.gold {
+        background: rgba(255, 215, 106, 0.22) !important;
+        border-color: #ffd76a !important;
+        color: #ffe8a3 !important;
+      }
+      .dossier-scroll-content {
+        overflow-y: auto !important;
+        flex: 1 !important;
+      }
+      .dossier-split-layout {
+        position: relative !important;
+        display: grid !important;
+        grid-template-columns: 300px minmax(0, 1fr) !important;
+        gap: 28px !important;
+        padding: 24px 28px !important;
+        align-items: start !important;
+        overflow: hidden !important;
+      }
+      .dossier-hero-backdrop {
+        position: absolute !important;
+        top: -30px !important; left: -30px !important; right: -30px !important; bottom: -30px !important;
+        background-size: cover !important;
+        background-position: center !important;
+        filter: blur(32px) saturate(1.4) brightness(0.42) !important;
+        opacity: 0.55 !important;
+        z-index: 0 !important;
+        pointer-events: none !important;
+      }
+      .dossier-hero-scrim {
+        position: absolute !important;
+        top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important;
+        background: linear-gradient(135deg, rgba(18, 13, 38, 0.55) 0%, rgba(20, 15, 45, 0.92) 70%, #140f2d 100%) !important;
+        z-index: 1 !important;
+        pointer-events: none !important;
+      }
+      .dossier-left-poster-col {
+        position: relative !important;
+        z-index: 5 !important;
+      }
+      .dossier-poster-large {
+        position: relative !important;
+        width: 100% !important;
+        border-radius: 16px !important;
+        overflow: hidden !important;
+        border: 2px solid rgba(255, 215, 106, 0.65) !important;
+        box-shadow: 0 18px 45px rgba(0, 0, 0, 0.9), 0 0 28px -6px rgba(255, 215, 106, 0.4) !important;
+        background: #120f24 !important;
+      }
+      .dossier-poster-large img {
+        width: 100% !important;
+        aspect-ratio: 2 / 3 !important;
+        object-fit: cover !important;
+        display: block !important;
+      }
+      .dossier-score-orb {
+        position: absolute !important;
+        bottom: 12px !important;
+        right: 12px !important;
+        background: linear-gradient(135deg, #ffd76a, #ff5e7e) !important;
+        color: #090614 !important;
+        font-weight: 900 !important;
+        font-size: 15px !important;
+        padding: 5px 12px !important;
+        border-radius: 999px !important;
+        box-shadow: 0 4px 14px rgba(0,0,0,0.85) !important;
+      }
+      .dossier-right-info-col {
+        position: relative !important;
+        z-index: 5 !important;
+        min-width: 0 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 14px !important;
+        color: #f5f3ff !important;
+      }
+      .dossier-title-main {
+        margin: 0 0 4px !important;
+        font-family: var(--serif, 'Cinzel', serif) !important;
+        font-size: 26px !important;
+        font-weight: 900 !important;
+        color: #ffffff !important;
+      }
+      .dossier-title-orig {
+        font-size: 13.5px !important;
+        color: #cbc4eb !important;
+        margin-bottom: 12px !important;
+      }
+      .dossier-metrics-row {
+        display: grid !important;
+        grid-template-columns: repeat(3, 1fr) !important;
+        gap: 10px !important;
+        margin-bottom: 10px !important;
+      }
+      .dossier-metric-card {
+        background: rgba(255, 255, 255, 0.07) !important;
+        border: 1px solid rgba(255, 255, 255, 0.16) !important;
+        border-radius: 10px !important;
+        padding: 10px 14px !important;
+      }
+      .dossier-metric-card .dm-lbl {
+        font-size: 10px !important;
+        text-transform: uppercase !important;
+        color: #bdb6de !important;
+        margin-bottom: 3px !important;
+      }
+      .dossier-metric-card .dm-val {
+        font-family: var(--serif, 'Cinzel', serif) !important;
+        font-size: 17px !important;
+        font-weight: 800 !important;
+        color: #ffffff !important;
+      }
+      .dossier-comment-card {
+        background: rgba(181, 124, 255, 0.12) !important;
+        border: 1px solid rgba(181, 124, 255, 0.32) !important;
+        border-left: 4px solid #ffd76a !important;
+        border-radius: 9px !important;
+        padding: 10px 14px !important;
+        font-size: 13px !important;
+        line-height: 1.45 !important;
+        color: #f5f3ff !important;
+        margin-bottom: 10px !important;
+      }
+      .dossier-genres-wrap {
+        display: flex !important;
+        gap: 7px !important;
+        flex-wrap: wrap !important;
+        margin-top: 2px !important;
+      }
+      .dossier-genre-tag {
+        display: inline-block !important;
+        padding: 4px 11px !important;
+        border-radius: 999px !important;
+        font-size: 11.5px !important;
+        font-weight: 700 !important;
+        background: rgba(0, 245, 255, 0.13) !important;
+        border: 1px solid rgba(0, 245, 255, 0.38) !important;
+        color: #b8fbff !important;
+      }
+      .dossier-seasons-block {
+        background: rgba(14, 11, 30, 0.78) !important;
+        border: 1px solid rgba(255, 255, 255, 0.14) !important;
+        border-radius: 14px !important;
+        padding: 14px 16px !important;
+        overflow-x: auto !important;
+      }
+      .dossier-seasons-header {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        gap: 10px !important;
+        flex-wrap: wrap !important;
+        margin: 0 0 12px !important;
+      }
+      .dossier-filter-pills {
+        display: flex !important;
+        gap: 6px !important;
+        flex-wrap: wrap !important;
+      }
+      .dossier-pill-btn {
+        padding: 5px 12px !important;
+        border-radius: 999px !important;
+        font-size: 11px !important;
+        font-weight: 700 !important;
+        border: 1px solid rgba(255, 255, 255, 0.16) !important;
+        background: rgba(255, 255, 255, 0.06) !important;
+        color: #c4bede !important;
+        cursor: pointer !important;
+      }
+      .dossier-pill-btn.active {
+        background: rgba(0, 245, 255, 0.22) !important;
+        border-color: #00f5ff !important;
+        color: #ffffff !important;
+      }
+      /* СИНХРОННАЯ ТАБЛИЧНАЯ СЕТКА СЕЗОНОВ: все столбцы (Тип/Год, Объём, 1 серия, Время, Дата) двигаются синхронно и стоят ровно друг под другом! */
+      .dossier-seasons-vertical-list {
+        display: grid !important;
+        grid-template-columns: minmax(220px, 1fr) max-content max-content max-content max-content max-content !important;
+        row-gap: 8px !important;
+        width: 100% !important;
+      }
+      .dossier-season-bar {
+        grid-column: 1 / -1 !important;
+        display: grid !important;
+        grid-template-columns: subgrid !important;
+        align-items: center !important;
+        column-gap: 16px !important;
+        background: linear-gradient(135deg, rgba(28, 22, 56, 0.94), rgba(18, 14, 38, 0.98)) !important;
+        border: 1px solid rgba(255, 255, 255, 0.14) !important;
+        border-left: 3px solid #00f5ff !important;
+        border-radius: 10px !important;
+        padding: 10px 14px !important;
+      }
+      @supports not (grid-template-columns: subgrid) {
+        .dossier-seasons-vertical-list {
+          display: flex !important;
+          flex-direction: column !important;
+          gap: 8px !important;
+        }
+        .dossier-season-bar {
+          display: grid !important;
+          grid-template-columns: minmax(220px, 1fr) 96px 125px 120px 92px 115px !important;
+          align-items: center !important;
+          column-gap: 14px !important;
+        }
+      }
+      .dossier-season-bar.is-upcoming {
+        border-left-color: #ffd76a !important;
+        background: linear-gradient(135deg, rgba(42, 30, 22, 0.6), rgba(18, 14, 38, 0.96)) !important;
+      }
+      .dsb-col-left {
+        display: flex !important;
+        align-items: center !important;
+        gap: 10px !important;
+        min-width: 0 !important;
+      }
+      .dsc-num {
+        font-size: 11px !important;
+        font-weight: 900 !important;
+        color: #090614 !important;
+        background: #ffd76a !important;
+        padding: 2px 7px !important;
+        border-radius: 5px !important;
+        flex-shrink: 0 !important;
+      }
+      .dsc-title-wrap {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 2px !important;
+        min-width: 0 !important;
+      }
+      .dsc-name {
+        font-size: 13.5px !important;
+        font-weight: 800 !important;
+        color: #ffffff !important;
+        line-height: 1.25 !important;
+      }
+      .dsb-note-inline {
+        font-size: 11px !important;
+        color: #cbc4eb !important;
+        opacity: 0.9 !important;
+      }
+      /* Тип тайтла и год выпуска стоят строго ДРУГ ПОД ДРУГОМ и видны полностью без обрезания */
+      .dsb-col-typeyear {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 4px !important;
+        white-space: nowrap !important;
+      }
+      .dsb-col-typeyear .cum-kind {
+        display: inline-block !important;
+        font-size: 9px !important;
+        font-weight: 800 !important;
+        text-transform: uppercase !important;
+        padding: 2px 8px !important;
+        border-radius: 5px !important;
+        background: rgba(255, 215, 106, 0.14) !important;
+        color: #ffd76a !important;
+        border: 1px solid rgba(255, 215, 106, 0.5) !important;
+        white-space: nowrap !important;
+        overflow: visible !important;
+        text-overflow: clip !important;
+      }
+      .dsc-year {
+        display: inline-block !important;
+        font-size: 10.5px !important;
+        font-weight: 800 !important;
+        color: #ffe8a3 !important;
+        background: rgba(255, 255, 255, 0.07) !important;
+        border: 1px solid rgba(255, 255, 255, 0.18) !important;
+        padding: 1.5px 8px !important;
+        border-radius: 5px !important;
+        white-space: nowrap !important;
+      }
+      .dsb-col-stat {
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 5px !important;
+        white-space: nowrap !important;
+        font-size: 12px !important;
+        color: #ffffff !important;
+        justify-self: start !important;
+      }
+      .dsc-lbl {
+        color: #9e97bf !important;
+        font-size: 11px !important;
+      }
+      .s-chip-vol {
+        font-weight: 800 !important;
+        color: #ffffff !important;
+      }
+      .s-chip-upcoming {
+        font-weight: 800 !important;
+        color: #ffd76a !important;
+        font-size: 11.5px !important;
+      }
+      @media (max-width: 980px) {
+        .dossier-split-layout { grid-template-columns: 1fr !important; }
+        .dossier-left-poster-col { max-width: 250px !important; margin: 0 auto !important; }
+        .dossier-seasons-vertical-list { display: flex !important; flex-direction: column !important; gap: 8px !important; }
+        .dossier-season-bar { display: flex !important; flex-wrap: wrap !important; gap: 10px !important; }
+      }
+    `;
+    document.head.appendChild(st);
+  }
+
   function openModal(id) {
+    ensureDossierStyles();
     document.getElementById(id)?.classList.add("open");
   }
 
@@ -22,7 +376,7 @@ const Modals = (() => {
   }
 
   function stopActiveBgm() {
-    bgmSessionId++; // Отменяет любые незавершённые асинхронные загрузки треков от предыдущих кликов
+    bgmSessionId++;
     try {
       bgmPlayer.pause();
       bgmPlayer.removeAttribute("src");
@@ -59,7 +413,7 @@ const Modals = (() => {
   }
 
   function showAnimeDetails(item, tier) {
-    // 1. Сначала мгновенно останавливаем любой предыдущий звук и фиксируем ID текущего открытия
+    ensureDossierStyles();
     stopActiveBgm();
     const currentSession = bgmSessionId;
 
@@ -243,10 +597,8 @@ const Modals = (() => {
       };
     }
 
-    // 2. МГНОВЕННО открываем карточку (не дожидаясь загрузки аудио или картинок!)
     openModal("detailsModal");
 
-    // 3. В фоновом режиме подтягиваем обложку высокого разрешения (если нет inline-копии)
     if (!item.posterInline && typeof GitHubSync !== "undefined" && typeof GitHubSync.resolveAssetUrl === "function") {
       GitHubSync.resolveAssetUrl(item.poster, item.posterBlobSha, "image/jpeg", item.posterInline).then(resolvedUrl => {
         if (!resolvedUrl || currentSession !== bgmSessionId) return;
@@ -257,7 +609,6 @@ const Modals = (() => {
       }).catch(() => {});
     }
 
-    // 4. В фоновом режиме запускаем потоковую музыку через единый bgmPlayer (без наложения!)
     if (item.bgmUrl || item.bgmBlobSha) {
       if (bgmBtn) {
         bgmBtn.style.display = "inline-flex";
@@ -276,7 +627,6 @@ const Modals = (() => {
       }
 
       GitHubSync.resolveAssetUrl(item.bgmUrl, item.bgmBlobSha, "audio/mpeg").then(resolvedBgm => {
-        // Если за время разрешения URL пользователь закрыл окно или кликнул ещё раз — выходим!
         if (!resolvedBgm || currentSession !== bgmSessionId) return;
         const modalEl = document.getElementById("detailsModal");
         if (!modalEl || !modalEl.classList.contains("open")) return;
