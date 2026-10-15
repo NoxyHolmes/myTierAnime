@@ -1,4 +1,4 @@
-/* ═══════════════════ GITHUB REST API v3 TOKEN AUTH & CLOUD COMMIT ═══════════════════ */
+/* ═══════════════════ GITHUB REST API v3: STRICT OWNER AUTH & IMAGE UPLOAD ═══════════════════ */
 const GitHubSync = (() => {
   const TOKEN_KEY = "mta_2026_gh_token";
   const REPO_KEY  = "mta_2026_gh_repo";
@@ -15,6 +15,10 @@ const GitHubSync = (() => {
     return localStorage.getItem(REPO_KEY) || DEFAULT_REPO;
   }
 
+  function isOwner() {
+    return !!verifiedUser && document.body.classList.contains("is-owner");
+  }
+
   function saveCredentials(token, repo) {
     if (token) localStorage.setItem(TOKEN_KEY, token.trim());
     else localStorage.removeItem(TOKEN_KEY);
@@ -25,9 +29,25 @@ const GitHubSync = (() => {
     return btoa(unescape(encodeURIComponent(str)));
   }
 
+  function fileToBase64(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const res = String(reader.result || "");
+        const base64 = res.includes(",") ? res.split(",")[1] : res;
+        resolve({ base64, dataUrl: res });
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
   async function verifyToken(token) {
     const tk = (token ?? getToken()).trim();
-    if (!tk) return null;
+    if (!tk) {
+      verifiedUser = null;
+      return null;
+    }
     try {
       const res = await fetch("https://api.github.com/user", {
         headers: {
@@ -35,20 +55,56 @@ const GitHubSync = (() => {
           "Accept": "application/vnd.github+json"
         }
       });
-      if (!res.ok) return null;
+      if (!res.ok) {
+        verifiedUser = null;
+        return null;
+      }
       const data = await res.json();
       verifiedUser = data;
       return data;
     } catch (err) {
       console.warn("GitHub token verification error:", err);
+      verifiedUser = null;
       return null;
     }
   }
 
-  async function commitTiersToGitHub(payloadObj, commitMsg = "Update data/tiers.json via myTierAnime 2026 UI") {
+  /* Загрузка файла обложки в папку posters/ или фона в папку backgrounds/ */
+  async function uploadAssetFile(file, folder = "posters") {
+    if (!isOwner()) throw new Error("Только владелец может загружать файлы.");
     const tk = getToken();
     const repo = getRepo();
-    if (!tk) throw new Error("Токен владельца не задан.");
+    const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
+    const relPath = `${folder}/${Date.now()}_${safeName}`;
+    const { base64 } = await fileToBase64(file);
+
+    const apiUrl = `https://api.github.com/repos/${repo}/contents/${relPath}`;
+    const headers = {
+      "Authorization": `Bearer ${tk}`,
+      "Accept": "application/vnd.github+json",
+      "Content-Type": "application/json"
+    };
+
+    const putRes = await fetch(apiUrl, {
+      method: "PUT",
+      headers,
+      body: JSON.stringify({
+        message: `Upload ${relPath} via myTierAnime UI`,
+        content: base64
+      })
+    });
+
+    if (!putRes.ok) {
+      const errJson = await putRes.json().catch(() => ({}));
+      throw new Error(errJson.message || `Ошибка загрузки файла (${putRes.status})`);
+    }
+    return relPath;
+  }
+
+  async function commitTiersToGitHub(payloadObj, commitMsg = "Update data/tiers.json via myTierAnime UI") {
+    if (!isOwner()) throw new Error("Необходим вход владельца по токену GitHub.");
+    const tk = getToken();
+    const repo = getRepo();
 
     const apiUrl = `https://api.github.com/repos/${repo}/contents/${FILE_PATH}`;
     const headers = {
@@ -95,8 +151,10 @@ const GitHubSync = (() => {
   return {
     getToken,
     getRepo,
+    isOwner,
     saveCredentials,
     verifyToken,
+    uploadAssetFile,
     commitTiersToGitHub,
     logout
   };
