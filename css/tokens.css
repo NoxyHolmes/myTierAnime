@@ -19,20 +19,20 @@
   --t2: #ff8e53;
   --tg: rgba(255, 215, 106, 0.52);
 
-  /* Настраиваемые переменные из Студии Кастомизации */
+  /* Увеличенные размеры сетки и карточек */
   --grid-cols: 10;
-  --grid-gap: 10px;
-  --card-radius: 10px;
+  --grid-gap: 12px;
+  --card-radius: 12px;
   --poster-zoom: 1.05;
   --holo-max-opacity: 0.88;
   --scrim-opacity: 0.95;
-  --card-title-size: 11px;
+  --card-title-size: 11.5px;
   --tier-bg-alpha: 0.88;
   --glass-blur: 16px;
   --tier-radius: 22px;
-  --tier-gap: 24px;
-  --badge-col-width: 185px;
-  --container-width: 1780px;
+  --tier-gap: 26px;
+  --badge-col-width: 175px;
+  --container-width: 1920px;
   --seal-scale: 1;
   --seal-glow-mult: 1;
   --letter-perspective: 780px;
