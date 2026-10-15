@@ -1,4 +1,4 @@
-/* ═══════════════════ SETTINGS STUDIO, 8 LETTER 3D STYLES & INSTANT BLOB BACKGROUND ═══════════════════ */
+/* ═══════════════════ SETTINGS STUDIO, 8 LETTER 3D STYLES & YANDEX-SAFE BACKGROUND ═══════════════════ */
 const FXController = (() => {
   let io = null;
   let bgEffect = localStorage.getItem("mta_bg_effect") || "sakura";
@@ -262,7 +262,7 @@ const FXController = (() => {
     }
   }
 
-  /* МГНОВЕННОЕ ОТОБРАЖЕНИЕ ФОНА И У ВЛАДЕЛЬЦА, И У ВСЕХ ЗРИТЕЛЕЙ ПО ССЫЛКЕ (ЧЕРЕЗ GIT BLOB SHA) */
+  /* Отображает фон во всех браузерах (включая Яндекс Браузер) через bgInline или локальный путь */
   async function applyGlobalBackground(meta = {}, instantBlobUrl = "") {
     const bgWrap = document.getElementById("globalOwnerBg");
     const bgImg = document.getElementById("globalOwnerBgImg");
@@ -290,11 +290,12 @@ const FXController = (() => {
       return;
     }
 
+    const inlineBg = (meta.bgInline || "").trim();
     const rawPath = (meta.bgImage || "").trim();
     const blobSha = (meta.bgBlobSha || "").trim();
     const mime = meta.bgMime || "image/jpeg";
 
-    if (!rawPath && !blobSha) {
+    if (!inlineBg && !rawPath && !blobSha) {
       bgImg.removeAttribute("src");
       bgWrap.classList.remove("has-bg");
       document.body.classList.remove("has-custom-bg");
@@ -302,11 +303,11 @@ const FXController = (() => {
       return;
     }
 
-    const sig = `${rawPath}_${blobSha}`;
+    const sig = `${inlineBg.slice(0, 64)}_${rawPath}_${blobSha}`;
     if (sig === currentBgSignature && bgWrap.classList.contains("has-bg")) return;
     currentBgSignature = sig;
 
-    const resolvedUrl = await GitHubSync.resolveAssetUrl(rawPath, blobSha, mime);
+    const resolvedUrl = await GitHubSync.resolveAssetUrl(rawPath, blobSha, mime, inlineBg);
     if (resolvedUrl) {
       bgImg.src = resolvedUrl;
       bgWrap.classList.add("has-bg");
