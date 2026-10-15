@@ -1,4 +1,4 @@
-/* ═══════════════════ GITHUB SYNC ENGINE v7.0 (FAULT-TOLERANT & INSTANT SYNC) ═══════════════════ */
+/* ═══════════════════ GITHUB SYNC ENGINE v8.0 (YANDEX BROWSER CACHE-BUSTING & MULTI-CHANNEL) ═══════════════════ */
 const GitHubSync = (() => {
   const TOKEN_KEY = "mta_2026_gh_token";
   const REPO_KEY  = "mta_2026_gh_repo";
@@ -7,7 +7,6 @@ const GitHubSync = (() => {
   let verifiedUser = null;
   let detectedBranch = "main";
   let lastKnownCommitSha = "";
-  let lastEtag = "";
   const blobUrlCache = new Map();
 
   function detectRepoFromLocation() {
@@ -99,7 +98,7 @@ const GitHubSync = (() => {
       return null;
     }
     try {
-      const res = await fetch("https://api.github.com/user", {
+      const res = await fetch(`https://api.github.com/user?_ya=${Date.now()}`, {
         headers: {
           "Authorization": `Bearer ${tk}`,
           "Accept": "application/vnd.github+json"
@@ -118,25 +117,20 @@ const GitHubSync = (() => {
     }
   }
 
-  async function getLatestBranchCommitSha(useEtag = false) {
+  async function getLatestBranchCommitSha() {
     const repo = getRepo();
     const tk = getToken();
     const headers = { "Accept": "application/vnd.github+json" };
     if (tk) headers["Authorization"] = `Bearer ${tk}`;
-    if (useEtag && lastEtag) headers["If-None-Match"] = lastEtag;
 
     for (const br of [detectedBranch, "main", "master"]) {
       try {
-        const res = await fetch(`https://api.github.com/repos/${repo}/commits/${br}`, {
+        // Уникальный query-параметр обходит кэш Яндекс Браузера!
+        const res = await fetch(`https://api.github.com/repos/${repo}/commits/${br}?_ya_bust=${Date.now()}_${Math.random()}`, {
           headers,
           cache: "no-store"
         });
-        if (res.status === 304) {
-          return { notModified: true, commitSha: lastKnownCommitSha };
-        }
         if (res.ok) {
-          const etag = res.headers.get("etag");
-          if (etag) lastEtag = etag;
           const data = await res.json();
           if (data && data.sha) {
             detectedBranch = br;
@@ -148,32 +142,32 @@ const GitHubSync = (() => {
     return null;
   }
 
+  /* МНОГОКАНАЛЬНОЕ ЧТЕНИЕ С ВЫБОРОМ САМОЙ СВЕЖЕЙ РЕВИЗИИ (ДЛЯ ЯНДЕКС БРАУЗЕРА И CHROME) */
   async function fetchFreshTiersFromApi(force = false) {
     const repo = getRepo();
     const tk = getToken();
     const headers = { "Accept": "application/vnd.github+json" };
     if (tk) headers["Authorization"] = `Bearer ${tk}`;
 
+    const candidates = [];
+
+    // Канал 1: Через прямой SHA последнего коммита (мгновенно)
     try {
-      const branchInfo = await getLatestBranchCommitSha(!force);
-      if (branchInfo?.notModified && !force) return null;
-
+      const branchInfo = await getLatestBranchCommitSha();
       if (branchInfo && branchInfo.commitSha) {
-        if (!force && branchInfo.commitSha === lastKnownCommitSha) return null;
-
         try {
-          const rawRes = await fetch(`https://raw.githubusercontent.com/${repo}/${branchInfo.commitSha}/${FILE_PATH}`, {
+          const rawRes = await fetch(`https://raw.githubusercontent.com/${repo}/${branchInfo.commitSha}/${FILE_PATH}?_ya=${Date.now()}`, {
             cache: "no-store"
           });
           if (rawRes.ok) {
             const parsed = await rawRes.json();
             lastKnownCommitSha = branchInfo.commitSha;
-            return parsed;
+            candidates.push(parsed);
           }
         } catch {}
 
-        if (branchInfo.treeSha) {
-          const treeRes = await fetch(`https://api.github.com/repos/${repo}/git/trees/${branchInfo.treeSha}?recursive=1`, {
+        if (candidates.length === 0 && branchInfo.treeSha) {
+          const treeRes = await fetch(`https://api.github.com/repos/${repo}/git/trees/${branchInfo.treeSha}?recursive=1&_ya=${Date.now()}`, {
             headers,
             cache: "no-store"
           });
@@ -181,7 +175,7 @@ const GitHubSync = (() => {
             const treeData = await treeRes.json();
             const fileNode = (treeData.tree || []).find(n => n.path === FILE_PATH);
             if (fileNode && fileNode.sha) {
-              const blobRes = await fetch(`https://api.github.com/repos/${repo}/git/blobs/${fileNode.sha}`, {
+              const blobRes = await fetch(`https://api.github.com/repos/${repo}/git/blobs/${fileNode.sha}?_ya=${Date.now()}`, {
                 headers,
                 cache: "no-store"
               });
@@ -189,7 +183,7 @@ const GitHubSync = (() => {
                 const blobData = await blobRes.json();
                 if (blobData.content) {
                   lastKnownCommitSha = branchInfo.commitSha;
-                  return JSON.parse(base64ToUtf8(blobData.content));
+                  candidates.push(JSON.parse(base64ToUtf8(blobData.content)));
                 }
               }
             }
@@ -198,21 +192,35 @@ const GitHubSync = (() => {
       }
     } catch {}
 
-    for (const br of [detectedBranch, "main", "master"]) {
-      try {
-        const rRes = await fetch(`https://raw.githubusercontent.com/${repo}/${br}/${FILE_PATH}?nocache=${Date.now()}`, {
-          cache: "no-store"
-        });
-        if (rRes.ok) return await rRes.json();
-      } catch {}
-    }
-
+    // Канал 2: Прямой запрос к contents API с анти-кэш штампом (не блокируется Антитрекингом Яндекса)
     try {
-      const resLocal = await fetch(`data/tiers.json?nocache=${Date.now()}`, { cache: "no-store" });
-      if (resLocal.ok) return await resLocal.json();
+      const cRes = await fetch(`https://api.github.com/repos/${repo}/contents/${FILE_PATH}?_ya_nocache=${Date.now()}`, {
+        headers,
+        cache: "no-store"
+      });
+      if (cRes.ok) {
+        const cJson = await cRes.json();
+        if (cJson.content) {
+          candidates.push(JSON.parse(base64ToUtf8(cJson.content)));
+        }
+      }
     } catch {}
 
-    return null;
+    // Канал 3: Через jsDelivr CDN (с автосбросом) + локальный файл со случайным штампом
+    try {
+      const localRes = await fetch(`data/tiers.json?_ya_nocache=${Date.now()}_${Math.random()}`, {
+        cache: "reload"
+      });
+      if (localRes.ok) {
+        candidates.push(await localRes.json());
+      }
+    } catch {}
+
+    if (!candidates.length) return null;
+
+    // Из всех полученных ответов выбираем тот, у которого самая высокая ревизия (revision)!
+    candidates.sort((a, b) => Number(b?.meta?.revision || 0) - Number(a?.meta?.revision || 0));
+    return candidates[0];
   }
 
   async function uploadAssetFile(file, folder = "posters") {
@@ -255,22 +263,12 @@ const GitHubSync = (() => {
     }
 
     const repo = getRepo();
-    if (pathOrUrl) {
-      const cleanPath = pathOrUrl.replace(/^\.?\//, "");
-      const ref = lastKnownCommitSha || detectedBranch || "main";
-      const rawCommitUrl = `https://raw.githubusercontent.com/${repo}/${ref}/${cleanPath}`;
-      try {
-        const check = await fetch(rawCommitUrl, { method: "HEAD", cache: "no-store" });
-        if (check.ok) return rawCommitUrl;
-      } catch {}
-    }
-
     if (blobSha) {
       try {
         const tk = getToken();
         const headers = { "Accept": "application/vnd.github+json" };
         if (tk) headers["Authorization"] = `Bearer ${tk}`;
-        const res = await fetch(`https://api.github.com/repos/${repo}/git/blobs/${blobSha}`, {
+        const res = await fetch(`https://api.github.com/repos/${repo}/git/blobs/${blobSha}?_ya=${Date.now()}`, {
           headers,
           cache: "no-store"
         });
@@ -286,6 +284,13 @@ const GitHubSync = (() => {
         }
       } catch {}
     }
+
+    if (pathOrUrl) {
+      const cleanPath = pathOrUrl.replace(/^\.?\//, "");
+      const ref = lastKnownCommitSha || detectedBranch || "main";
+      return `https://raw.githubusercontent.com/${repo}/${ref}/${cleanPath}?_ya=${Date.now()}`;
+    }
+
     return pathOrUrl;
   }
 
@@ -305,7 +310,7 @@ const GitHubSync = (() => {
     payloadObj.meta.updatedAt = new Date().toISOString();
     const jsonStr = JSON.stringify(payloadObj, null, 2);
 
-    const branchInfo = await getLatestBranchCommitSha(false);
+    const branchInfo = await getLatestBranchCommitSha();
     if (branchInfo && branchInfo.commitSha && branchInfo.treeSha) {
       const blobRes = await fetch(`https://api.github.com/repos/${repo}/git/blobs`, {
         method: "POST",
@@ -358,6 +363,8 @@ const GitHubSync = (() => {
             });
             if (refRes.ok) {
               lastKnownCommitSha = createdCommit.sha;
+              // Дополнительно сбрасываем внешний CDN-кэш
+              fetch(`https://purge.jsdelivr.net/gh/${repo}@${detectedBranch}/${FILE_PATH}`).catch(() => {});
               return createdCommit;
             }
           }
