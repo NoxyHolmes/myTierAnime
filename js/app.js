@@ -1,41 +1,50 @@
-/* ═══════════════════ MAIN APPLICATION ORCHESTRATOR (myTierAnime v2.3) ═══════════════════ */
+/* ═══════════════════ MAIN APPLICATION ORCHESTRATOR (myTierAnime v3.0) ═══════════════════ */
 (() => {
-  const LOCAL_STORAGE_KEY = "mta_2026_state_v3";
+  const LOCAL_STORAGE_KEY = "mta_2026_state_v4";
   let appData = null;
   let searchQuery = "";
   let selectedGenre = "ALL";
-  let activeView = "tiers"; // "tiers" или "calendar"
+  let genreFilterSearch = "";
+  let activeView = "tiers";
 
   const DEFAULT_TIERS_TEMPLATE = [
-    { id: "S", rank: 1, name: "Абсолютный Канон", subtitle: "Астролябия Короны · Шедевры на все времена", hue: 45, items: [] },
-    { id: "A", rank: 2, name: "Кристалл Спектра", subtitle: "Тессеракт Дисперсии · Выдающиеся тайтлы", hue: 185, items: [] },
-    { id: "B", rank: 3, name: "Аметистовый Резонанс", subtitle: "Магнитный Тор · Достойные и атмосферные работы", hue: 275, items: [] },
-    { id: "C", rank: 4, name: "Изумрудная Роса", subtitle: "Био-Сфера Росы · Расслабляющие и нишевые тайтлы", hue: 148, items: [] },
-    { id: "D", rank: 5, name: "Янтарный Маятник", subtitle: "Хронометр · Спорные или проходные работы", hue: 28, items: [] },
-    { id: "E", rank: 6, name: "Монолит Забвения", subtitle: "Обелиск Пепла · Разочарования и брошенные тайтлы", hue: 215, items: [] }
+    { id: "S", rank: 1, name: "Золотой фонд", subtitle: "Шедевры и эталонные произведения на все времена", hue: 45, items: [] },
+    { id: "A", rank: 2, name: "Высшая лига", subtitle: "Отличные и запоминающиеся тайтлы", hue: 185, items: [] },
+    { id: "B", rank: 3, name: "Достойный уровень", subtitle: "Крепкие и атмосферные работы", hue: 275, items: [] },
+    { id: "C", rank: 4, name: "На один вечер", subtitle: "Неплохие и расслабляющие тайтлы под настроение", hue: 148, items: [] },
+    { id: "D", rank: 5, name: "Проходной уровень", subtitle: "Спорные или слабые проекты", hue: 28, items: [] },
+    { id: "E", rank: 6, name: "Вне рейтинга", subtitle: "Разочарования и брошенные тайтлы", hue: 215, items: [] }
   ];
+
+  const CLEAN_TITLES_MAP = {
+    S: { name: "Золотой фонд", subtitle: "Шедевры и эталонные произведения на все времена" },
+    A: { name: "Высшая лига", subtitle: "Отличные и запоминающиеся тайтлы" },
+    B: { name: "Достойный уровень", subtitle: "Крепкие и атмосферные работы" },
+    C: { name: "На один вечер", subtitle: "Неплохие и расслабляющие тайтлы под настроение" },
+    D: { name: "Проходной уровень", subtitle: "Спорные или слабые проекты" },
+    E: { name: "Вне рейтинга", subtitle: "Разочарования и брошенные тайтлы" }
+  };
 
   function ensureSixTiers(data) {
     if (!data || !Array.isArray(data.tiers)) {
-      return { meta: { title: "myTierAnime" }, tiers: DEFAULT_TIERS_TEMPLATE };
+      return { meta: { title: "myTierAnime", bgImage: "", bgDim: 65, bgBlur: 4 }, tiers: DEFAULT_TIERS_TEMPLATE };
     }
+    data.meta = data.meta || {};
     DEFAULT_TIERS_TEMPLATE.forEach(def => {
       if (!data.tiers.find(t => t.id === def.id)) {
         data.tiers.push(JSON.parse(JSON.stringify(def)));
+      }
+    });
+    data.tiers.forEach(t => {
+      if (CLEAN_TITLES_MAP[t.id]) {
+        t.name = CLEAN_TITLES_MAP[t.id].name;
+        t.subtitle = CLEAN_TITLES_MAP[t.id].subtitle;
       }
     });
     return data;
   }
 
   async function loadInitialState() {
-    const cached = localStorage.getItem(LOCAL_STORAGE_KEY);
-    if (cached) {
-      try {
-        appData = ensureSixTiers(JSON.parse(cached));
-        return;
-      } catch {}
-    }
-
     try {
       const res = await fetch(`data/tiers.json?t=${Date.now()}`);
       if (res.ok) {
@@ -46,6 +55,14 @@
     } catch (e) {
       console.warn("Could not fetch remote tiers.json:", e);
     }
+
+    const cached = localStorage.getItem(LOCAL_STORAGE_KEY);
+    if (cached) {
+      try {
+        appData = ensureSixTiers(JSON.parse(cached));
+        return;
+      } catch {}
+    }
     appData = ensureSixTiers(null);
   }
 
@@ -55,7 +72,6 @@
     StatsEngine.updateStats(appData.tiers);
   }
 
-  /* Чистая карточка тайтла (без крестика и кнопок редактирования на постере — они внутри карточки при клике) */
   function cardEl(item, idx, tierId) {
     const m = calcItemMetrics(item);
     const yr = m.latestYear || item.year || "";
@@ -84,7 +100,6 @@
           </div>
         </article>
 
-        <!-- Блок под карточкой: Тип тайтла + Общее кол-во серий + Часы -->
         <div class="card-under-meta">
           <div class="cum-row">
             <span class="cum-kind">${esc(m.kind)}</span>
@@ -103,6 +118,8 @@
     const host = document.getElementById("tiersRoot");
     if (!host || !appData || !Array.isArray(appData.tiers)) return;
 
+    FXController.applyGlobalBackground(appData.meta || {});
+
     const q = searchQuery.trim().toLowerCase();
 
     host.innerHTML = appData.tiers.map((tier, tierIdx) => {
@@ -116,7 +133,7 @@
       });
 
       const badgeBodyHtml = `
-        <span class="seal-index">ТИР <b>${String(tierIdx + 1).padStart(2, "0")}</b></span>
+        <span class="seal-index">РАНГ <b>${esc(tier.id)}</b></span>
         <div class="lstage">
           ${realismMarkup(tierIdx, tier)}${elementMarkup(tierIdx)}${orbitalMarkup()}
           <span class="seal-floor" aria-hidden="true"></span>
@@ -140,7 +157,7 @@
                 </h2>
                 <div class="tier-meta-sub">${esc(tier.subtitle || "")}</div>
               </div>
-              <button type="button" class="btn btn-sm btn-neon-gold" data-add-to-tier="${esc(tier.id)}">
+              <button type="button" class="btn btn-sm btn-neon-gold owner-only" data-add-to-tier="${esc(tier.id)}">
                 ➕ Добавить в ${esc(tier.id)}
               </button>
             </header>
@@ -164,7 +181,7 @@
 
     FXController.observeTiers();
     StatsEngine.updateStats(appData.tiers);
-    populateGenreFilter();
+    populateGenreDropdowns();
     bindTierInteractions();
 
     if (activeView === "calendar") {
@@ -176,26 +193,43 @@
     }
   }
 
-  /* Заполнение полного списка всех существующих жанров аниме */
-  function populateGenreFilter() {
-    const sel = document.getElementById("genreFilter");
-    const picker = document.getElementById("genreQuickPicker");
-    if (!sel || !appData) return;
-
-    const allGenresSet = new Set(window.ALL_ANIME_GENRES || []);
-    appData.tiers.forEach(t => {
-      (t.items || []).forEach(it => (it.genres || []).forEach(g => allGenresSet.add(g)));
+  function getSortedAllGenres() {
+    const set = new Set(window.ALL_ANIME_GENRES || []);
+    appData?.tiers?.forEach(t => {
+      (t.items || []).forEach(it => (it.genres || []).forEach(g => set.add(g)));
     });
-    const sortedGenres = [...allGenresSet].sort((a, b) => a.localeCompare(b, "ru"));
+    return [...set].sort((a, b) => a.localeCompare(b, "ru"));
+  }
 
-    const current = sel.value || "ALL";
-    sel.innerHTML = `<option value="ALL">Все жанры (${sortedGenres.length})</option>` +
-      sortedGenres.map(g => `<option value="${esc(g)}" ${g === current ? "selected" : ""}>${esc(g)}</option>`).join("");
+  /* Заполнение фильтра жанров с живым поиском в шапке и в редакторе */
+  function populateGenreDropdowns(editorSearchTerm = "") {
+    const listEl = document.getElementById("genreOptionsList");
+    const picker = document.getElementById("genreQuickPicker");
+    const sorted = getSortedAllGenres();
 
-    if (picker && !picker.dataset.populated) {
-      picker.innerHTML = `<option value="">+ Выбрать жанр из энциклопедии (${sortedGenres.length})...</option>` +
-        sortedGenres.map(g => `<option value="${esc(g)}">${esc(g)}</option>`).join("");
-      picker.dataset.populated = "1";
+    if (listEl) {
+      const q = genreFilterSearch.trim().toLowerCase();
+      const matching = sorted.filter(g => !q || g.toLowerCase().includes(q));
+      listEl.innerHTML =
+        `<div class="genre-opt-item ${selectedGenre === "ALL" ? "active" : ""}" data-g-val="ALL">🎭 Все жанры (${sorted.length})</div>` +
+        matching.map(g => `<div class="genre-opt-item ${selectedGenre === g ? "active" : ""}" data-g-val="${esc(g)}">${esc(g)}</div>`).join("");
+
+      listEl.querySelectorAll(".genre-opt-item").forEach(itemEl => {
+        itemEl.addEventListener("click", () => {
+          selectedGenre = itemEl.dataset.gVal;
+          document.getElementById("genreDropdownLabel").textContent =
+            selectedGenre === "ALL" ? "Все жанры" : selectedGenre;
+          document.getElementById("genreDropdownMenu")?.classList.remove("open");
+          render();
+        });
+      });
+    }
+
+    if (picker) {
+      const eq = editorSearchTerm.trim().toLowerCase();
+      const matchingEditor = sorted.filter(g => !eq || g.toLowerCase().includes(eq));
+      picker.innerHTML = `<option value="">+ Выбрать жанр (${matchingEditor.length})...</option>` +
+        matchingEditor.map(g => `<option value="${esc(g)}">${esc(g)}</option>`).join("");
     }
   }
 
@@ -212,13 +246,12 @@
         const tierId = unit.dataset.tierId;
         const tier = appData.tiers.find(t => t.id === tierId);
         const item = tier?.items.find(i => i.uid === uid);
-        if (item && tier) {
-          Modals.showAnimeDetails(item, tier);
-        }
+        if (item && tier) Modals.showAnimeDetails(item, tier);
       });
     });
 
     DragDropEngine.bindCardsAndGrids((uid, fromTierId, toTierId, targetUid) => {
+      if (!GitHubSync.isOwner()) return;
       const fromTier = appData.tiers.find(t => t.id === fromTierId);
       const toTier = appData.tiers.find(t => t.id === toTierId);
       if (!fromTier || !toTier) return;
@@ -268,8 +301,8 @@
   }
 
   function bindGlobalUI() {
-    // Обработчик удаления тайтла из открытой карточки
     Modals.setDeleteHandler((uid, tierId) => {
+      if (!GitHubSync.isOwner()) return;
       const tier = appData.tiers.find(t => t.id === tierId);
       if (!tier) return;
       const item = tier.items.find(i => i.uid === uid);
@@ -279,22 +312,33 @@
       showToast(`Тайтл «${item?.title || ""}» удалён`);
     });
 
-    // Кнопка Календаря
-    document.getElementById("btnToggleCalendar")?.addEventListener("click", () => {
-      toggleCalendarView();
+    document.getElementById("btnToggleCalendar")?.addEventListener("click", () => toggleCalendarView());
+    document.getElementById("brandHomeBtn")?.addEventListener("click", () => toggleCalendarView("tiers"));
+    document.getElementById("btnAddTitleTop")?.addEventListener("click", () => Modals.openEditorModal("S", null));
+
+    // Выпадающий список жанров с поиском в шапке
+    const gBtn = document.getElementById("genreDropdownBtn");
+    const gMenu = document.getElementById("genreDropdownMenu");
+    const gSearch = document.getElementById("genreSearchInput");
+    gBtn?.addEventListener("click", e => {
+      e.stopPropagation();
+      gMenu?.classList.toggle("open");
+      if (gMenu?.classList.contains("open")) gSearch?.focus();
+    });
+    gSearch?.addEventListener("input", () => {
+      genreFilterSearch = gSearch.value;
+      populateGenreDropdowns();
+    });
+    document.addEventListener("click", e => {
+      if (!e.target.closest("#genreDropdown")) gMenu?.classList.remove("open");
     });
 
-    // Клик по логотипу всегда возвращает к тирам
-    document.getElementById("brandHomeBtn")?.addEventListener("click", () => {
-      toggleCalendarView("tiers");
+    // Поиск по жанрам внутри редактора тайтла
+    const editorGSearch = document.getElementById("editorGenreSearch");
+    editorGSearch?.addEventListener("input", () => {
+      populateGenreDropdowns(editorGSearch.value);
     });
 
-    // Кнопка «➕ Добавить тайтл» в верхней шапке
-    document.getElementById("btnAddTitleTop")?.addEventListener("click", () => {
-      Modals.openEditorModal("S", null);
-    });
-
-    // Быстрое добавление жанра из энциклопедии в поле жанров редактора
     const picker = document.getElementById("genreQuickPicker");
     picker?.addEventListener("change", () => {
       const val = picker.value;
@@ -308,12 +352,82 @@
       picker.value = "";
     });
 
+    // Загрузка файла обложки в папку posters/
+    const posterFileInp = document.getElementById("fPosterFile");
+    posterFileInp?.addEventListener("change", async () => {
+      const file = posterFileInp.files?.[0];
+      if (!file) return;
+      try {
+        showToast("Загрузка обложки в папку posters/ репозитория...", "#00f5ff");
+        const uploadedPath = await GitHubSync.uploadAssetFile(file, "posters");
+        document.getElementById("fPoster").value = uploadedPath;
+        showToast(`Обложка сохранена: ${uploadedPath}`, "#38ef7d");
+      } catch (err) {
+        const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
+        document.getElementById("fPoster").value = `posters/${safeName}`;
+        showToast(`Указан путь posters/${safeName}. Не забудьте положить файл в папку posters/`, "#ffd76a");
+      }
+    });
+
+    // Глобальный фон владельца (вкладка в Настройках)
+    const ownerBgFile = document.getElementById("ownerBgFileInput");
+    ownerBgFile?.addEventListener("change", async () => {
+      const file = ownerBgFile.files?.[0];
+      if (!file) return;
+      try {
+        showToast("Загрузка картинки фона в папку backgrounds/...", "#00f5ff");
+        const path = await GitHubSync.uploadAssetFile(file, "backgrounds");
+        document.getElementById("ownerBgUrlInput").value = path;
+        appData.meta = appData.meta || {};
+        appData.meta.bgImage = path;
+        FXController.applyGlobalBackground(appData.meta);
+        saveLocalState();
+        showToast("Фон загружен! Нажмите «☁ Сохранить в GitHub», чтобы его видели все.", "#38ef7d");
+      } catch (err) {
+        showToast("Ошибка загрузки фона: " + err.message, "#ff3c8c");
+      }
+    });
+
+    document.getElementById("rngOwnerBgDim")?.addEventListener("input", e => {
+      const v = parseInt(e.target.value, 10);
+      document.getElementById("lblOwnerBgDim").textContent = v + "%";
+      if (appData?.meta) {
+        appData.meta.bgDim = v;
+        FXController.applyGlobalBackground(appData.meta);
+      }
+    });
+
+    document.getElementById("rngOwnerBgBlur")?.addEventListener("input", e => {
+      const v = parseInt(e.target.value, 10);
+      document.getElementById("lblOwnerBgBlur").textContent = v + "px";
+      if (appData?.meta) {
+        appData.meta.bgBlur = v;
+        FXController.applyGlobalBackground(appData.meta);
+      }
+    });
+
+    document.getElementById("btnApplyOwnerBg")?.addEventListener("click", () => {
+      if (!GitHubSync.isOwner()) return;
+      appData.meta = appData.meta || {};
+      appData.meta.bgImage = document.getElementById("ownerBgUrlInput").value.trim();
+      appData.meta.bgDim = parseInt(document.getElementById("rngOwnerBgDim").value, 10) || 65;
+      appData.meta.bgBlur = parseInt(document.getElementById("rngOwnerBgBlur").value, 10) || 4;
+      FXController.applyGlobalBackground(appData.meta);
+      saveLocalState();
+      showToast("Глобальный фон применён! Нажмите «☁ Сохранить в GitHub» для публикации.", "#38ef7d");
+    });
+
+    document.getElementById("btnClearOwnerBg")?.addEventListener("click", () => {
+      if (!GitHubSync.isOwner()) return;
+      appData.meta = appData.meta || {};
+      appData.meta.bgImage = "";
+      FXController.applyGlobalBackground(appData.meta);
+      saveLocalState();
+      showToast("Глобальный фон отключён");
+    });
+
     document.getElementById("searchInput")?.addEventListener("input", e => {
       searchQuery = e.target.value;
-      render();
-    });
-    document.getElementById("genreFilter")?.addEventListener("change", e => {
-      selectedGenre = e.target.value;
       render();
     });
 
@@ -325,7 +439,7 @@
       btn.addEventListener("click", () => Modals.addSeasonRow(btn.dataset.addPart));
     });
 
-    // Shikimori Autocomplete
+    // Автозаполнение Shikimori
     const shikiInput = document.getElementById("shikiSearchInput");
     const shikiBox = document.getElementById("shikiResults");
     let debounceTimer = 0;
@@ -373,15 +487,20 @@
               Modals.recalculateSeasonsPreview();
             }
             shikiBox.classList.remove("show");
-            showToast("Метаданные подтянуты из базы аниме!", "#38ef7d");
+            showToast("Метаданные заполнены!", "#38ef7d");
           });
         });
       }, 320);
     });
 
-    // Сохранение тайтла
+    // Сохранение тайтла (только для владельца)
     document.getElementById("animeEditorForm")?.addEventListener("submit", e => {
       e.preventDefault();
+      if (!GitHubSync.isOwner()) {
+        showToast("Ошибка: редактировать может только владелец!", "#ff3c8c");
+        return;
+      }
+
       const uid = document.getElementById("fUid").value || ("anime-" + Date.now());
       const targetTierId = document.getElementById("fTier").value;
       const seasons = Modals.readSeasonsFromEditor();
@@ -424,6 +543,7 @@
       showToast(`«${newItem.title}» сохранён в тир ${targetTierId}`);
     });
 
+    // Строгая авторизация владельца по токену GitHub
     document.getElementById("btnOwnerAuth")?.addEventListener("click", () => {
       document.getElementById("ghTokenInput").value = GitHubSync.getToken();
       document.getElementById("ghRepoInput").value = GitHubSync.getRepo();
@@ -434,7 +554,6 @@
       e.preventDefault();
       const tk = document.getElementById("ghTokenInput").value.trim();
       const rp = document.getElementById("ghRepoInput").value.trim();
-      GitHubSync.saveCredentials(tk, rp);
 
       if (!tk) {
         GitHubSync.logout();
@@ -444,18 +563,26 @@
         return;
       }
 
+      showToast("Проверка токена в GitHub...");
       const user = await GitHubSync.verifyToken(tk);
-      document.body.classList.add("is-owner");
-      updateOwnerBadge(user || { login: "Owner" });
-      Modals.closeModal("authModal");
-      showToast("Режим владельца активирован!", "#38ef7d");
+      if (user) {
+        GitHubSync.saveCredentials(tk, rp);
+        document.body.classList.add("is-owner");
+        updateOwnerBadge(user);
+        Modals.closeModal("authModal");
+        showToast(`Добро пожаловать, ${user.login}! Режим владельца активен.`, "#38ef7d");
+      } else {
+        GitHubSync.logout();
+        updateOwnerBadge(null);
+        showToast("Неверный токен GitHub! Доступ к редактированию запрещён.", "#ff3c8c");
+      }
     });
 
     document.getElementById("btnSyncGitHub")?.addEventListener("click", async () => {
       try {
         showToast("Отправка коммита в GitHub (data/tiers.json)...", "#00f5ff");
         await GitHubSync.commitTiersToGitHub(appData);
-        showToast("Успешно синхронизировано с GitHub Pages!", "#38ef7d");
+        showToast("Успешно сохранено в GitHub! Все гости по ссылке теперь видят обновления.", "#38ef7d");
       } catch (err) {
         showToast("Ошибка синхронизации: " + err.message, "#ff3c8c");
       }
@@ -490,9 +617,13 @@
     render();
 
     if (GitHubSync.getToken()) {
-      document.body.classList.add("is-owner");
       const u = await GitHubSync.verifyToken();
-      updateOwnerBadge(u || { login: "Owner" });
+      if (u) {
+        document.body.classList.add("is-owner");
+        updateOwnerBadge(u);
+      } else {
+        GitHubSync.logout();
+      }
     }
   });
 })();
