@@ -4,12 +4,12 @@
     "owner": "geraltschwarzenegger-svg",
     "repo": "noxyholmes/myTierAnime",
     "branch": "main",
-    "updatedAt": "2026-10-15T09:53:42.443Z",
+    "updatedAt": "2026-10-15T09:53:50.369Z",
     "activeMode": "emblems-realism",
     "bgImage": "",
     "bgDim": 65,
     "bgBlur": 4,
-    "revision": 4
+    "revision": 5
   },
   "tiers": [
     {
@@ -88,50 +88,6 @@
               "epMinutes": 2,
               "date": "28.04.2026",
               "note": "Короткие спешлы"
-            }
-          ]
-        },
-        {
-          "uid": "anime-oshinoko-2023",
-          "kind": "TV Сериал",
-          "title": "Звёздное дитя",
-          "origTitle": "Oshi no Ko",
-          "year": 2023,
-          "studio": "Doga Kobo",
-          "score": 9.8,
-          "reaction": "✨ Фаворит",
-          "genres": [
-            "Драма",
-            "Музыка",
-            "Триллер",
-            "Шоу-бизнес"
-          ],
-          "poster": "https://shikimori.one/system/animes/original/52034.jpg",
-          "comment": "Феноменальная режиссура, пронзительный пролог, хореография B-Komachi и легендарный трек Idol от YOASOBI.",
-          "seasons": [
-            {
-              "title": "Пролог (Эпизод 1)",
-              "type": "Спешл",
-              "episodes": 1,
-              "epMinutes": 82,
-              "date": "10.05.2025",
-              "note": "Расширенная премьера"
-            },
-            {
-              "title": "Сезон 1 (эп. 2–11)",
-              "type": "TV Сериал",
-              "episodes": 10,
-              "epMinutes": 24,
-              "date": "15.05.2025",
-              "note": "Основной сезон"
-            },
-            {
-              "title": "Сезон 2",
-              "type": "TV Сериал",
-              "episodes": 13,
-              "epMinutes": 24,
-              "date": "05.10.2026",
-              "note": "Второй сезон"
             }
           ]
         }
@@ -231,6 +187,50 @@
               "epMinutes": 24,
               "date": "02.02.2026",
               "note": "Просмотр"
+            }
+          ]
+        },
+        {
+          "uid": "anime-oshinoko-2023",
+          "kind": "TV Сериал",
+          "title": "Звёздное дитя",
+          "origTitle": "Oshi no Ko",
+          "year": 2023,
+          "studio": "Doga Kobo",
+          "score": 9.8,
+          "reaction": "✨ Фаворит",
+          "genres": [
+            "Драма",
+            "Музыка",
+            "Триллер",
+            "Шоу-бизнес"
+          ],
+          "poster": "https://shikimori.one/system/animes/original/52034.jpg",
+          "comment": "Феноменальная режиссура, пронзительный пролог, хореография B-Komachi и легендарный трек Idol от YOASOBI.",
+          "seasons": [
+            {
+              "title": "Пролог (Эпизод 1)",
+              "type": "Спешл",
+              "episodes": 1,
+              "epMinutes": 82,
+              "date": "10.05.2025",
+              "note": "Расширенная премьера"
+            },
+            {
+              "title": "Сезон 1 (эп. 2–11)",
+              "type": "TV Сериал",
+              "episodes": 10,
+              "epMinutes": 24,
+              "date": "15.05.2025",
+              "note": "Основной сезон"
+            },
+            {
+              "title": "Сезон 2",
+              "type": "TV Сериал",
+              "episodes": 13,
+              "epMinutes": 24,
+              "date": "05.10.2026",
+              "note": "Второй сезон"
             }
           ]
         }
