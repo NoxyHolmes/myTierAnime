@@ -4,12 +4,12 @@
     "owner": "geraltschwarzenegger-svg",
     "repo": "noxyholmes/myTierAnime",
     "branch": "main",
-    "updatedAt": "2026-10-15T11:45:44.563Z",
+    "updatedAt": "2026-10-15T11:47:28.695Z",
     "activeMode": "emblems-realism",
     "bgImage": "backgrounds/1792058756499____________________________________.png",
     "bgDim": 65,
     "bgBlur": 5,
-    "revision": 37,
+    "revision": 38,
     "bgBlobSha": "1de942c76368b8d317071e794ae55fed35d163ad",
     "bgMime": "image/png"
   },
@@ -60,7 +60,7 @@
               "note": ""
             },
             {
-              "title": "Сезон 3",
+              "title": "Сезон 3 | Часть 1",
               "type": "TV Сериал",
               "releaseYear": 2026,
               "episodes": 0,
@@ -75,6 +75,15 @@
               "episodes": 0,
               "epMinutes": 110,
               "date": "2026",
+              "note": "Сокровище покойной наложницы"
+            },
+            {
+              "title": "Сезон 3 | Часть 1",
+              "type": "TV Сериал",
+              "releaseYear": 2027,
+              "episodes": 0,
+              "epMinutes": 24,
+              "date": "2027",
               "note": ""
             }
           ],
@@ -89,11 +98,15 @@
             },
             {
               "date": "2026",
-              "note": "Сезон 3"
+              "note": "Сезон 3 | Часть 1"
             },
             {
               "date": "2026",
               "note": "Фильм"
+            },
+            {
+              "date": "2027",
+              "note": "Сезон 3 | Часть 1"
             }
           ]
         }
