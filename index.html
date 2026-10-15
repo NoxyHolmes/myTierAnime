@@ -14,10 +14,10 @@
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;900&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&family=Montserrat:wght@500;700;800&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
   <link rel="manifest" href="manifest.json">
 
-  <link rel="stylesheet" href="css/tokens.css?v=12.0">
-  <link rel="stylesheet" href="css/realism-3d.css?v=12.0">
-  <link rel="stylesheet" href="css/cards-and-tiers.css?v=12.0">
-  <link rel="stylesheet" href="css/modals-and-panels.css?v=12.0">
+  <link rel="stylesheet" href="css/tokens.css?v=13.0">
+  <link rel="stylesheet" href="css/realism-3d.css?v=13.0">
+  <link rel="stylesheet" href="css/cards-and-tiers.css?v=13.0">
+  <link rel="stylesheet" href="css/modals-and-panels.css?v=13.0">
 </head>
 <body class="emblems-realism letter-style-gold motion-precession fx-tier-motion fx-tilt">
   <div id="globalOwnerBg" class="global-owner-bg" aria-hidden="true">
@@ -91,10 +91,6 @@
             ⚙️ Настройки
           </button>
 
-          <button type="button" id="btnExportJson" class="btn owner-only" title="Скачать резервную копию JSON">
-            ⬇ JSON
-          </button>
-
           <button type="button" id="btnOwnerAuth" class="btn">
             🔑 Вход
           </button>
@@ -102,13 +98,17 @@
       </div>
     </header>
 
+    <!-- Верхняя панель статистики -->
     <section id="statsRibbon" class="stats-ribbon" aria-label="Статистика"></section>
+
+    <!-- НОВОЕ: Секция последних добавленных / просмотренных тайтлов между статистикой и тирами -->
+    <section id="recentAdditionsSection" class="recent-strip-wrap" aria-label="Последние добавленные тайтлы"></section>
 
     <main id="tiersRoot" class="tiers-container"></main>
     <section id="calendarRoot" class="calendar-container" style="display:none;"></section>
   </div>
 
-  <!-- Панель «⚙️ Настройки» (с ползунком громкости фоновой музыки) -->
+  <!-- Панель «⚙️ Настройки» -->
   <aside id="fxPanel" class="fx-drawer" aria-label="Настройки">
     <div class="fx-drawer-head">
       <strong>⚙️ Студия Кастомизации</strong>
@@ -335,7 +335,6 @@
           <span>Размытие фона (Blur): <b id="lblOwnerBgBlur">0px</b></span>
           <input type="range" id="rngOwnerBgBlur" min="0" max="20" step="1" value="0">
         </label>
-        <!-- НОВОЕ: Настройка громкости фоновой музыки для владельца -->
         <label class="fx-slider-row" style="margin-top:10px;">
           <span>🔊 Громкость фоновой музыки тайтлов: <b id="lblBgmVol">30%</b></span>
           <input type="range" id="rngBgmVol" min="0" max="100" step="5" value="30">
@@ -347,13 +346,12 @@
     </div>
   </aside>
 
-  <!-- Модальное окно 1: Карточка тайтла (с кнопкой управления звуком 🔊/🔇) -->
+  <!-- Модальное окно 1: Карточка тайтла -->
   <div id="detailsModal" class="modal-backdrop">
     <div class="modal-box modal-box-wide dossier-cinema-box">
       <div class="dossier-sticky-topbar">
         <div id="dossierTopBadges" class="dossier-badges-row" style="margin:0;"></div>
         <div class="dossier-top-btns">
-          <!-- НОВОЕ: Кнопка включения / выключения музыки в карточке -->
           <button type="button" id="btnBgmToggle" class="btn btn-sm btn-neon-cyan" style="display:none;" title="Включить / отключить фоновую музыку">🔊 Музыка</button>
           <button type="button" id="btnDetailsEdit" class="btn btn-sm btn-neon-gold owner-only">✎ Редактировать тайтл</button>
           <button type="button" id="btnDetailsDelete" class="btn btn-sm btn-danger owner-only">🗑 Удалить</button>
@@ -364,7 +362,7 @@
     </div>
   </div>
 
-  <!-- Модальное окно 2: Добавление / Редактирование тайтла (с полем для загрузки фоновой музыки) -->
+  <!-- Модальное окно 2: Добавление / Редактирование тайтла -->
   <div id="editorModal" class="modal-backdrop">
     <div class="modal-box modal-box-wide">
       <div class="modal-header">
@@ -378,7 +376,7 @@
         <div id="shikiResults" class="shiki-results"></div>
       </div>
 
-      <form id="animeEditorForm">
+      <form id="animeEditorForm" novalidate>
         <input type="hidden" id="fUid">
         <div class="form-grid">
           <div class="form-group">
@@ -448,7 +446,6 @@
             </div>
           </div>
 
-          <!-- НОВОЕ: Загрузка фоновой музыки для тайтла (необязательно) -->
           <div class="form-group full poster-upload-box" style="border-color:rgba(181,124,255,0.45);background:rgba(181,124,255,0.04);">
             <label>🎵 Фоновая музыка тайтла (необязательно — загрузите MP3/WAV файл с ПК):</label>
             <div style="display:flex;gap:8px;align-items:center;">
@@ -537,17 +534,16 @@
 
   <div id="toastContainer"></div>
 
-  <script src="js/utils.js?v=12.0"></script>
-  <script src="js/realism-core.js?v=12.0"></script>
-  <script src="js/realism-engine.js?v=12.0"></script>
-  <script src="js/github-sync.js?v=12.0"></script>
-  <script src="js/shikimori-api.js?v=12.0"></script>
-  <script src="js/fx-controller.js?v=12.0"></script>
-  <script src="js/stats-engine.js?v=12.0"></script>
-  <script src="js/calendar-view.js?v=12.0"></script>
-  <script src="js/drag-dir.js?v=12.0" onerror=""></script>
-  <script src="js/drag-drop.js?v=12.0"></script>
-  <script src="js/modals.js?v=12.0"></script>
-  <script src="js/app.js?v=12.0"></script>
+  <script src="js/utils.js?v=13.0"></script>
+  <script src="js/realism-core.js?v=13.0"></script>
+  <script src="js/realism-engine.js?v=13.0"></script>
+  <script src="js/github-sync.js?v=13.0"></script>
+  <script src="js/shikimori-api.js?v=13.0"></script>
+  <script src="js/fx-controller.js?v=13.0"></script>
+  <script src="js/stats-engine.js?v=13.0"></script>
+  <script src="js/calendar-view.js?v=13.0"></script>
+  <script src="js/drag-drop.js?v=13.0"></script>
+  <script src="js/modals.js?v=13.0"></script>
+  <script src="js/app.js?v=13.0"></script>
 </body>
 </html>
