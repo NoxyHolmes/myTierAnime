@@ -1,34 +1,33 @@
-/* ═══════════════════ MAIN APPLICATION ORCHESTRATOR (myTierAnime v3.2) ═══════════════════ */
+/* ═══════════════════ MAIN APPLICATION ORCHESTRATOR (myTierAnime v4.0 INSTANT PERSISTENCE) ═══════════════════ */
 (() => {
-  const LOCAL_STORAGE_KEY = "mta_2026_state_v6";
+  const LOCAL_STORAGE_KEY = "mta_2026_state_v7";
   let appData = null;
   let searchQuery = "";
   let selectedGenre = "ALL";
   let genreFilterSearch = "";
   let activeView = "tiers";
-  let displayMode = "posters";
 
   const DEFAULT_TIERS_TEMPLATE = [
-    { id: "S", rank: 1, name: "Золотой фонд", subtitle: "Шедевры и эталонные произведения на все времена", hue: 45, items: [] },
-    { id: "A", rank: 2, name: "Высшая лига", subtitle: "Отличные и запоминающиеся тайтлы", hue: 185, items: [] },
-    { id: "B", rank: 3, name: "Достойный уровень", subtitle: "Крепкие и атмосферные работы", hue: 275, items: [] },
-    { id: "C", rank: 4, name: "На один вечер", subtitle: "Неплохие и расслабляющие тайтлы под настроение", hue: 148, items: [] },
-    { id: "D", rank: 5, name: "Проходной уровень", subtitle: "Спорные или слабые проекты", hue: 28, items: [] },
-    { id: "E", rank: 6, name: "Вне рейтинга", subtitle: "Разочарования и брошенные тайтлы", hue: 215, items: [] }
+    { id: "S", rank: 1, name: "Шедевры", subtitle: "Лучшие и незабываемые тайтлы на все времена", hue: 45, items: [] },
+    { id: "A", rank: 2, name: "Отличные", subtitle: "Яркие и очень качественные работы", hue: 185, items: [] },
+    { id: "B", rank: 3, name: "Хорошие", subtitle: "Достойные внимания и атмосферные тайтлы", hue: 275, items: [] },
+    { id: "C", rank: 4, name: "Нормальные", subtitle: "Средние тайтлы на один вечер", hue: 148, items: [] },
+    { id: "D", rank: 5, name: "Слабые", subtitle: "Проходные или скучные проекты", hue: 28, items: [] },
+    { id: "E", rank: 6, name: "Плохие", subtitle: "Разочарования и брошенные тайтлы", hue: 215, items: [] }
   ];
 
   const CLEAN_TITLES_MAP = {
-    S: { name: "Золотой фонд", subtitle: "Шедевры и эталонные произведения на все времена" },
-    A: { name: "Высшая лига", subtitle: "Отличные и запоминающиеся тайтлы" },
-    B: { name: "Достойный уровень", subtitle: "Крепкие и атмосферные работы" },
-    C: { name: "На один вечер", subtitle: "Неплохие и расслабляющие тайтлы под настроение" },
-    D: { name: "Проходной уровень", subtitle: "Спорные или слабые проекты" },
-    E: { name: "Вне рейтинга", subtitle: "Разочарования и брошенные тайтлы" }
+    S: { name: "Шедевры", subtitle: "Лучшие и незабываемые тайтлы на все времена" },
+    A: { name: "Отличные", subtitle: "Яркие и очень качественные работы" },
+    B: { name: "Хорошие", subtitle: "Достойные внимания и атмосферные тайтлы" },
+    C: { name: "Нормальные", subtitle: "Средние тайтлы на один вечер" },
+    D: { name: "Слабые", subtitle: "Проходные или скучные проекты" },
+    E: { name: "Плохие", subtitle: "Разочарования и брошенные тайтлы" }
   };
 
   function ensureSixTiers(data) {
     if (!data || !Array.isArray(data.tiers)) {
-      return { meta: { title: "myTierAnime", bgImage: "", bgDim: 65, bgBlur: 4 }, tiers: DEFAULT_TIERS_TEMPLATE };
+      return { meta: { title: "myTierAnime", bgImage: "", bgDim: 60, bgBlur: 2, updatedAt: new Date(0).toISOString() }, tiers: DEFAULT_TIERS_TEMPLATE };
     }
     data.meta = data.meta || {};
     DEFAULT_TIERS_TEMPLATE.forEach(def => {
@@ -45,35 +44,67 @@
     return data;
   }
 
+  /* Умная загрузка: никогда не затирает более свежие локальные правки старым кешем GitHub Pages! */
   async function loadInitialState() {
-    try {
-      const res = await fetch(`data/tiers.json?t=${Date.now()}`);
-      if (res.ok) {
-        appData = ensureSixTiers(await res.json());
-        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(appData));
-        FXController.applyGlobalBackground(appData.meta || {});
-        return;
-      }
-    } catch (e) {
-      console.warn("Could not fetch remote tiers.json:", e);
-    }
-
+    let localObj = null;
     const cached = localStorage.getItem(LOCAL_STORAGE_KEY);
     if (cached) {
       try {
-        appData = ensureSixTiers(JSON.parse(cached));
-        FXController.applyGlobalBackground(appData.meta || {});
-        return;
+        localObj = ensureSixTiers(JSON.parse(cached));
       } catch {}
     }
-    appData = ensureSixTiers(null);
+
+    // Если есть локальный стейт — сразу рисуем его за 0мс
+    if (localObj) {
+      appData = localObj;
+      FXController.applyGlobalBackground(appData.meta || {});
+    }
+
+    // Пытаемся получить свежие данные из GitHub API (или статического файла для гостей)
+    try {
+      let remoteObj = await GitHubSync.fetchFreshTiersFromApi();
+      if (!remoteObj) {
+        const res = await fetch(`data/tiers.json?t=${Date.now()}`, { cache: "no-store" });
+        if (res.ok) remoteObj = await res.json();
+      }
+      if (remoteObj) {
+        remoteObj = ensureSixTiers(remoteObj);
+        const localTime = Date.parse(localObj?.meta?.updatedAt || "") || 0;
+        const remoteTime = Date.parse(remoteObj?.meta?.updatedAt || "") || 0;
+
+        // Заменяем локальный стейт только если на сервере версия новее (или локальной ещё нет)
+        if (!localObj || remoteTime > localTime) {
+          appData = remoteObj;
+          localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(appData));
+        }
+      }
+    } catch (e) {
+      console.warn("Using local state:", e);
+    }
+
+    if (!appData) appData = ensureSixTiers(null);
     FXController.applyGlobalBackground(appData.meta || {});
   }
 
-  function saveLocalState() {
+  /* МОМЕНТАЛЬНОЕ АВТОСОХРАНЕНИЕ (за 0.01с локально + фоновый коммит в GitHub без кнопок!) */
+  let syncTimer = 0;
+  function saveAndAutoSync(reason = "Auto-update via myTierAnime") {
     if (!appData) return;
+    appData.meta = appData.meta || {};
+    appData.meta.updatedAt = new Date().toISOString();
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(appData));
     StatsEngine.updateStats(appData.tiers);
+
+    if (GitHubSync.isOwner()) {
+      clearTimeout(syncTimer);
+      syncTimer = setTimeout(async () => {
+        try {
+          await GitHubSync.commitTiersToGitHub(appData, reason);
+        } catch (err) {
+          console.warn("Background GitHub sync warning:", err);
+        }
+      }, 250);
+    }
   }
 
   function cardEl(item, idx, tierId) {
@@ -118,6 +149,18 @@
     `;
   }
 
+  function rebuildAll3DLetters() {
+    if (!appData) return;
+    document.querySelectorAll("#tiersRoot .tier").forEach((tierEl, idx) => {
+      const l3dHost = tierEl.querySelector(".l3d");
+      build3DLetter(l3dHost, appData.tiers[idx], idx);
+    });
+    const demoSeal = document.querySelector("#fxDemo .l3d");
+    if (demoSeal && appData.tiers[0]) {
+      build3DLetter(demoSeal, appData.tiers[0], 0);
+    }
+  }
+
   function render() {
     const host = document.getElementById("tiersRoot");
     if (!host || !appData || !Array.isArray(appData.tiers)) return;
@@ -144,7 +187,7 @@
       const titlesStr = formatTitlesCount(tierCount);
 
       const badgeBodyHtml = `
-        <span class="seal-index">РАНГ <b>${esc(tier.id)}</b></span>
+        <span class="seal-index">ТИР <b>${esc(tier.id)}</b></span>
         <div class="lstage">
           ${realismMarkup(tierIdx, tier)}${elementMarkup(tierIdx)}${orbitalMarkup()}
           <span class="seal-floor" aria-hidden="true"></span>
@@ -180,16 +223,7 @@
       `;
     }).join("");
 
-    host.querySelectorAll(".tier").forEach((tierEl, idx) => {
-      const l3dHost = tierEl.querySelector(".l3d");
-      build3DLetter(l3dHost, appData.tiers[idx], idx);
-    });
-
-    const demoSeal = document.querySelector("#fxDemo .l3d");
-    if (demoSeal && appData.tiers[0]) {
-      build3DLetter(demoSeal, appData.tiers[0], 0);
-    }
-
+    rebuildAll3DLetters();
     FXController.observeTiers();
     StatsEngine.updateStats(appData.tiers);
     populateGenreDropdowns();
@@ -281,9 +315,9 @@
       } else {
         toTier.items.push(moved);
       }
-      saveLocalState();
+      saveAndAutoSync(`Move ${moved.title} to ${toTierId}`);
       render();
-      showToast(`«${moved.title}» перемещён в тир ${toTierId}`, "#00f5ff");
+      showToast(`«${moved.title}» перемещён в тир ${toTierId} (сохранено)`, "#00f5ff");
     });
   }
 
@@ -315,29 +349,16 @@
     }
   }
 
-  function setDisplayMode(mode) {
-    displayMode = mode;
-    document.body.classList.remove("view-mode-posters", "view-mode-chips", "view-mode-list");
-    document.body.classList.add(`view-mode-${mode}`);
-    document.querySelectorAll("[data-dmode]").forEach(btn => {
-      btn.classList.toggle("active", btn.dataset.dmode === mode);
-    });
-    localStorage.setItem("mta_display_mode", mode);
-  }
-
   function bindGlobalUI() {
     Modals.setDeleteHandler((uid, tierId) => {
-      if (!GitHubSync.isOwner()) {
-        showToast("Удаление доступно только владельцу", "#ff3c8c");
-        return;
-      }
+      if (!GitHubSync.isOwner()) return;
       const tier = appData.tiers.find(t => t.id === tierId);
       if (!tier) return;
       const item = tier.items.find(i => i.uid === uid);
       tier.items = tier.items.filter(i => i.uid !== uid);
-      saveLocalState();
+      saveAndAutoSync(`Delete ${item?.title || uid}`);
       render();
-      showToast(`Тайтл «${item?.title || ""}» удалён`);
+      showToast(`Тайтл «${item?.title || ""}» удалён и сохранён`);
     });
 
     document.getElementById("btnToggleCalendar")?.addEventListener("click", () => toggleCalendarView());
@@ -350,12 +371,6 @@
       }
       Modals.openEditorModal("S", null);
     });
-
-    document.querySelectorAll("[data-dmode]").forEach(btn => {
-      btn.addEventListener("click", () => setDisplayMode(btn.dataset.dmode));
-    });
-    const savedDMode = localStorage.getItem("mta_display_mode") || "posters";
-    setDisplayMode(savedDMode);
 
     const gBtn = document.getElementById("genreDropdownBtn");
     const gMenu = document.getElementById("genreDropdownMenu");
@@ -391,38 +406,49 @@
       picker.value = "";
     });
 
+    // Загрузка обложки тайтла: моментальное превью + загрузка в posters/
     const posterFileInp = document.getElementById("fPosterFile");
     posterFileInp?.addEventListener("change", async () => {
       const file = posterFileInp.files?.[0];
       if (!file) return;
       try {
-        showToast("Загрузка обложки в папку posters/...", "#00f5ff");
-        const uploadedPath = await GitHubSync.uploadAssetFile(file, "posters");
-        document.getElementById("fPoster").value = uploadedPath;
-        showToast(`Обложка сохранена: ${uploadedPath}`, "#38ef7d");
+        const dataUrl = await GitHubSync.compressImageToDataUrl(file, 700, 0.85);
+        document.getElementById("fPoster").value = dataUrl;
+        showToast("Обложка мгновенно подготовлена!", "#38ef7d");
+        GitHubSync.uploadAssetFile(file, "posters").then(path => {
+          document.getElementById("fPoster").value = path;
+        }).catch(() => {});
       } catch (err) {
-        const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
-        document.getElementById("fPoster").value = `posters/${safeName}`;
-        showToast(`Указан путь posters/${safeName}. Закиньте файл в репозиторий`, "#ffd76a");
+        showToast("Ошибка чтения файла", "#ff3c8c");
       }
     });
 
+    // МГНОВЕННАЯ УСТАНОВКА ФОНА С КОМПЬЮТЕРА (БЕЗ ЗАДЕРЖКИ!)
     const ownerBgFile = document.getElementById("ownerBgFileInput");
     ownerBgFile?.addEventListener("change", async () => {
       const file = ownerBgFile.files?.[0];
       if (!file) return;
       try {
-        showToast("Загрузка фона в папку backgrounds/...", "#00f5ff");
-        const path = await GitHubSync.uploadAssetFile(file, "backgrounds");
-        document.getElementById("ownerBgUrlInput").value = path;
+        const compressedDataUrl = await GitHubSync.compressImageToDataUrl(file, 1600, 0.8);
         appData.meta = appData.meta || {};
-        appData.meta.bgImage = path;
+        appData.meta.bgImage = compressedDataUrl;
         FXController.applyGlobalBackground(appData.meta);
-        saveLocalState();
-        showToast("Фон загружен! Нажмите «☁ Сохранить» для публикации.", "#38ef7d");
+        saveAndAutoSync("Update global background image");
+        showToast("Фон мгновенно установлен и сохранён!", "#38ef7d");
       } catch (err) {
-        showToast("Ошибка загрузки фона: " + err.message, "#ff3c8c");
+        showToast("Не удалось прочитать картинку фона", "#ff3c8c");
       }
+    });
+
+    // Мгновенная установка фона по URL
+    const ownerBgUrlInp = document.getElementById("ownerBgUrlInput");
+    ownerBgUrlInp?.addEventListener("change", () => {
+      if (!GitHubSync.isOwner()) return;
+      appData.meta = appData.meta || {};
+      appData.meta.bgImage = ownerBgUrlInp.value.trim();
+      FXController.applyGlobalBackground(appData.meta);
+      saveAndAutoSync("Update global background URL");
+      showToast("Фон обновлён и сохранён!", "#38ef7d");
     });
 
     document.getElementById("rngOwnerBgDim")?.addEventListener("input", e => {
@@ -431,6 +457,7 @@
       if (appData?.meta) {
         appData.meta.bgDim = v;
         FXController.applyGlobalBackground(appData.meta);
+        saveAndAutoSync("Update background dim");
       }
     });
 
@@ -440,27 +467,19 @@
       if (appData?.meta) {
         appData.meta.bgBlur = v;
         FXController.applyGlobalBackground(appData.meta);
+        saveAndAutoSync("Update background blur");
       }
-    });
-
-    document.getElementById("btnApplyOwnerBg")?.addEventListener("click", () => {
-      if (!GitHubSync.isOwner()) return;
-      appData.meta = appData.meta || {};
-      appData.meta.bgImage = document.getElementById("ownerBgUrlInput").value.trim();
-      appData.meta.bgDim = parseInt(document.getElementById("rngOwnerBgDim").value, 10) || 65;
-      appData.meta.bgBlur = parseInt(document.getElementById("rngOwnerBgBlur").value, 10) || 4;
-      FXController.applyGlobalBackground(appData.meta);
-      saveLocalState();
-      showToast("Фон применён! Не забудьте нажать «☁ Сохранить».", "#38ef7d");
     });
 
     document.getElementById("btnClearOwnerBg")?.addEventListener("click", () => {
       if (!GitHubSync.isOwner()) return;
       appData.meta = appData.meta || {};
       appData.meta.bgImage = "";
+      const urlInp = document.getElementById("ownerBgUrlInput");
+      if (urlInp) urlInp.value = "";
       FXController.applyGlobalBackground(appData.meta);
-      saveLocalState();
-      showToast("Фон отключён");
+      saveAndAutoSync("Clear global background");
+      showToast("Картинка фона убрана");
     });
 
     document.getElementById("searchInput")?.addEventListener("input", e => {
@@ -529,6 +548,7 @@
       }, 320);
     });
 
+    // Моментальное сохранение при редактировании/добавлении тайтла
     document.getElementById("animeEditorForm")?.addEventListener("submit", e => {
       e.preventDefault();
       if (!GitHubSync.isOwner()) {
@@ -572,10 +592,10 @@
         destTier.items.unshift(newItem);
       }
 
-      saveLocalState();
+      saveAndAutoSync(`Save ${newItem.title} in tier ${targetTierId}`);
       render();
       Modals.closeModal("editorModal");
-      showToast(`«${newItem.title}» сохранён в тир ${targetTierId}`);
+      showToast(`✔ «${newItem.title}» моментально сохранён!`, "#38ef7d");
     });
 
     document.getElementById("btnOwnerAuth")?.addEventListener("click", () => {
@@ -597,28 +617,17 @@
         return;
       }
 
-      showToast("Проверка токена...");
       const user = await GitHubSync.verifyToken(tk);
       if (user) {
         GitHubSync.saveCredentials(tk, rp);
         document.body.classList.add("is-owner");
         updateOwnerBadge(user);
         Modals.closeModal("authModal");
-        showToast(`Вход выполнен: ${user.login}! Режим владельца активен.`, "#38ef7d");
+        showToast(`Вход выполнен: ${user.login}! Все изменения сохраняются автоматически.`, "#38ef7d");
       } else {
         GitHubSync.logout();
         updateOwnerBadge(null);
         showToast("Неверный токен GitHub!", "#ff3c8c");
-      }
-    });
-
-    document.getElementById("btnSyncGitHub")?.addEventListener("click", async () => {
-      try {
-        showToast("Отправка коммита в GitHub...", "#00f5ff");
-        await GitHubSync.commitTiersToGitHub(appData);
-        showToast("Успешно сохранено в GitHub! Все гости видят обновления.", "#38ef7d");
-      } catch (err) {
-        showToast("Ошибка синхронизации: " + err.message, "#ff3c8c");
       }
     });
 
@@ -645,19 +654,18 @@
   }
 
   window.addEventListener("DOMContentLoaded", async () => {
-    FXController.init();
+    FXController.init(rebuildAll3DLetters);
     bindGlobalUI();
-    await loadInitialState();
-    render();
 
     if (GitHubSync.getToken()) {
-      const u = await GitHubSync.verifyToken();
-      if (u) {
-        document.body.classList.add("is-owner");
-        updateOwnerBadge(u);
-      } else {
-        GitHubSync.logout();
-      }
+      document.body.classList.add("is-owner");
+      GitHubSync.verifyToken().then(u => {
+        if (u) updateOwnerBadge(u);
+        else GitHubSync.logout();
+      });
     }
+
+    await loadInitialState();
+    render();
   });
 })();
