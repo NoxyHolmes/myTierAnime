@@ -1,17 +1,17 @@
-/* ═══════════════════ TIERS & 3 DISPLAY MODES (POSTERS, CHIPS, LIST) ═══════════════════ */
+/* ═══════════════════ LARGER CARDS & NON-OVERLAPPING UNDER-META STATS ═══════════════════ */
 .tiers-container {
-  max-width: var(--container-width, 1780px);
+  max-width: var(--container-width, 1920px);
   margin: 0 auto;
-  padding: 14px 20px 80px;
+  padding: 14px 18px 80px;
   display: flex;
   flex-direction: column;
-  gap: var(--tier-gap, 24px);
+  gap: var(--tier-gap, 26px);
 }
 
 .tier {
   position: relative;
   display: grid;
-  grid-template-columns: var(--badge-col-width, 185px) 1fr;
+  grid-template-columns: var(--badge-col-width, 175px) 1fr;
   background: linear-gradient(
     135deg,
     rgba(20, 17, 38, var(--tier-bg-alpha, 0.88)),
@@ -70,10 +70,10 @@
 }
 
 .tier-content {
-  padding: 16px 18px;
+  padding: 18px 20px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
   min-width: 0;
 }
 
@@ -88,7 +88,7 @@
 
 .tier-title-group h2 {
   font-family: var(--serif);
-  font-size: 17px;
+  font-size: 18px;
   font-weight: 700;
   color: var(--ink);
   margin: 0;
@@ -107,30 +107,30 @@
   color: var(--t);
 }
 
-/* СЕТКА ПОСТЕРИКОВ (10 в ряд) */
+/* УВЕЛИЧЕННАЯ СЕТКА КАРТОЧЕК */
 .tier-grid {
   display: grid;
   grid-template-columns: repeat(var(--grid-cols, 10), minmax(0, 1fr));
-  gap: var(--grid-gap, 10px);
-  min-height: 190px;
-  align-items: start;
+  gap: var(--grid-gap, 12px);
+  min-height: 225px;
+  align-items: stretch;
 }
 
 .card-unit {
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 6px;
   min-width: 0;
 }
 
 .card {
   position: relative;
-  aspect-ratio: 2 / 3;
-  border-radius: var(--card-radius, 10px);
+  aspect-ratio: 2 / 3.08;
+  border-radius: var(--card-radius, 12px);
   overflow: hidden;
   background: #120f24;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  box-shadow: 0 8px 20px -6px rgba(0, 0, 0, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  box-shadow: 0 10px 24px -6px rgba(0, 0, 0, 0.78);
   cursor: pointer;
   transform-style: preserve-3d;
   transform: perspective(800px) rotateX(var(--crx, 0deg)) rotateY(var(--cry, 0deg));
@@ -139,7 +139,7 @@
 
 .card:hover {
   border-color: var(--t);
-  box-shadow: 0 14px 28px -6px rgba(0, 0, 0, 0.92), 0 0 20px -4px var(--tg);
+  box-shadow: 0 16px 32px -6px rgba(0, 0, 0, 0.94), 0 0 22px -4px var(--tg);
   z-index: 5;
 }
 
@@ -169,15 +169,15 @@
 
 .card .rank {
   position: absolute;
-  top: 6px;
-  left: 6px;
+  top: 7px;
+  left: 7px;
   z-index: 4;
-  width: 19px;
-  height: 19px;
+  width: 20px;
+  height: 20px;
   border-radius: 5px;
   display: grid;
   place-items: center;
-  font-size: 9.5px;
+  font-size: 10px;
   font-weight: 800;
   color: #090614;
   background: var(--t);
@@ -186,12 +186,12 @@
 
 .card-score-badge {
   position: absolute;
-  top: 6px;
-  right: 6px;
+  top: 7px;
+  right: 7px;
   z-index: 4;
-  padding: 1.5px 5px;
+  padding: 2px 6px;
   border-radius: 5px;
-  font-size: 9px;
+  font-size: 9.5px;
   font-weight: 800;
   color: #ffd76a;
   background: rgba(10, 8, 20, 0.85);
@@ -201,18 +201,18 @@
 
 .card-reaction {
   position: absolute;
-  bottom: 48px;
-  left: 6px;
+  bottom: 52px;
+  left: 7px;
   z-index: 4;
-  padding: 1.5px 6px;
+  padding: 2px 7px;
   border-radius: 999px;
-  font-size: 8.5px;
+  font-size: 9px;
   font-weight: 700;
   color: #fff;
   background: rgba(14, 11, 28, 0.84);
   border: 1px solid rgba(255, 255, 255, 0.16);
   backdrop-filter: blur(4px);
-  max-width: calc(100% - 12px);
+  max-width: calc(100% - 14px);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -231,15 +231,15 @@ body.hide-under-meta .card-under-meta { display: none !important; }
   bottom: 0;
   left: 0;
   right: 0;
-  padding: 7px 7px 6px;
+  padding: 8px 8px 7px;
   z-index: 4;
   transform: translateZ(16px);
 }
 
 .card-title {
-  font-size: var(--card-title-size, 11px);
+  font-size: var(--card-title-size, 11.5px);
   font-weight: 700;
-  line-height: 1.2;
+  line-height: 1.22;
   color: #fff;
   margin: 0 0 2px;
   display: -webkit-box;
@@ -249,7 +249,7 @@ body.hide-under-meta .card-under-meta { display: none !important; }
 }
 
 .card-sub {
-  font-size: 9px;
+  font-size: 9.5px;
   color: var(--ink-soft);
   white-space: nowrap;
   overflow: hidden;
@@ -272,27 +272,30 @@ body.hide-under-meta .card-under-meta { display: none !important; }
   position: absolute;
   inset: 2px;
   border: 1px solid rgba(255, 215, 106, 0.38);
-  border-radius: calc(var(--card-radius, 10px) - 2px);
+  border-radius: calc(var(--card-radius, 12px) - 2px);
   z-index: 3;
   pointer-events: none;
 }
 
+/* ПЕРЕРАБОТАННАЯ НИЖНЯЯ ПЛАШКА ПОД КАРТОЧКОЙ (БЕЗ НАЛОЖЕНИЯ ТЕКСТА СЕРИЙ/ФИЛЬМОВ НА ВРЕМЯ!) */
 .card-under-meta {
-  background: rgba(14, 12, 28, 0.88);
-  border: 1px solid var(--border-subtle);
-  border-radius: 8px;
-  padding: 5px 7px;
+  background: linear-gradient(145deg, rgba(18, 15, 36, 0.92), rgba(11, 9, 22, 0.95));
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  padding: 7px 8px;
   display: flex;
   flex-direction: column;
-  gap: 3px;
-  font-size: 9.5px;
+  gap: 5px;
+  font-size: 10px;
+  flex: 1;
+  justify-content: space-between;
 }
 
 .cum-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 3px;
+  gap: 4px;
 }
 
 .cum-kind {
@@ -300,8 +303,8 @@ body.hide-under-meta .card-under-meta { display: none !important; }
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  padding: 1.5px 5px;
-  border-radius: 4px;
+  padding: 2px 6px;
+  border-radius: 5px;
   background: color-mix(in srgb, var(--t) 18%, rgba(255,255,255,0.05));
   color: var(--t);
   border: 1px solid color-mix(in srgb, var(--t) 40%, transparent);
@@ -311,107 +314,41 @@ body.hide-under-meta .card-under-meta { display: none !important; }
 }
 
 .cum-seasons-badge {
-  font-size: 8.5px;
+  font-size: 9px;
   color: var(--ink-soft);
   white-space: nowrap;
 }
 
+/* Свободная многострочная укладка для серий, фильмов и часов — никогда не слипаются и не накладываются! */
 .cum-stats {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 4px 6px;
   color: var(--ink);
   font-weight: 600;
-  font-size: 9.5px;
-  padding-top: 2px;
-  border-top: 1px solid rgba(255,255,255,0.06);
-  white-space: nowrap;
+  font-size: 10px;
+  padding-top: 4px;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  line-height: 1.3;
 }
+
+.cum-count-text {
+  color: #e8e4ff;
+  word-break: break-word;
+}
+
 .cum-hours {
   color: #00f5ff;
-  font-weight: 700;
-}
-
-/* ──────── РЕЖИМ 2: ЧИПЫ (CHIPS) ──────── */
-body.view-mode-chips .tier-grid {
-  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)) !important;
-}
-body.view-mode-chips .card {
-  aspect-ratio: auto !important;
-  height: 64px;
-}
-body.view-mode-chips .card-poster {
-  position: absolute;
-  width: 44px;
-  height: 64px;
-  left: 0;
-  top: 0;
-}
-body.view-mode-chips .card-info {
-  position: static;
-  padding: 6px 8px 6px 52px;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-body.view-mode-chips .card .scrim,
-body.view-mode-chips .card .rank,
-body.view-mode-chips .card-reaction,
-body.view-mode-chips .card-coronet,
-body.view-mode-chips .floral-frame,
-body.view-mode-chips .card-year-3d {
-  display: none !important;
-}
-body.view-mode-chips .card-score-badge {
-  top: 4px;
-  right: 4px;
-  font-size: 8px;
-  padding: 1px 4px;
-}
-
-/* ──────── РЕЖИМ 3: СПИСОК (LIST) ──────── */
-body.view-mode-list .tier-grid {
-  grid-template-columns: 1fr !important;
-  gap: 8px;
-}
-body.view-mode-list .card-unit {
-  flex-direction: row;
-  background: rgba(14, 11, 28, 0.85);
-  border: 1px solid var(--border-subtle);
-  border-radius: 10px;
-  padding: 8px 12px;
-  align-items: center;
-  gap: 14px;
-}
-body.view-mode-list .card {
-  width: 46px;
-  height: 64px;
-  aspect-ratio: auto !important;
-  flex-shrink: 0;
-  box-shadow: none;
-}
-body.view-mode-list .card .scrim,
-body.view-mode-list .card .rank,
-body.view-mode-list .card-info,
-body.view-mode-list .card-reaction,
-body.view-mode-list .card-coronet,
-body.view-mode-list .floral-frame,
-body.view-mode-list .card-year-3d {
-  display: none !important;
-}
-body.view-mode-list .card-under-meta {
-  background: transparent;
-  border: none;
-  padding: 0;
-  flex: 1;
-  display: grid;
-  grid-template-columns: 2fr 1fr 1fr 1fr;
-  align-items: center;
-  gap: 10px;
-}
-@media (max-width: 900px) {
-  body.view-mode-list .card-under-meta { grid-template-columns: 1fr 1fr; }
+  font-weight: 800;
+  background: rgba(0, 245, 255, 0.1);
+  border: 1px solid rgba(0, 245, 255, 0.28);
+  padding: 1px 6px;
+  border-radius: 999px;
+  font-size: 9.5px;
+  white-space: nowrap;
+  margin-left: auto;
 }
 
 .card-unit.dragging {
@@ -424,7 +361,7 @@ body.view-mode-list .card-under-meta {
   outline: 1.5px dashed var(--t);
 }
 
-@media (max-width: 1480px) {
+@media (max-width: 1540px) {
   .tier-grid { grid-template-columns: repeat(8, minmax(0, 1fr)); }
 }
 @media (max-width: 1180px) {
