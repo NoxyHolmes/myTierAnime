@@ -1,11 +1,12 @@
-/* ═══════════════════ MAIN APPLICATION ORCHESTRATOR (myTierAnime v3.0) ═══════════════════ */
+/* ═══════════════════ MAIN APPLICATION ORCHESTRATOR (myTierAnime v3.1) ═══════════════════ */
 (() => {
-  const LOCAL_STORAGE_KEY = "mta_2026_state_v4";
+  const LOCAL_STORAGE_KEY = "mta_2026_state_v5";
   let appData = null;
   let searchQuery = "";
   let selectedGenre = "ALL";
   let genreFilterSearch = "";
-  let activeView = "tiers";
+  let activeView = "tiers"; // "tiers" или "calendar"
+  let displayMode = "posters"; // "posters", "chips", "list"
 
   const DEFAULT_TIERS_TEMPLATE = [
     { id: "S", rank: 1, name: "Золотой фонд", subtitle: "Шедевры и эталонные произведения на все времена", hue: 45, items: [] },
@@ -78,8 +79,8 @@
     const yearBadgeHtml = yr ? `<span class="card-year-3d" aria-hidden="true">${yr}</span>` : "";
 
     const countLabel = m.totalMovies > 0 && m.totalEpisodes === 0
-      ? `${m.totalMovies} фильм(а)`
-      : `${m.totalEpisodes} эп.${m.totalMovies ? ` + ${m.totalMovies} ф.` : ""}`;
+      ? formatMoviesCount(m.totalMovies)
+      : `${formatEpisodesCount(m.totalEpisodes)}${m.totalMovies ? ` + ${formatMoviesCount(m.totalMovies)}` : ""}`;
 
     return `
       <div class="card-unit" draggable="true" data-uid="${esc(item.uid)}" data-tier-id="${esc(tierId)}">
@@ -120,6 +121,9 @@
 
     FXController.applyGlobalBackground(appData.meta || {});
 
+    let grandTotal = 0;
+    appData.tiers.forEach(t => grandTotal += (t.items || []).length);
+
     const q = searchQuery.trim().toLowerCase();
 
     host.innerHTML = appData.tiers.map((tier, tierIdx) => {
@@ -131,6 +135,9 @@
         const matchGenre = selectedGenre === "ALL" || (it.genres || []).some(g => g.toLowerCase() === selectedGenre.toLowerCase());
         return matchText && matchGenre;
       });
+
+      const tierCount = (tier.items || []).length;
+      const tierPercent = grandTotal > 0 ? Math.round((tierCount / grandTotal) * 100) : 0;
 
       const badgeBodyHtml = `
         <span class="seal-index">РАНГ <b>${esc(tier.id)}</b></span>
@@ -153,7 +160,7 @@
               <div class="tier-title-group">
                 <h2>
                   ${esc(tier.name)}
-                  <span class="tier-count-pill">${filteredItems.length}</span>
+                  <span class="tier-count-pill">${tierCount} тайтл. (${tierPercent}%)</span>
                 </h2>
                 <div class="tier-meta-sub">${esc(tier.subtitle || "")}</div>
               </div>
@@ -201,7 +208,6 @@
     return [...set].sort((a, b) => a.localeCompare(b, "ru"));
   }
 
-  /* Заполнение фильтра жанров с живым поиском в шапке и в редакторе */
   function populateGenreDropdowns(editorSearchTerm = "") {
     const listEl = document.getElementById("genreOptionsList");
     const picker = document.getElementById("genreQuickPicker");
@@ -236,6 +242,11 @@
   function bindTierInteractions() {
     document.querySelectorAll("[data-add-to-tier]").forEach(btn => {
       btn.addEventListener("click", () => {
+        if (!GitHubSync.isOwner()) {
+          showToast("Для добавления войдите как владелец по токену", "#ff3c8c");
+          Modals.openModal("authModal");
+          return;
+        }
         Modals.openEditorModal(btn.dataset.addToTier, null);
       });
     });
@@ -300,9 +311,22 @@
     }
   }
 
+  function setDisplayMode(mode) {
+    displayMode = mode;
+    document.body.classList.remove("view-mode-posters", "view-mode-chips", "view-mode-list");
+    document.body.classList.add(`view-mode-${mode}`);
+    document.querySelectorAll("[data-dmode]").forEach(btn => {
+      btn.classList.toggle("active", btn.dataset.dmode === mode);
+    });
+    localStorage.setItem("mta_display_mode", mode);
+  }
+
   function bindGlobalUI() {
     Modals.setDeleteHandler((uid, tierId) => {
-      if (!GitHubSync.isOwner()) return;
+      if (!GitHubSync.isOwner()) {
+        showToast("Удаление доступно только владельцу", "#ff3c8c");
+        return;
+      }
       const tier = appData.tiers.find(t => t.id === tierId);
       if (!tier) return;
       const item = tier.items.find(i => i.uid === uid);
@@ -314,9 +338,22 @@
 
     document.getElementById("btnToggleCalendar")?.addEventListener("click", () => toggleCalendarView());
     document.getElementById("brandHomeBtn")?.addEventListener("click", () => toggleCalendarView("tiers"));
-    document.getElementById("btnAddTitleTop")?.addEventListener("click", () => Modals.openEditorModal("S", null));
+    document.getElementById("btnAddTitleTop")?.addEventListener("click", () => {
+      if (!GitHubSync.isOwner()) {
+        showToast("Для добавления войдите как владелец по токену", "#ff3c8c");
+        Modals.openModal("authModal");
+        return;
+      }
+      Modals.openEditorModal("S", null);
+    });
 
-    // Выпадающий список жанров с поиском в шапке
+    // Переключение видов (постеры, чипы, список)
+    document.querySelectorAll("[data-dmode]").forEach(btn => {
+      btn.addEventListener("click", () => setDisplayMode(btn.dataset.dmode));
+    });
+    const savedDMode = localStorage.getItem("mta_display_mode") || "posters";
+    setDisplayMode(savedDMode);
+
     const gBtn = document.getElementById("genreDropdownBtn");
     const gMenu = document.getElementById("genreDropdownMenu");
     const gSearch = document.getElementById("genreSearchInput");
@@ -333,7 +370,6 @@
       if (!e.target.closest("#genreDropdown")) gMenu?.classList.remove("open");
     });
 
-    // Поиск по жанрам внутри редактора тайтла
     const editorGSearch = document.getElementById("editorGenreSearch");
     editorGSearch?.addEventListener("input", () => {
       populateGenreDropdowns(editorGSearch.value);
@@ -352,37 +388,35 @@
       picker.value = "";
     });
 
-    // Загрузка файла обложки в папку posters/
     const posterFileInp = document.getElementById("fPosterFile");
     posterFileInp?.addEventListener("change", async () => {
       const file = posterFileInp.files?.[0];
       if (!file) return;
       try {
-        showToast("Загрузка обложки в папку posters/ репозитория...", "#00f5ff");
+        showToast("Загрузка обложки в папку posters/...", "#00f5ff");
         const uploadedPath = await GitHubSync.uploadAssetFile(file, "posters");
         document.getElementById("fPoster").value = uploadedPath;
         showToast(`Обложка сохранена: ${uploadedPath}`, "#38ef7d");
       } catch (err) {
         const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
         document.getElementById("fPoster").value = `posters/${safeName}`;
-        showToast(`Указан путь posters/${safeName}. Не забудьте положить файл в папку posters/`, "#ffd76a");
+        showToast(`Указан путь posters/${safeName}. Закиньте файл в репозиторий`, "#ffd76a");
       }
     });
 
-    // Глобальный фон владельца (вкладка в Настройках)
     const ownerBgFile = document.getElementById("ownerBgFileInput");
     ownerBgFile?.addEventListener("change", async () => {
       const file = ownerBgFile.files?.[0];
       if (!file) return;
       try {
-        showToast("Загрузка картинки фона в папку backgrounds/...", "#00f5ff");
+        showToast("Загрузка фона в папку backgrounds/...", "#00f5ff");
         const path = await GitHubSync.uploadAssetFile(file, "backgrounds");
         document.getElementById("ownerBgUrlInput").value = path;
         appData.meta = appData.meta || {};
         appData.meta.bgImage = path;
         FXController.applyGlobalBackground(appData.meta);
         saveLocalState();
-        showToast("Фон загружен! Нажмите «☁ Сохранить в GitHub», чтобы его видели все.", "#38ef7d");
+        showToast("Фон загружен! Нажмите «☁ Сохранить» для публикации.", "#38ef7d");
       } catch (err) {
         showToast("Ошибка загрузки фона: " + err.message, "#ff3c8c");
       }
@@ -414,7 +448,7 @@
       appData.meta.bgBlur = parseInt(document.getElementById("rngOwnerBgBlur").value, 10) || 4;
       FXController.applyGlobalBackground(appData.meta);
       saveLocalState();
-      showToast("Глобальный фон применён! Нажмите «☁ Сохранить в GitHub» для публикации.", "#38ef7d");
+      showToast("Фон применён! Не забудьте нажать «☁ Сохранить».", "#38ef7d");
     });
 
     document.getElementById("btnClearOwnerBg")?.addEventListener("click", () => {
@@ -423,7 +457,7 @@
       appData.meta.bgImage = "";
       FXController.applyGlobalBackground(appData.meta);
       saveLocalState();
-      showToast("Глобальный фон отключён");
+      showToast("Фон отключён");
     });
 
     document.getElementById("searchInput")?.addEventListener("input", e => {
@@ -439,7 +473,6 @@
       btn.addEventListener("click", () => Modals.addSeasonRow(btn.dataset.addPart));
     });
 
-    // Автозаполнение Shikimori
     const shikiInput = document.getElementById("shikiSearchInput");
     const shikiBox = document.getElementById("shikiResults");
     let debounceTimer = 0;
@@ -493,11 +526,10 @@
       }, 320);
     });
 
-    // Сохранение тайтла (только для владельца)
     document.getElementById("animeEditorForm")?.addEventListener("submit", e => {
       e.preventDefault();
       if (!GitHubSync.isOwner()) {
-        showToast("Ошибка: редактировать может только владелец!", "#ff3c8c");
+        showToast("Ошибка: сохранять может только владелец!", "#ff3c8c");
         return;
       }
 
@@ -543,7 +575,6 @@
       showToast(`«${newItem.title}» сохранён в тир ${targetTierId}`);
     });
 
-    // Строгая авторизация владельца по токену GitHub
     document.getElementById("btnOwnerAuth")?.addEventListener("click", () => {
       document.getElementById("ghTokenInput").value = GitHubSync.getToken();
       document.getElementById("ghRepoInput").value = GitHubSync.getRepo();
@@ -563,26 +594,26 @@
         return;
       }
 
-      showToast("Проверка токена в GitHub...");
+      showToast("Проверка токена...");
       const user = await GitHubSync.verifyToken(tk);
       if (user) {
         GitHubSync.saveCredentials(tk, rp);
         document.body.classList.add("is-owner");
         updateOwnerBadge(user);
         Modals.closeModal("authModal");
-        showToast(`Добро пожаловать, ${user.login}! Режим владельца активен.`, "#38ef7d");
+        showToast(`Вход выполнен: ${user.login}! Режим владельца активен.`, "#38ef7d");
       } else {
         GitHubSync.logout();
         updateOwnerBadge(null);
-        showToast("Неверный токен GitHub! Доступ к редактированию запрещён.", "#ff3c8c");
+        showToast("Неверный токен GitHub!", "#ff3c8c");
       }
     });
 
     document.getElementById("btnSyncGitHub")?.addEventListener("click", async () => {
       try {
-        showToast("Отправка коммита в GitHub (data/tiers.json)...", "#00f5ff");
+        showToast("Отправка коммита в GitHub...", "#00f5ff");
         await GitHubSync.commitTiersToGitHub(appData);
-        showToast("Успешно сохранено в GitHub! Все гости по ссылке теперь видят обновления.", "#38ef7d");
+        showToast("Успешно сохранено в GitHub! Все гости видят обновления.", "#38ef7d");
       } catch (err) {
         showToast("Ошибка синхронизации: " + err.message, "#ff3c8c");
       }
@@ -603,10 +634,10 @@
     if (!btn) return;
     if (user) {
       btn.classList.add("btn-owner-active");
-      btn.innerHTML = `🔓 Владелец: ${esc(user.login)}`;
+      btn.innerHTML = `🔓 ${esc(user.login)}`;
     } else {
       btn.classList.remove("btn-owner-active");
-      btn.innerHTML = `🔑 Вход владельца`;
+      btn.innerHTML = `🔑 Вход`;
     }
   }
 
