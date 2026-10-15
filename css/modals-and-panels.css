@@ -1,4 +1,8 @@
-/* ═══════════════════ COLORFUL NEON TOPBAR, CONTROLS, CALENDAR, SETTINGS & MODALS ═══════════════════ */
+/* ═══════════════════ CUSTOM SLIDERS, GENRE SEARCH DROPDOWN, OWNER BG & MODALS ═══════════════════ */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
 body {
   margin: 0;
   background-color: var(--bg-deep);
@@ -12,15 +16,111 @@ body {
   overflow-x: hidden;
 }
 
+/* Глобальный фон владельца (виден всем, у кого есть ссылка) */
+.global-owner-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+.global-owner-bg.has-bg {
+  opacity: 1;
+}
+.global-owner-bg::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(6, 5, 12, var(--owner-bg-dim, 0.65));
+}
+
+/* Экранные оверлеи (Виньетка, Кибер-сетка, Сканлайны) */
+.screen-fx-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  box-shadow: inset 0 0 110px rgba(0, 0, 0, var(--vignette-opacity, 0.3));
+}
+body.fx-cyber-grid .screen-fx-overlay {
+  background-image:
+    linear-gradient(rgba(0, 245, 255, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 245, 255, 0.035) 1px, transparent 1px);
+  background-size: 36px 36px;
+}
+body.fx-scanlines .screen-fx-overlay::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0px,
+    transparent 2px,
+    rgba(0, 0, 0, 0.22) 3px
+  );
+}
+
+/* КАСТОМНЫЕ ПОЛЗУНКИ (БЕЗ БЕЛОЙ ПОЛОСЫ!) */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 8px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #1b1438 0%, #2a1f54 50%, #152b3d 100%);
+  border: 1px solid rgba(0, 245, 255, 0.35);
+  box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.85);
+  outline: none;
+  cursor: pointer;
+  margin: 4px 0;
+}
+input[type="range"]::-webkit-slider-runnable-track {
+  height: 8px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(255, 215, 106, 0.32), rgba(181, 124, 255, 0.35), rgba(0, 245, 255, 0.4));
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #ffd76a, #ff5e7e);
+  border: 2px solid #ffffff;
+  box-shadow: 0 0 12px rgba(255, 215, 106, 0.85);
+  margin-top: -6px;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+  box-shadow: 0 0 18px #00f5ff;
+}
+input[type="range"]::-moz-range-track {
+  height: 8px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #1b1438, #2a1f54, #152b3d);
+  border: 1px solid rgba(0, 245, 255, 0.35);
+}
+input[type="range"]::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #ffd76a, #ff5e7e);
+  border: 2px solid #ffffff;
+  box-shadow: 0 0 12px rgba(255, 215, 106, 0.85);
+}
+
 select,
-.form-control,
-.genre-select {
+.form-control {
   color-scheme: dark;
   background-color: #15112b !important;
   color: #f5f3ff !important;
 }
-select option,
-select optgroup {
+select option {
   background-color: #15112b !important;
   color: #f5f3ff !important;
   padding: 8px 12px;
@@ -32,15 +132,14 @@ select optgroup {
   width: 100%;
   height: 100%;
   pointer-events: none;
-  z-index: 0;
+  z-index: 1;
 }
 
 .app-shell {
   position: relative;
-  z-index: 1;
+  z-index: 3;
 }
 
-/* Красочная неоновая шапка */
 .topbar {
   position: sticky;
   top: 0;
@@ -62,13 +161,16 @@ select optgroup {
   background-size: 200% 100%;
   animation: rainbowBar 8s linear infinite;
 }
+body.hide-top-rainbow .topbar-glow-line { display: none !important; }
+body.hide-stats-ribbon .stats-ribbon { display: none !important; }
+
 @keyframes rainbowBar {
   0% { background-position: 0% 50%; }
   100% { background-position: 200% 50%; }
 }
 
 .topbar-inner {
-  max-width: 1780px;
+  max-width: var(--container-width, 1780px);
   margin: 0 auto;
   display: flex;
   align-items: center;
@@ -107,7 +209,6 @@ select optgroup {
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
-  filter: drop-shadow(0 0 14px rgba(255, 215, 106, 0.3));
 }
 
 .toolbar-controls {
@@ -117,7 +218,6 @@ select optgroup {
   flex-wrap: wrap;
 }
 
-/* Красочное поле поиска */
 .search-input-wrap {
   position: relative;
   display: flex;
@@ -132,15 +232,15 @@ select optgroup {
   color: #fff;
   font-size: 13px;
   font-weight: 500;
-  width: 220px;
-  box-shadow: 0 0 16px -4px rgba(0, 245, 255, 0.25), inset 0 1px 0 rgba(255,255,255,0.12);
+  width: 210px;
+  box-shadow: 0 0 16px -4px rgba(0, 245, 255, 0.25);
   transition: all 0.25s ease;
 }
 .search-input:focus {
   outline: none;
   border-color: #00f5ff;
   box-shadow: 0 0 22px -2px rgba(0, 245, 255, 0.55);
-  width: 265px;
+  width: 255px;
 }
 .search-icon {
   position: absolute;
@@ -151,40 +251,69 @@ select optgroup {
   pointer-events: none;
 }
 
-/* Красочная капсула выбора жанра */
-.genre-select-wrap {
+/* ВЫПАДАЮЩИЙ СПИСОК ЖАНРОВ С ЖИВЫМ ПОИСКОМ */
+.genre-dropdown {
   position: relative;
-  display: flex;
+}
+.genre-dropdown-btn {
+  display: inline-flex;
   align-items: center;
-}
-.genre-icon {
-  position: absolute;
-  left: 13px;
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: 13px;
-  pointer-events: none;
-  z-index: 2;
-}
-.genre-select {
-  border-radius: 999px !important;
-  padding: 9px 32px 9px 36px !important;
+  gap: 8px;
+  border-radius: 999px;
+  padding: 9px 16px;
   font-size: 12.5px;
   font-weight: 700;
-  border: 1px solid rgba(255, 60, 140, 0.45) !important;
-  background: linear-gradient(135deg, rgba(40, 18, 52, 0.92), rgba(18, 13, 36, 0.95)) !important;
-  box-shadow: 0 0 16px -4px rgba(255, 60, 140, 0.3), inset 0 1px 0 rgba(255,255,255,0.14);
+  color: #fff;
+  border: 1px solid rgba(255, 60, 140, 0.5);
+  background: linear-gradient(135deg, rgba(40, 18, 52, 0.92), rgba(18, 13, 36, 0.95));
+  box-shadow: 0 0 16px -4px rgba(255, 60, 140, 0.35);
   cursor: pointer;
-  transition: all 0.2s ease;
-  max-width: 230px;
+  transition: all 0.2s;
 }
-.genre-select:hover, .genre-select:focus {
-  border-color: #ff3c8c !important;
-  box-shadow: 0 0 22px -2px rgba(255, 60, 140, 0.55);
-  outline: none;
+.genre-dropdown-btn:hover {
+  border-color: #ff3c8c;
+  box-shadow: 0 0 22px -2px rgba(255, 60, 140, 0.6);
+}
+.genre-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  width: 280px;
+  background: #130f26;
+  border: 1px solid rgba(255, 60, 140, 0.45);
+  border-radius: 14px;
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.9);
+  padding: 10px;
+  z-index: 70;
+  display: none;
+}
+.genre-dropdown-menu.open {
+  display: block;
+}
+.genre-search-box {
+  margin-bottom: 8px;
+}
+.genre-options-list {
+  max-height: 250px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.genre-opt-item {
+  padding: 7px 10px;
+  border-radius: 8px;
+  font-size: 12px;
+  color: var(--ink);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.genre-opt-item:hover, .genre-opt-item.active {
+  background: rgba(255, 60, 140, 0.22);
+  color: #ffd76a;
+  font-weight: 700;
 }
 
-/* Кнопки верхней панели */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -251,11 +380,6 @@ select optgroup {
   border-color: transparent;
   font-weight: 800;
 }
-.btn-primary:hover {
-  filter: brightness(1.08);
-  box-shadow: 0 0 20px rgba(255, 215, 106, 0.5);
-}
-
 .btn-danger {
   background: rgba(255, 82, 82, 0.16);
   border-color: rgba(255, 82, 82, 0.55);
@@ -265,33 +389,37 @@ select optgroup {
   background: #ff5252;
   color: #fff;
 }
-
 .btn-owner-active {
   border-color: #38ef7d;
   color: #38ef7d;
   background: rgba(56, 239, 125, 0.14);
 }
 
+/* СТРОГОЕ СКРЫТИЕ КНОПОК ВЛАДЕЛЬЦА ДЛЯ ОБЫЧНЫХ ПОЛЬЗОВАТЕЛЕЙ */
 .owner-only {
   display: none !important;
 }
 body.is-owner .owner-only {
   display: inline-flex !important;
 }
+body.is-owner div.owner-only,
+body.is-owner section.owner-only {
+  display: block !important;
+}
 
-/* Аналитическая лента */
+/* Аналитическая лента с крупным блоком Серий и Фильмов */
 .stats-ribbon {
-  max-width: 1780px;
+  max-width: var(--container-width, 1780px);
   margin: 18px auto 6px;
   padding: 0 20px;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
   gap: 14px;
 }
 
 .stat-card {
-  background: linear-gradient(135deg, rgba(22, 18, 42, 0.82), rgba(12, 10, 24, 0.88));
-  border: 1px solid rgba(255, 255, 255, 0.11);
+  background: linear-gradient(135deg, rgba(22, 18, 42, 0.86), rgba(12, 10, 24, 0.92));
+  border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: var(--radius-md);
   padding: 13px 16px;
   display: flex;
@@ -308,7 +436,7 @@ body.is-owner .owner-only {
 }
 .stat-val {
   font-family: var(--serif);
-  font-size: 21px;
+  font-size: 22px;
   font-weight: 800;
   color: #fff;
   margin-top: 3px;
@@ -320,17 +448,38 @@ body.is-owner .owner-only {
   font-weight: 600;
 }
 
-/* Панель «⚙️ Настройки» */
+/* Двойной яркий блок для Серий и Фильмов */
+.stat-dual-split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  width: 100%;
+}
+.stat-split-box {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  padding: 8px 12px;
+  display: flex;
+  flex-direction: column;
+}
+.stat-split-box.movies-highlight {
+  background: linear-gradient(135deg, rgba(255, 60, 140, 0.16), rgba(255, 215, 106, 0.12));
+  border-color: rgba(255, 94, 126, 0.5);
+  box-shadow: 0 0 16px -4px rgba(255, 60, 140, 0.35);
+}
+
+/* Студия кастомизации (#fxPanel) с вкладками */
 .fx-drawer {
   position: fixed;
   top: 72px;
   right: 22px;
-  width: 410px;
+  width: 440px;
   max-height: calc(100vh - 92px);
   overflow-y: auto;
   background: rgba(14, 11, 28, 0.97);
-  border: 1px solid rgba(0, 245, 255, 0.3);
-  border-radius: var(--radius-lg);
+  border: 1px solid rgba(0, 245, 255, 0.35);
+  border-radius: 20px;
   padding: 18px;
   z-index: 60;
   box-shadow: var(--shadow-lg), 0 0 35px -8px rgba(0, 245, 255, 0.25);
@@ -344,15 +493,46 @@ body.is-owner .owner-only {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.fx-tabs-nav {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
   margin-bottom: 12px;
   padding-bottom: 8px;
   border-bottom: 1px solid var(--border-subtle);
 }
+.fx-tab-btn {
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border-subtle);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--ink-soft);
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.fx-tab-btn.active {
+  background: linear-gradient(135deg, rgba(0, 245, 255, 0.22), rgba(181, 124, 255, 0.22));
+  border-color: #00f5ff;
+  color: #fff;
+}
+.fx-tab-pane {
+  display: none;
+}
+.fx-tab-pane.active {
+  display: block;
+}
+
 .fx-section-title {
   font-size: 11.5px;
   font-weight: 700;
   color: var(--ink-soft);
-  margin: 10px 0 6px;
+  margin: 8px 0 6px;
   text-transform: uppercase;
   letter-spacing: 0.06em;
 }
@@ -363,15 +543,14 @@ body.is-owner .owner-only {
   margin-bottom: 12px;
 }
 .fx-seg button {
-  padding: 8px 10px;
+  padding: 7px 10px;
   border-radius: 8px;
   border: 1px solid var(--border-subtle);
   background: rgba(255,255,255,0.04);
   color: var(--ink-soft);
-  font-size: 11.5px;
+  font-size: 11px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s;
   text-align: left;
 }
 .fx-seg button.active {
@@ -382,17 +561,18 @@ body.is-owner .owner-only {
 .fx-sliders {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  margin: 12px 0;
-  padding: 10px;
-  border-radius: 10px;
-  background: rgba(255,255,255,0.03);
+  gap: 9px;
+  margin: 10px 0;
+  padding: 12px;
+  border-radius: 12px;
+  background: rgba(10, 8, 22, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.07);
 }
 .fx-slider-row {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  font-size: 12px;
+  gap: 2px;
+  font-size: 11.5px;
   color: var(--ink-soft);
 }
 .fx-slider-row b {
@@ -401,7 +581,7 @@ body.is-owner .owner-only {
 .fx-toggles {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 7px;
   font-size: 12px;
 }
 .fx-check-row {
@@ -411,9 +591,9 @@ body.is-owner .owner-only {
   cursor: pointer;
 }
 
-/* Календарь и Список по месяцам */
+/* Календарь */
 .calendar-container {
-  max-width: 1780px;
+  max-width: var(--container-width, 1780px);
   margin: 16px auto 80px;
   padding: 0 20px;
 }
@@ -524,7 +704,7 @@ body.is-owner .owner-only {
   border-radius: 6px;
 }
 
-/* Модальные окна */
+/* Модальные окна и исправленная сетка сезонов */
 .modal-backdrop {
   position: fixed;
   inset: 0;
@@ -546,12 +726,12 @@ body.is-owner .owner-only {
   overflow-y: auto;
   background: #120f24;
   border: 1px solid rgba(255, 255, 255, 0.18);
-  border-radius: var(--radius-lg);
+  border-radius: 22px;
   padding: 24px;
   box-shadow: var(--shadow-lg);
 }
 .modal-box-wide {
-  max-width: 880px;
+  max-width: 920px;
 }
 
 .modal-header {
@@ -579,6 +759,7 @@ body.is-owner .owner-only {
   flex-direction: column;
   gap: 5px;
   margin-bottom: 10px;
+  min-width: 0;
 }
 .form-group.full {
   grid-column: 1 / -1;
@@ -589,12 +770,14 @@ body.is-owner .owner-only {
   font-weight: 600;
 }
 .form-control {
+  width: 100%;
+  min-width: 0;
   background: #15112b;
   border: 1px solid var(--border-subtle);
   border-radius: 9px;
-  padding: 9px 12px;
+  padding: 8px 11px;
   color: #fff;
-  font-size: 13px;
+  font-size: 12.5px;
   font-family: var(--sans);
 }
 .form-control:focus {
@@ -602,6 +785,25 @@ body.is-owner .owner-only {
   border-color: #00f5ff;
 }
 
+.poster-upload-box {
+  background: rgba(0, 245, 255, 0.04);
+  border: 1px dashed rgba(0, 245, 255, 0.35);
+  border-radius: 12px;
+  padding: 12px;
+}
+.poster-upload-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.editor-genre-bar {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+/* ИСПРАВЛЕННАЯ СТРОКА СЕЗОНА (НИЧЕГО НЕ ВЫЛЕЗАЕТ ЗА КРАЯ!) */
 .seasons-builder-box {
   margin-top: 10px;
   padding: 14px;
@@ -621,16 +823,19 @@ body.is-owner .owner-only {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  max-height: 280px;
+  overflow-y: auto;
+  padding-right: 4px;
 }
 .season-row {
   display: grid;
-  grid-template-columns: 1.3fr 1fr 0.65fr 0.75fr 0.95fr 1fr 0.85fr auto;
-  gap: 7px;
+  grid-template-columns: minmax(120px, 1.3fr) minmax(105px, 0.95fr) 68px 74px 110px minmax(100px, 1fr) 72px 32px;
+  gap: 6px;
   align-items: center;
-  background: rgba(12, 10, 24, 0.85);
-  padding: 8px 10px;
+  background: rgba(12, 10, 24, 0.9);
+  padding: 8px;
   border-radius: 9px;
-  border: 1px solid rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.09);
 }
 .season-row .s-calc {
   font-size: 11px;
@@ -648,24 +853,66 @@ body.is-owner .owner-only {
   font-weight: 700;
   display: flex;
   justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
+/* КОМПАКТНОЕ ОФОРМЛЕНИЕ МНОЖЕСТВА СЕЗОНОВ В КАРТОЧКЕ ТАЙТЛА */
+.dossier-seasons-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 12px 0 8px;
+}
+.dossier-filter-pills {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.dossier-pill-btn {
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  border: 1px solid var(--border-subtle);
+  background: rgba(255,255,255,0.04);
+  color: var(--ink-soft);
+  cursor: pointer;
+}
+.dossier-pill-btn.active {
+  background: rgba(0, 245, 255, 0.18);
+  border-color: #00f5ff;
+  color: #fff;
+}
+.seasons-scroll-box {
+  max-height: 245px;
+  overflow-y: auto;
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  background: rgba(8, 6, 18, 0.65);
+}
 .seasons-table {
   width: 100%;
   border-collapse: collapse;
-  margin-top: 10px;
-  font-size: 12.5px;
+  font-size: 12px;
 }
-.seasons-table th,
-.seasons-table td {
-  padding: 8px 10px;
-  border-bottom: 1px solid var(--border-subtle);
-  text-align: left;
-}
-.seasons-table th {
+.seasons-table thead th {
+  position: sticky;
+  top: 0;
+  background: #16122c;
   color: var(--ink-soft);
-  font-size: 11px;
+  font-size: 10.5px;
   text-transform: uppercase;
+  padding: 8px 10px;
+  text-align: left;
+  border-bottom: 1px solid var(--border-subtle);
+  z-index: 2;
+}
+.seasons-table td {
+  padding: 7px 10px;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
 }
 
 .shiki-results {
@@ -718,11 +965,11 @@ body.is-owner .owner-only {
   box-shadow: var(--shadow-lg);
 }
 
-@media (max-width: 820px) {
+@media (max-width: 860px) {
   .season-row {
     grid-template-columns: 1fr 1fr;
   }
-  .cal-grid {
-    grid-template-columns: repeat(2, 1fr);
+  .poster-upload-grid, .editor-genre-bar {
+    grid-template-columns: 1fr;
   }
 }
