@@ -1,12 +1,12 @@
-/* ═══════════════════ MAIN APPLICATION ORCHESTRATOR (myTierAnime v3.1) ═══════════════════ */
+/* ═══════════════════ MAIN APPLICATION ORCHESTRATOR (myTierAnime v3.2) ═══════════════════ */
 (() => {
-  const LOCAL_STORAGE_KEY = "mta_2026_state_v5";
+  const LOCAL_STORAGE_KEY = "mta_2026_state_v6";
   let appData = null;
   let searchQuery = "";
   let selectedGenre = "ALL";
   let genreFilterSearch = "";
-  let activeView = "tiers"; // "tiers" или "calendar"
-  let displayMode = "posters"; // "posters", "chips", "list"
+  let activeView = "tiers";
+  let displayMode = "posters";
 
   const DEFAULT_TIERS_TEMPLATE = [
     { id: "S", rank: 1, name: "Золотой фонд", subtitle: "Шедевры и эталонные произведения на все времена", hue: 45, items: [] },
@@ -51,6 +51,7 @@
       if (res.ok) {
         appData = ensureSixTiers(await res.json());
         localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(appData));
+        FXController.applyGlobalBackground(appData.meta || {});
         return;
       }
     } catch (e) {
@@ -61,10 +62,12 @@
     if (cached) {
       try {
         appData = ensureSixTiers(JSON.parse(cached));
+        FXController.applyGlobalBackground(appData.meta || {});
         return;
       } catch {}
     }
     appData = ensureSixTiers(null);
+    FXController.applyGlobalBackground(appData.meta || {});
   }
 
   function saveLocalState() {
@@ -138,6 +141,7 @@
 
       const tierCount = (tier.items || []).length;
       const tierPercent = grandTotal > 0 ? Math.round((tierCount / grandTotal) * 100) : 0;
+      const titlesStr = formatTitlesCount(tierCount);
 
       const badgeBodyHtml = `
         <span class="seal-index">РАНГ <b>${esc(tier.id)}</b></span>
@@ -160,7 +164,7 @@
               <div class="tier-title-group">
                 <h2>
                   ${esc(tier.name)}
-                  <span class="tier-count-pill">${tierCount} тайтл. (${tierPercent}%)</span>
+                  <span class="tier-count-pill">${tierCount} ${titlesStr.replace(/^\d+\s*/, "")} (${tierPercent}%)</span>
                 </h2>
                 <div class="tier-meta-sub">${esc(tier.subtitle || "")}</div>
               </div>
@@ -243,7 +247,7 @@
     document.querySelectorAll("[data-add-to-tier]").forEach(btn => {
       btn.addEventListener("click", () => {
         if (!GitHubSync.isOwner()) {
-          showToast("Для добавления войдите как владелец по токену", "#ff3c8c");
+          showToast("Для добавления войдите как владелец", "#ff3c8c");
           Modals.openModal("authModal");
           return;
         }
@@ -340,14 +344,13 @@
     document.getElementById("brandHomeBtn")?.addEventListener("click", () => toggleCalendarView("tiers"));
     document.getElementById("btnAddTitleTop")?.addEventListener("click", () => {
       if (!GitHubSync.isOwner()) {
-        showToast("Для добавления войдите как владелец по токену", "#ff3c8c");
+        showToast("Для добавления войдите как владелец", "#ff3c8c");
         Modals.openModal("authModal");
         return;
       }
       Modals.openEditorModal("S", null);
     });
 
-    // Переключение видов (постеры, чипы, список)
     document.querySelectorAll("[data-dmode]").forEach(btn => {
       btn.addEventListener("click", () => setDisplayMode(btn.dataset.dmode));
     });
