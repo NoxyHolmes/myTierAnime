@@ -1,7 +1,12 @@
-/* ═══════════════════ MODALS: TYPE & YEAR STACKED, LARGE POSTER & BGM PLAYER ═══════════════════ */
+/* ═══════════════════ MODALS: INSTANT OPEN & SINGLETON BGM PLAYER (NO OVERLAP) ═══════════════════ */
 const Modals = (() => {
   let deleteHandler = null;
-  let activeAudio = null;
+
+  /* Единый глобальный аудио-плеер (Singleton): физически исключает наложение двух треков друг на друга! */
+  const bgmPlayer = new Audio();
+  bgmPlayer.loop = true;
+  bgmPlayer.preload = "auto";
+  let bgmSessionId = 0;
 
   function openModal(id) {
     document.getElementById(id)?.classList.add("open");
@@ -17,13 +22,12 @@ const Modals = (() => {
   }
 
   function stopActiveBgm() {
-    if (activeAudio) {
-      try {
-        activeAudio.pause();
-        activeAudio.currentTime = 0;
-      } catch {}
-      activeAudio = null;
-    }
+    bgmSessionId++; // Отменяет любые незавершённые асинхронные загрузки треков от предыдущих кликов
+    try {
+      bgmPlayer.pause();
+      bgmPlayer.removeAttribute("src");
+      bgmPlayer.load();
+    } catch {}
   }
 
   function syncEditorGenreChips() {
@@ -54,8 +58,11 @@ const Modals = (() => {
     });
   }
 
-  async function showAnimeDetails(item, tier) {
+  function showAnimeDetails(item, tier) {
+    // 1. Сначала мгновенно останавливаем любой предыдущий звук и фиксируем ID текущего открытия
     stopActiveBgm();
+    const currentSession = bgmSessionId;
+
     const body = document.getElementById("detailsModalBody");
     const topBadges = document.getElementById("dossierTopBadges");
     const bgmBtn = document.getElementById("btnBgmToggle");
@@ -71,7 +78,6 @@ const Modals = (() => {
       `;
     }
 
-    /* РАСКЛАДКА СЕЗОНОВ: тип и год выпуска стоят строго ДРУГ ПОД ДРУГОМ, текст виден полностью без обрезания */
     function renderSeasonsVerticalStack(filterType = "ALL") {
       const filtered = m.seasons.filter(s => {
         if (filterType === "ALL") return true;
@@ -100,7 +106,6 @@ const Modals = (() => {
               </div>
             </div>
 
-            <!-- Тип и год выпуска стоят строго ДРУГ ПОД ДРУГОМ -->
             <div class="dsb-col-typeyear">
               <span class="cum-kind">${esc(s.type)}</span>
               <span class="dsc-year">${esc(relYr)} г.</span>
@@ -137,7 +142,6 @@ const Modals = (() => {
         <div id="dossierHeroBackdrop" class="dossier-hero-backdrop" style="background-image:url('${esc(displayPoster)}');"></div>
         <div class="dossier-hero-scrim"></div>
 
-        <!-- КРУПНАЯ ОБЛОЖКА СЛЕВА (ШИРИНА УВЕЛИЧЕНА ДО 310PX) -->
         <aside class="dossier-left-poster-col">
           <div class="dossier-poster-large">
             <img id="dossierMainPosterImg" src="${esc(displayPoster)}" alt="${esc(item.title)}"
@@ -202,46 +206,6 @@ const Modals = (() => {
       </div>
     `;
 
-    if (item.bgmUrl || item.bgmBlobSha) {
-      if (bgmBtn) bgmBtn.style.display = "inline-flex";
-      const resolvedBgm = await GitHubSync.resolveAssetUrl(item.bgmUrl, item.bgmBlobSha, "audio/mpeg");
-      if (resolvedBgm) {
-        activeAudio = new Audio(resolvedBgm);
-        activeAudio.loop = true;
-        const globalVol = parseFloat(localStorage.getItem("mta_bgm_volume") || "0.3");
-        activeAudio.volume = globalVol;
-        activeAudio.play().then(() => {
-          if (bgmBtn) bgmBtn.innerHTML = "🔊 Музыка вкл.";
-        }).catch(() => {
-          if (bgmBtn) bgmBtn.innerHTML = "🔇 Включить музыку";
-        });
-
-        if (bgmBtn) {
-          bgmBtn.onclick = () => {
-            if (activeAudio.paused) {
-              activeAudio.play();
-              bgmBtn.innerHTML = "🔊 Музыка вкл.";
-            } else {
-              activeAudio.pause();
-              bgmBtn.innerHTML = "🔇 Музыка выкл.";
-            }
-          };
-        }
-      }
-    } else {
-      if (bgmBtn) bgmBtn.style.display = "none";
-    }
-
-    if (!item.posterInline && typeof GitHubSync !== "undefined" && typeof GitHubSync.resolveAssetUrl === "function") {
-      GitHubSync.resolveAssetUrl(item.poster, item.posterBlobSha, "image/jpeg", item.posterInline).then(resolvedUrl => {
-        if (!resolvedUrl) return;
-        const posterImg = document.getElementById("dossierMainPosterImg");
-        const backdropEl = document.getElementById("dossierHeroBackdrop");
-        if (posterImg) posterImg.src = resolvedUrl;
-        if (backdropEl) backdropEl.style.backgroundImage = `url("${resolvedUrl}")`;
-      }).catch(() => {});
-    }
-
     body.querySelectorAll("[data-s-filter]").forEach(btn => {
       btn.addEventListener("click", () => {
         body.querySelectorAll("[data-s-filter]").forEach(b => b.classList.toggle("active", b === btn));
@@ -279,7 +243,64 @@ const Modals = (() => {
       };
     }
 
+    // 2. МГНОВЕННО открываем карточку (не дожидаясь загрузки аудио или картинок!)
     openModal("detailsModal");
+
+    // 3. В фоновом режиме подтягиваем обложку высокого разрешения (если нет inline-копии)
+    if (!item.posterInline && typeof GitHubSync !== "undefined" && typeof GitHubSync.resolveAssetUrl === "function") {
+      GitHubSync.resolveAssetUrl(item.poster, item.posterBlobSha, "image/jpeg", item.posterInline).then(resolvedUrl => {
+        if (!resolvedUrl || currentSession !== bgmSessionId) return;
+        const posterImg = document.getElementById("dossierMainPosterImg");
+        const backdropEl = document.getElementById("dossierHeroBackdrop");
+        if (posterImg) posterImg.src = resolvedUrl;
+        if (backdropEl) backdropEl.style.backgroundImage = `url("${resolvedUrl}")`;
+      }).catch(() => {});
+    }
+
+    // 4. В фоновом режиме запускаем потоковую музыку через единый bgmPlayer (без наложения!)
+    if (item.bgmUrl || item.bgmBlobSha) {
+      if (bgmBtn) {
+        bgmBtn.style.display = "inline-flex";
+        bgmBtn.innerHTML = "⏳ Загрузка музыки...";
+        bgmBtn.onclick = () => {
+          if (!bgmPlayer.src) return;
+          if (bgmPlayer.paused) {
+            bgmPlayer.play().then(() => {
+              bgmBtn.innerHTML = "🔊 Музыка вкл.";
+            }).catch(() => {});
+          } else {
+            bgmPlayer.pause();
+            bgmBtn.innerHTML = "🔇 Музыка выкл.";
+          }
+        };
+      }
+
+      GitHubSync.resolveAssetUrl(item.bgmUrl, item.bgmBlobSha, "audio/mpeg").then(resolvedBgm => {
+        // Если за время разрешения URL пользователь закрыл окно или кликнул ещё раз — выходим!
+        if (!resolvedBgm || currentSession !== bgmSessionId) return;
+        const modalEl = document.getElementById("detailsModal");
+        if (!modalEl || !modalEl.classList.contains("open")) return;
+
+        const globalVol = parseFloat(localStorage.getItem("mta_bgm_volume") || "0.3");
+        bgmPlayer.volume = Math.min(1, Math.max(0, isNaN(globalVol) ? 0.3 : globalVol));
+        bgmPlayer.src = resolvedBgm;
+        bgmPlayer.currentTime = 0;
+
+        bgmPlayer.play().then(() => {
+          if (currentSession === bgmSessionId && bgmBtn) {
+            bgmBtn.innerHTML = "🔊 Музыка вкл.";
+          }
+        }).catch(() => {
+          if (currentSession === bgmSessionId && bgmBtn) {
+            bgmBtn.innerHTML = "🔇 Включить музыку";
+          }
+        });
+      }).catch(() => {
+        if (bgmBtn) bgmBtn.style.display = "none";
+      });
+    } else {
+      if (bgmBtn) bgmBtn.style.display = "none";
+    }
   }
 
   function createSeasonRowElement(part = {}) {
@@ -418,13 +439,18 @@ const Modals = (() => {
     const fileInp = document.getElementById("fPosterFile");
     if (fileInp) fileInp.value = "";
 
+    const bgmFileInp = document.getElementById("fBgmFile");
+    if (bgmFileInp) bgmFileInp.value = "";
     const bgmUrlInp = document.getElementById("fBgmUrl");
     if (bgmUrlInp) {
       bgmUrlInp.value = existingItem ? existingItem.bgmUrl || "" : "";
       bgmUrlInp.dataset.existingBlobSha = existingItem?.bgmBlobSha || "";
     }
     const bgmFileLbl = document.getElementById("bgmFileNameLabel");
-    if (bgmFileLbl) bgmFileLbl.textContent = existingItem?.bgmUrl ? "Музыка загружена" : "Музыка не выбрана";
+    if (bgmFileLbl) {
+      bgmFileLbl.style.color = existingItem?.bgmUrl ? "#38ef7d" : "#ffd76a";
+      bgmFileLbl.textContent = existingItem?.bgmUrl ? "🎵 Музыка загружена" : "Музыка не выбрана";
+    }
 
     document.getElementById("fGenres").value = existingItem ? (existingItem.genres || []).join(", ") : "";
     document.getElementById("fComment").value = existingItem ? existingItem.comment || "" : "";
@@ -461,6 +487,10 @@ const Modals = (() => {
     recalculateSeasonsPreview();
   }
 
+  function setLiveBgmVolume(volFloat) {
+    bgmPlayer.volume = Math.min(1, Math.max(0, volFloat));
+  }
+
   return {
     openModal,
     closeModal,
@@ -470,6 +500,7 @@ const Modals = (() => {
     openEditorModal,
     addSeasonRow,
     readSeasonsFromEditor,
-    recalculateSeasonsPreview
+    recalculateSeasonsPreview,
+    setLiveBgmVolume
   };
 })();
