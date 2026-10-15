@@ -1,10 +1,12 @@
-/* ═══════════════════ MAIN APPLICATION ORCHESTRATOR (myTierAnime v5.0 1-SEC LIVE SYNC & UNLIMITED FILES) ═══════════════════ */
+/* ═══════════════════ MAIN APPLICATION ORCHESTRATOR (myTierAnime v6.0 STUDIO SEARCH & MANUAL/AUTO SYNC) ═══════════════════ */
 (() => {
-  const LOCAL_STORAGE_KEY = "mta_2026_owner_draft_v10";
+  const LOCAL_STORAGE_KEY = "mta_2026_owner_draft_v11";
   let appData = null;
   let searchQuery = "";
   let selectedGenre = "ALL";
   let genreFilterSearch = "";
+  let selectedStudio = "ALL";
+  let studioFilterSearch = "";
   let activeView = "tiers";
   let lastRenderedSignature = "";
 
@@ -65,7 +67,6 @@
         } catch {}
       }
     } else {
-      // У зрителей всегда очищаем любые старые черновики, чтобы они видели только живой сервер!
       localStorage.removeItem(LOCAL_STORAGE_KEY);
     }
 
@@ -93,9 +94,9 @@
     await FXController.applyGlobalBackground(appData.meta || {});
   }
 
-  /* ЖИВАЯ СИНХРОНИЗАЦИЯ ДЛЯ ВСЕХ ПО ССЫЛКЕ КАЖДЫЕ 2.5 СЕКУНДЫ! */
+  /* Безопасный фоновый опрос для зрителей (с использованием ETag, чтобы не исчерпывать лимит 60 запросов GitHub API) */
   function startLiveViewerPolling() {
-    setInterval(async () => {
+    async function checkRemote() {
       if (document.hidden || GitHubSync.isOwner()) return;
       try {
         const remoteRaw = await GitHubSync.fetchFreshTiersFromApi(false);
@@ -107,9 +108,15 @@
           lastRenderedSignature = newSig;
           await FXController.applyGlobalBackground(appData.meta || {});
           render();
+          showToast("✨ Информация на странице обновлена владельцем!", "#00f5ff");
         }
       } catch {}
-    }, 2500);
+    }
+
+    setInterval(checkRemote, 8000);
+    document.addEventListener("visibilitychange", () => {
+      if (!document.hidden && !GitHubSync.isOwner()) checkRemote();
+    });
   }
 
   function setSyncIndicator(text, col = "#38ef7d") {
@@ -123,7 +130,7 @@
   let isSyncing = false;
   let pendingSync = false;
 
-  async function saveAndAutoSync(reason = "Instant sync via myTierAnime") {
+  async function saveAndAutoSync(reason = "Sync via myTierAnime", showSuccessToast = false) {
     if (!appData) return;
     appData.meta = appData.meta || {};
     appData.meta.revision = Number(appData.meta.revision || 1) + 1;
@@ -145,18 +152,26 @@
     }
 
     isSyncing = true;
-    setSyncIndicator("⚡ Мгновенная публикация...", "#00f5ff");
+    setSyncIndicator("⏳ Синхронизация с GitHub...", "#00f5ff");
+    const syncBtn = document.getElementById("btnSyncNowOwner");
+    if (syncBtn) syncBtn.textContent = "⏳ Синхронизация...";
+
     try {
       await GitHubSync.commitTiersToGitHub(appData, reason);
-      setSyncIndicator("☁ Синхронизировано (видят все по ссылке)", "#38ef7d");
+      setSyncIndicator(`☁ Синхронизировано (${new Date().toLocaleTimeString("ru-RU")})`, "#38ef7d");
+      if (syncBtn) syncBtn.textContent = "🔄 Синхронизировать со всеми";
+      if (showSuccessToast) {
+        showToast("✔ Вся информация и фон успешно синхронизированы со всеми пользователями по ссылке!", "#38ef7d");
+      }
     } catch (err) {
-      setSyncIndicator("⚠ Ошибка GitHub API: " + err.message, "#ff5e7e");
+      setSyncIndicator("⚠ Ошибка синхронизации: проверьте токен/репозиторий", "#ff5e7e");
+      if (syncBtn) syncBtn.textContent = "🔄 Повторить синхронизацию";
       showToast("Ошибка отправки в GitHub: " + err.message, "#ff3c8c");
     } finally {
       isSyncing = false;
       if (pendingSync) {
         pendingSync = false;
-        saveAndAutoSync("Queued instant sync");
+        saveAndAutoSync("Queued sync", false);
       }
     }
   }
@@ -233,7 +248,9 @@
           (it.origTitle && it.origTitle.toLowerCase().includes(q)) ||
           (it.studio && it.studio.toLowerCase().includes(q));
         const matchGenre = selectedGenre === "ALL" || (it.genres || []).some(g => g.toLowerCase() === selectedGenre.toLowerCase());
-        return matchText && matchGenre;
+        const matchStudio = selectedStudio === "ALL" ||
+          (it.studio && it.studio.toLowerCase().includes(selectedStudio.toLowerCase()));
+        return matchText && matchGenre && matchStudio;
       });
 
       const tierCount = (tier.items || []).length;
@@ -277,7 +294,6 @@
       `;
     }).join("");
 
-    // Если у карточек есть обложки, загруженные через Git Blob API, мгновенно подтягиваем их по SHA
     host.querySelectorAll("img.card-poster[data-blob-sha]").forEach(async img => {
       const sha = img.dataset.blobSha;
       if (sha) {
@@ -290,6 +306,7 @@
     FXController.observeTiers();
     StatsEngine.updateStats(appData.tiers);
     populateGenreDropdowns();
+    populateStudioDropdown();
     bindTierInteractions();
 
     if (activeView === "calendar") {
@@ -307,6 +324,16 @@
       (t.items || []).forEach(it => (it.genres || []).forEach(g => set.add(g)));
     });
     return [...set].sort((a, b) => a.localeCompare(b, "ru"));
+  }
+
+  function getSortedAllStudios() {
+    const set = new Set(window.ALL_ANIME_STUDIOS || []);
+    appData?.tiers?.forEach(t => {
+      (t.items || []).forEach(it => {
+        if (it.studio && it.studio.trim()) set.add(it.studio.trim());
+      });
+    });
+    return [...set].sort((a, b) => a.localeCompare(b, "en"));
   }
 
   function populateGenreDropdowns(editorSearchTerm = "") {
@@ -337,6 +364,36 @@
       const matchingEditor = sorted.filter(g => !eq || g.toLowerCase().includes(eq));
       picker.innerHTML = `<option value="">+ Выбрать жанр (${matchingEditor.length})...</option>` +
         matchingEditor.map(g => `<option value="${esc(g)}">${esc(g)}</option>`).join("");
+    }
+  }
+
+  /* Заполнение выпадающего списка и поиска по КОНКРЕТНОЙ СТУДИИ */
+  function populateStudioDropdown() {
+    const listEl = document.getElementById("studioOptionsList");
+    const datalist = document.getElementById("studioPresetList");
+    const sortedStudios = getSortedAllStudios();
+
+    if (datalist && !datalist.dataset.populated) {
+      datalist.innerHTML = sortedStudios.map(s => `<option value="${esc(s)}"></option>`).join("");
+      datalist.dataset.populated = "1";
+    }
+
+    if (listEl) {
+      const q = studioFilterSearch.trim().toLowerCase();
+      const matching = sortedStudios.filter(s => !q || s.toLowerCase().includes(q));
+      listEl.innerHTML =
+        `<div class="genre-opt-item ${selectedStudio === "ALL" ? "active" : ""}" data-st-val="ALL">🎬 Все студии (${sortedStudios.length})</div>` +
+        matching.map(s => `<div class="genre-opt-item ${selectedStudio === s ? "active" : ""}" data-st-val="${esc(s)}">${esc(s)}</div>`).join("");
+
+      listEl.querySelectorAll(".genre-opt-item").forEach(itemEl => {
+        itemEl.addEventListener("click", () => {
+          selectedStudio = itemEl.dataset.stVal;
+          document.getElementById("studioDropdownLabel").textContent =
+            selectedStudio === "ALL" ? "Все студии" : selectedStudio;
+          document.getElementById("studioDropdownMenu")?.classList.remove("open");
+          render();
+        });
+      });
     }
   }
 
@@ -379,7 +436,7 @@
         toTier.items.push(moved);
       }
       render();
-      saveAndAutoSync(`Move ${moved.title} to ${toTierId}`);
+      saveAndAutoSync(`Move ${moved.title} to ${toTierId}`, false);
       showToast(`«${moved.title}» перемещён в тир ${toTierId}`, "#00f5ff");
     });
   }
@@ -420,8 +477,7 @@
       const item = tier.items.find(i => i.uid === uid);
       tier.items = tier.items.filter(i => i.uid !== uid);
       render();
-      saveAndAutoSync(`Delete ${item?.title || uid}`);
-      showToast(`Тайтл «${item?.title || ""}» удалён`);
+      saveAndAutoSync(`Delete ${item?.title || uid}`, true);
     });
 
     document.getElementById("btnToggleCalendar")?.addEventListener("click", () => toggleCalendarView());
@@ -435,11 +491,19 @@
       Modals.openEditorModal("S", null);
     });
 
+    /* КНОПКА ПРИНУДИТЕЛЬНОЙ СИНХРОНИЗАЦИИ ДЛЯ ВЛАДЕЛЬЦА */
+    document.getElementById("btnSyncNowOwner")?.addEventListener("click", async () => {
+      if (!GitHubSync.isOwner()) return;
+      await saveAndAutoSync("Manual owner full sync", true);
+    });
+
+    // Выпадающий список Жанров
     const gBtn = document.getElementById("genreDropdownBtn");
     const gMenu = document.getElementById("genreDropdownMenu");
     const gSearch = document.getElementById("genreSearchInput");
     gBtn?.addEventListener("click", e => {
       e.stopPropagation();
+      document.getElementById("studioDropdownMenu")?.classList.remove("open");
       gMenu?.classList.toggle("open");
       if (gMenu?.classList.contains("open")) gSearch?.focus();
     });
@@ -447,8 +511,25 @@
       genreFilterSearch = gSearch.value;
       populateGenreDropdowns();
     });
+
+    // Выпадающий список Студий
+    const stBtn = document.getElementById("studioDropdownBtn");
+    const stMenu = document.getElementById("studioDropdownMenu");
+    const stSearch = document.getElementById("studioSearchInput");
+    stBtn?.addEventListener("click", e => {
+      e.stopPropagation();
+      gMenu?.classList.remove("open");
+      stMenu?.classList.toggle("open");
+      if (stMenu?.classList.contains("open")) stSearch?.focus();
+    });
+    stSearch?.addEventListener("input", () => {
+      studioFilterSearch = stSearch.value;
+      populateStudioDropdown();
+    });
+
     document.addEventListener("click", e => {
       if (!e.target.closest("#genreDropdown")) gMenu?.classList.remove("open");
+      if (!e.target.closest("#studioDropdown")) stMenu?.classList.remove("open");
     });
 
     const editorGSearch = document.getElementById("editorGenreSearch");
@@ -469,43 +550,38 @@
       picker.value = "";
     });
 
-    /* Загрузка обложки тайтла БЕЗ ОГРАНИЧЕНИЙ РАЗМЕРА И БЕЗ СЖАТИЯ */
     const posterFileInp = document.getElementById("fPosterFile");
     let pendingPosterBlobSha = "";
     posterFileInp?.addEventListener("change", async () => {
       const file = posterFileInp.files?.[0];
       if (!file) return;
       try {
-        showToast("Загрузка оригинальной обложки в GitHub (без сжатия)...", "#00f5ff");
+        showToast("Загрузка оригинальной обложки в GitHub...", "#00f5ff");
         const uploaded = await GitHubSync.uploadAssetFile(file, "posters");
         document.getElementById("fPoster").value = uploaded.path;
         pendingPosterBlobSha = uploaded.blobSha;
-        showToast("✔ Обложка загружена в оригинальном качестве!", "#38ef7d");
+        showToast("✔ Обложка загружена!", "#38ef7d");
       } catch (err) {
         showToast("Ошибка загрузки обложки: " + err.message, "#ff3c8c");
       }
     });
 
-    /* ЗАГРУЗКА ФОНА ЛЮБОГО РАЗМЕРА (4K / PNG / GIF) С МГНОВЕННОЙ СИНХРОНИЗАЦИЕЙ ДЛЯ ВСЕХ ЗРИТЕЛЕЙ */
     const ownerBgFile = document.getElementById("ownerBgFileInput");
     ownerBgFile?.addEventListener("change", async () => {
       const file = ownerBgFile.files?.[0];
       if (!file) return;
       try {
-        // 1. В ту же миллисекунду показываем фон владельцу через локальный Blob URL
         const localBlobUrl = URL.createObjectURL(file);
         appData.meta = appData.meta || {};
         await FXController.applyGlobalBackground(appData.meta, localBlobUrl);
-        showToast("⚡ Загрузка оригинального фона в GitHub для всех зрителей...", "#00f5ff");
+        showToast("⚡ Отправка фона в GitHub для всех зрителей...", "#00f5ff");
 
-        // 2. Отправляем файл без сжатия в Git Blob API
         const uploaded = await GitHubSync.uploadAssetFile(file, "backgrounds");
         appData.meta.bgImage = uploaded.path;
         appData.meta.bgBlobSha = uploaded.blobSha;
         appData.meta.bgMime = uploaded.mime;
 
-        await saveAndAutoSync("Update global background image");
-        showToast("✔ Фон опубликован! Все по ссылке видят его уже сейчас.", "#38ef7d");
+        await saveAndAutoSync("Update global background image", true);
       } catch (err) {
         showToast("Ошибка публикации фона: " + err.message, "#ff3c8c");
       }
@@ -517,7 +593,6 @@
       if (appData?.meta) {
         appData.meta.bgDim = v;
         FXController.applyGlobalBackground(appData.meta);
-        saveAndAutoSync("Update background dim");
       }
     });
 
@@ -527,7 +602,6 @@
       if (appData?.meta) {
         appData.meta.bgBlur = v;
         FXController.applyGlobalBackground(appData.meta);
-        saveAndAutoSync("Update background blur");
       }
     });
 
@@ -537,8 +611,7 @@
       appData.meta.bgImage = "";
       appData.meta.bgBlobSha = "";
       FXController.applyGlobalBackground(appData.meta);
-      saveAndAutoSync("Clear global background");
-      showToast("Стандартный фон восстановлен");
+      saveAndAutoSync("Clear global background", true);
     });
 
     document.getElementById("searchInput")?.addEventListener("input", e => {
@@ -654,9 +727,8 @@
       }
 
       render();
-      saveAndAutoSync(`Save ${newItem.title} in tier ${targetTierId}`);
+      saveAndAutoSync(`Save ${newItem.title} in tier ${targetTierId}`, true);
       Modals.closeModal("editorModal");
-      showToast(`✔ «${newItem.title}» опубликован для всех!`, "#38ef7d");
     });
 
     document.getElementById("btnOwnerAuth")?.addEventListener("click", () => {
@@ -668,7 +740,7 @@
     document.getElementById("authForm")?.addEventListener("submit", async e => {
       e.preventDefault();
       const tk = document.getElementById("ghTokenInput").value.trim();
-      const rp = document.getElementById("ghRepoInput").value.trim();
+      const rp = document.getElementById("ghRepoInput").value.trim() || GitHubSync.detectRepoFromLocation();
 
       if (!tk) {
         GitHubSync.logout();
@@ -684,8 +756,7 @@
         document.body.classList.add("is-owner");
         updateOwnerBadge(user);
         Modals.closeModal("authModal");
-        await saveAndAutoSync("Owner login initial sync");
-        showToast(`Вход выполнен: ${user.login}! Мгновенная синхронизация активна.`, "#38ef7d");
+        await saveAndAutoSync("Owner login initial sync", true);
       } else {
         GitHubSync.logout();
         updateOwnerBadge(null);
