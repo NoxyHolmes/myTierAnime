@@ -4,12 +4,12 @@
     "owner": "geraltschwarzenegger-svg",
     "repo": "noxyholmes/myTierAnime",
     "branch": "main",
-    "updatedAt": "2026-10-15T11:32:05.385Z",
+    "updatedAt": "2026-10-15T11:32:11.035Z",
     "activeMode": "emblems-realism",
     "bgImage": "backgrounds/1792058756499____________________________________.png",
     "bgDim": 65,
     "bgBlur": 5,
-    "revision": 24,
+    "revision": 25,
     "bgBlobSha": "1de942c76368b8d317071e794ae55fed35d163ad",
     "bgMime": "image/png"
   },
@@ -20,66 +20,7 @@
       "name": "Шедевры",
       "subtitle": "Лучшие и незабываемые тайтлы на все времена",
       "hue": 45,
-      "items": [
-        {
-          "uid": "anime-frieren-2023",
-          "kind": "TV Сериал",
-          "title": "Провожающая в последний путь Фрирен",
-          "origTitle": "Sousou no Frieren",
-          "year": 2023,
-          "studio": "Madhouse",
-          "score": 9.9,
-          "reaction": "💎 Эталон",
-          "poster": "https://shikimori.one/system/animes/original/52991.jpg",
-          "genres": [
-            "Фэнтези",
-            "Приключения",
-            "Драма",
-            "Философия"
-          ],
-          "comment": "Глубокая, меланхоличная и невероятно красивая история о течении времени и памяти о товарищах.",
-          "seasons": [
-            {
-              "title": "Сезон 1",
-              "type": "TV Сериал",
-              "episodes": 28,
-              "epMinutes": 24,
-              "date": "24.04.2026",
-              "note": "Полный просмотр"
-            },
-            {
-              "title": "Мини-аниме Магия",
-              "type": "ONA",
-              "episodes": 11,
-              "epMinutes": 2,
-              "date": "28.04.2026",
-              "note": "Короткие спешлы"
-            },
-            {
-              "title": "Фильм 3",
-              "type": "Фильм",
-              "episodes": 1,
-              "epMinutes": 110,
-              "date": "15.10.2026",
-              "note": ""
-            }
-          ],
-          "watched": [
-            {
-              "date": "24.04.2026",
-              "note": "Сезон 1"
-            },
-            {
-              "date": "28.04.2026",
-              "note": "Мини-аниме Магия"
-            },
-            {
-              "date": "15.10.2026",
-              "note": "Фильм 3"
-            }
-          ]
-        }
-      ]
+      "items": []
     },
     {
       "id": "A",
