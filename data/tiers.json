@@ -4,12 +4,12 @@
     "owner": "geraltschwarzenegger-svg",
     "repo": "noxyholmes/myTierAnime",
     "branch": "main",
-    "updatedAt": "2026-10-15T11:31:35.798Z",
+    "updatedAt": "2026-10-15T11:31:45.490Z",
     "activeMode": "emblems-realism",
     "bgImage": "backgrounds/1792058756499____________________________________.png",
     "bgDim": 65,
     "bgBlur": 5,
-    "revision": 21,
+    "revision": 22,
     "bgBlobSha": "1de942c76368b8d317071e794ae55fed35d163ad",
     "bgMime": "image/png"
   },
@@ -21,42 +21,6 @@
       "subtitle": "Лучшие и незабываемые тайтлы на все времена",
       "hue": 45,
       "items": [
-        {
-          "uid": "anime-cotn-2022",
-          "kind": "TV Сериал",
-          "title": "Песнь ночных сов",
-          "origTitle": "Yofukashi no Uta (Call of the Night)",
-          "year": 2022,
-          "studio": "Liden Films",
-          "score": 10,
-          "reaction": "👑 Шедевр",
-          "genres": [
-            "Сверхъестественное",
-            "Романтика",
-            "Вампиры",
-            "Ночной вайб"
-          ],
-          "poster": "https://shikimori.one/system/animes/original/48926.jpg",
-          "comment": "Неоновая эстетика ночного города, потрясающий саундтрек Creepy Nuts и харизма Надзуны Нанакусы.",
-          "seasons": [
-            {
-              "title": "Сезон 1",
-              "type": "TV Сериал",
-              "episodes": 13,
-              "epMinutes": 23,
-              "date": "12.08.2024",
-              "note": "Первый просмотр"
-            },
-            {
-              "title": "Сезон 1 (Rewatch)",
-              "type": "TV Сериал",
-              "episodes": 13,
-              "epMinutes": 23,
-              "date": "18.06.2026",
-              "note": "Пересмотр в FHD"
-            }
-          ]
-        },
         {
           "uid": "anime-frieren-2023",
           "kind": "TV Сериал",
