@@ -1,10 +1,10 @@
-/* ═══════════════════ DESIGN TOKENS & OKLCH PALETTE FOR S · A · B · C · D · E (2026) ═══════════════════ */
+/* ═══════════════════ DESIGN TOKENS & CUSTOMIZABLE CSS VARIABLES ═══════════════════ */
 :root {
   color-scheme: dark;
   --bg-deep: #06050c;
   --bg-surface: #0d0b18;
-  --bg-elevated: rgba(19, 16, 36, 0.82);
-  --bg-glass: rgba(14, 12, 28, 0.74);
+  --bg-elevated: rgba(19, 16, 36, 0.84);
+  --bg-glass: rgba(14, 12, 28, 0.76);
   --border-subtle: rgba(255, 255, 255, 0.09);
   --border-bright: rgba(255, 255, 255, 0.22);
 
@@ -19,9 +19,29 @@
   --t2: #ff8e53;
   --tg: rgba(255, 215, 106, 0.52);
 
+  /* Настраиваемые переменные из Студии Кастомизации */
+  --grid-cols: 10;
+  --grid-gap: 10px;
+  --card-radius: 10px;
+  --poster-zoom: 1.05;
+  --holo-max-opacity: 0.88;
+  --scrim-opacity: 0.95;
+  --card-title-size: 11px;
+  --tier-bg-alpha: 0.88;
+  --glass-blur: 16px;
+  --tier-radius: 22px;
+  --tier-gap: 24px;
+  --badge-col-width: 185px;
+  --container-width: 1780px;
+  --seal-scale: 1;
+  --seal-glow-mult: 1;
+  --letter-perspective: 780px;
+  --metal-sheen-dur: 5.2s;
+  --vignette-opacity: 0.3;
+
   --radius-sm: 8px;
   --radius-md: 14px;
-  --radius-lg: 22px;
+  --radius-lg: var(--tier-radius);
   --shadow-lg: 0 20px 50px -12px rgba(0, 0, 0, 0.85);
 }
 
