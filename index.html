@@ -14,10 +14,10 @@
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;900&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&family=Montserrat:wght@500;700;800&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
   <link rel="manifest" href="manifest.json">
 
-  <link rel="stylesheet" href="css/tokens.css?v=9.0">
-  <link rel="stylesheet" href="css/realism-3d.css?v=9.0">
-  <link rel="stylesheet" href="css/cards-and-tiers.css?v=9.0">
-  <link rel="stylesheet" href="css/modals-and-panels.css?v=9.0">
+  <link rel="stylesheet" href="css/tokens.css?v=10.0">
+  <link rel="stylesheet" href="css/realism-3d.css?v=10.0">
+  <link rel="stylesheet" href="css/cards-and-tiers.css?v=10.0">
+  <link rel="stylesheet" href="css/modals-and-panels.css?v=10.0">
 </head>
 <body class="emblems-realism letter-style-gold motion-precession fx-tier-motion fx-tilt">
   <div id="globalOwnerBg" class="global-owner-bg" aria-hidden="true">
@@ -81,7 +81,7 @@
             ➕ Добавить тайтл
           </button>
 
-          <button type="button" id="btnSyncNowOwner" class="btn btn-primary owner-only" title="Опубликовать все изменения и фон для всех по ссылке">
+          <button type="button" id="btnSyncNowOwner" class="btn btn-primary owner-only" title="Опубликовать все изменения, обложки и фон для всех браузеров по ссылке">
             🔄 Синхронизировать со всеми
           </button>
 
@@ -318,7 +318,7 @@
     <div class="fx-tab-pane" id="tabOwnerBg">
       <div class="fx-section-title">🖼 Глобальный фон сайта:</div>
       <p style="font-size:11px;color:var(--ink-soft);line-height:1.45;margin:0 0 10px;">
-        Выберите картинку с компьютера — после загрузки нажмите <b>«🔄 Синхронизировать со всеми»</b> в шапке, чтобы этот фон появился у всех по ссылке!
+        Выберите картинку с компьютера — она автоматически встроится в базу и появится во всех браузерах (включая Яндекс Браузер, Edge и Opera)!
       </p>
       <div class="form-group">
         <label>Загрузить картинку фона с компьютера:</label>
@@ -355,7 +355,7 @@
     </div>
   </div>
 
-  <!-- Модальное окно 2: Добавление / Редактирование тайтла (БЕЗ поля Бейдж реакции) -->
+  <!-- Модальное окно 2: Добавление / Редактирование тайтла -->
   <div id="editorModal" class="modal-backdrop">
     <div class="modal-box modal-box-wide">
       <div class="modal-header">
@@ -420,7 +420,7 @@
           </div>
 
           <div class="form-group full poster-upload-box">
-            <label>🖼 Обложка (выберите файл с ПК или укажите путь в папке <code>posters/</code>):</label>
+            <label>🖼 Обложка (выберите файл с ПК — он автоматически появится во всех браузерах):</label>
             <div class="poster-upload-grid">
               <div>
                 <div style="font-size:11px;color:var(--ink-soft);margin-bottom:4px;">1. Загрузить файл с ПК:</div>
@@ -492,7 +492,7 @@
       <form id="authForm">
         <div class="form-group full">
           <label>Ваш репозиторий на GitHub (owner/repo):</label>
-          <input type="text" id="ghRepoInput" class="form-control" placeholder="ваш-логин/имя-репозитория">
+          <input type="text" id="ghRepoInput" class="form-control" placeholder="noxyholmes/myTierAnime">
         </div>
         <div class="form-group full">
           <label>GitHub Personal Access Token:</label>
@@ -508,16 +508,16 @@
 
   <div id="toastContainer"></div>
 
-  <script src="js/utils.js?v=9.0"></script>
-  <script src="js/realism-core.js?v=9.0"></script>
-  <script src="js/realism-engine.js?v=9.0"></script>
-  <script src="js/github-sync.js?v=9.0"></script>
-  <script src="js/shikimori-api.js?v=9.0"></script>
-  <script src="js/fx-controller.js?v=9.0"></script>
-  <script src="js/stats-engine.js?v=9.0"></script>
-  <script src="js/calendar-view.js?v=9.0"></script>
-  <script src="js/drag-drop.js?v=9.0"></script>
-  <script src="js/modals.js?v=9.0"></script>
-  <script src="js/app.js?v=9.0"></script>
+  <script src="js/utils.js?v=10.0"></script>
+  <script src="js/realism-core.js?v=10.0"></script>
+  <script src="js/realism-engine.js?v=10.0"></script>
+  <script src="js/github-sync.js?v=10.0"></script>
+  <script src="js/shikimori-api.js?v=10.0"></script>
+  <script src="js/fx-controller.js?v=10.0"></script>
+  <script src="js/stats-engine.js?v=10.0"></script>
+  <script src="js/calendar-view.js?v=10.0"></script>
+  <script src="js/drag-drop.js?v=10.0"></script>
+  <script src="js/modals.js?v=10.0"></script>
+  <script src="js/app.js?v=10.0"></script>
 </body>
 </html>
