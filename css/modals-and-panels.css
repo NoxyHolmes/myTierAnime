@@ -1,4 +1,4 @@
-/* ═══════════════════ PREMIUM GLASS DOSSIER, TOPBAR & CONTROLS ═══════════════════ */
+/* ═══════════════════ CINEMATIC DOSSIER MODAL, TOPBAR & CONTROLS ═══════════════════ */
 *, *::before, *::after {
   box-sizing: border-box;
 }
@@ -16,7 +16,6 @@ body {
   overflow-x: hidden;
 }
 
-/* Глобальный фон владельца (исправлено отображение для всех гостей) */
 .global-owner-bg {
   position: fixed;
   inset: 0;
@@ -26,7 +25,7 @@ body {
   background-position: center;
   background-repeat: no-repeat;
   opacity: 0;
-  transition: opacity 0.4s ease;
+  transition: opacity 0.35s ease;
 }
 .global-owner-bg.has-bg {
   opacity: 1;
@@ -35,7 +34,7 @@ body {
   content: "";
   position: absolute;
   inset: 0;
-  background: rgba(6, 5, 12, var(--owner-bg-dim, 0.65));
+  background: rgba(6, 5, 12, var(--owner-bg-dim, 0.6));
 }
 
 .screen-fx-overlay {
@@ -216,7 +215,7 @@ body.hide-stats-ribbon .stats-ribbon { display: none !important; }
   color: #fff;
   font-size: 13px;
   font-weight: 500;
-  width: 200px;
+  width: 210px;
   box-shadow: 0 0 16px -4px rgba(0, 245, 255, 0.25);
   transition: all 0.25s ease;
 }
@@ -224,7 +223,7 @@ body.hide-stats-ribbon .stats-ribbon { display: none !important; }
   outline: none;
   border-color: #00f5ff;
   box-shadow: 0 0 22px -2px rgba(0, 245, 255, 0.55);
-  width: 240px;
+  width: 255px;
 }
 .search-icon {
   position: absolute;
@@ -295,33 +294,6 @@ body.hide-stats-ribbon .stats-ribbon { display: none !important; }
   background: rgba(255, 60, 140, 0.22);
   color: #ffd76a;
   font-weight: 700;
-}
-
-.display-mode-switcher {
-  display: inline-flex;
-  background: rgba(255,255,255,0.05);
-  border: 1px solid var(--border-subtle);
-  border-radius: 999px;
-  padding: 3px;
-  gap: 3px;
-}
-.dmode-btn {
-  border: none;
-  background: transparent;
-  color: var(--ink-soft);
-  width: 32px;
-  height: 30px;
-  border-radius: 50%;
-  display: grid;
-  place-items: center;
-  font-size: 13px;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-.dmode-btn.active {
-  background: linear-gradient(135deg, rgba(255,215,106,0.25), rgba(0,245,255,0.22));
-  color: #fff;
-  border: 1px solid rgba(255,215,106,0.5);
 }
 
 .btn {
@@ -709,12 +681,12 @@ body.is-owner section.owner-only {
   border-radius: 6px;
 }
 
-/* ПРЕМИУМ ДИЗАЙН КАРТОЧКИ (ДОСЬЕ ТАЙТЛА) — УСТРАНЕН ЧЁРНЫЙ ФОН */
+/* ═══════════════════ НОВЫЙ КИНЕМАТОГРАФИЧНЫЙ ДИЗАЙН КАРТОЧКИ ПРИ ОТКРЫТИИ ТАЙТЛА ═══════════════════ */
 .modal-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(4, 3, 10, 0.82);
-  backdrop-filter: blur(12px);
+  background: rgba(6, 4, 14, 0.78);
+  backdrop-filter: blur(16px);
   z-index: 80;
   display: none;
   place-items: center;
@@ -727,16 +699,199 @@ body.is-owner section.owner-only {
 .modal-box {
   width: 100%;
   max-width: 680px;
-  max-height: 90vh;
+  max-height: 92vh;
   overflow-y: auto;
-  background: linear-gradient(145deg, rgba(25, 20, 48, 0.98), rgba(14, 11, 28, 0.99));
-  border: 1px solid rgba(0, 245, 255, 0.35);
-  border-radius: 24px;
-  padding: 28px;
-  box-shadow: 0 25px 70px rgba(0, 0, 0, 0.9), 0 0 40px -10px rgba(0, 245, 255, 0.25);
+  background: linear-gradient(145deg, rgba(28, 22, 54, 0.96), rgba(16, 13, 34, 0.98));
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 26px;
+  padding: 26px;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.92), 0 0 50px -12px rgba(181, 124, 255, 0.35);
 }
 .modal-box-wide {
-  max-width: 960px;
+  max-width: 980px;
+}
+
+.dossier-cinema-box {
+  padding: 0;
+  overflow: hidden;
+  position: relative;
+  background: linear-gradient(160deg, #1b1538 0%, #110d26 55%, #161130 100%);
+  border: 1px solid rgba(255, 215, 106, 0.38);
+}
+
+/* Размытый атмосферный постер в шапке открытой карточки */
+.dossier-hero-banner {
+  position: relative;
+  padding: 28px 30px 24px;
+  overflow: hidden;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+.dossier-hero-backdrop {
+  position: absolute;
+  inset: -30px;
+  background-size: cover;
+  background-position: center;
+  filter: blur(28px) saturate(1.5) brightness(0.55);
+  opacity: 0.65;
+  z-index: 0;
+  pointer-events: none;
+}
+.dossier-hero-scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(22, 16, 44, 0.35) 0%,
+    rgba(18, 14, 38, 0.85) 75%,
+    #140f2d 100%
+  );
+  z-index: 1;
+  pointer-events: none;
+}
+
+.dossier-top-actions {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+
+.dossier-hero-grid {
+  position: relative;
+  z-index: 3;
+  display: grid;
+  grid-template-columns: 215px 1fr;
+  gap: 26px;
+  align-items: start;
+}
+
+.dossier-poster-wrap {
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 2px solid rgba(255, 215, 106, 0.55);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.85), 0 0 28px -6px rgba(255, 215, 106, 0.45);
+}
+.dossier-poster-wrap img {
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  object-fit: cover;
+  display: block;
+}
+
+.dossier-score-orb {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  background: linear-gradient(135deg, #ffd76a, #ff5e7e);
+  color: #090614;
+  font-weight: 900;
+  font-size: 14px;
+  padding: 5px 11px;
+  border-radius: 999px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.75);
+}
+
+.dossier-badges-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+.dossier-badge-pill {
+  padding: 4px 11px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  color: #fff;
+  backdrop-filter: blur(8px);
+}
+.dossier-badge-pill.gold {
+  background: linear-gradient(135deg, rgba(255, 215, 106, 0.28), rgba(255, 94, 126, 0.22));
+  border-color: #ffd76a;
+  color: #ffe8a3;
+}
+
+.dossier-title-main {
+  margin: 0 0 4px;
+  font-family: var(--serif);
+  font-size: 26px;
+  font-weight: 900;
+  color: #ffffff;
+  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.7);
+}
+.dossier-title-orig {
+  font-size: 13px;
+  color: #cbc4eb;
+  margin-bottom: 14px;
+}
+
+/* Стеклянные неоновые карточки метрик внутри Досье */
+.dossier-metrics-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.dossier-metric-card {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.03));
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 14px;
+  padding: 11px 14px;
+  backdrop-filter: blur(10px);
+}
+.dossier-metric-card .dm-lbl {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: #bdb6de;
+  margin-bottom: 3px;
+}
+.dossier-metric-card .dm-val {
+  font-family: var(--serif);
+  font-size: 17px;
+  font-weight: 800;
+  color: #fff;
+}
+
+.dossier-comment-card {
+  background: linear-gradient(135deg, rgba(181, 124, 255, 0.12), rgba(0, 245, 255, 0.07));
+  border: 1px solid rgba(181, 124, 255, 0.32);
+  border-left: 4px solid #ffd76a;
+  border-radius: 12px;
+  padding: 12px 15px;
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: #f5f3ff;
+  margin-bottom: 12px;
+}
+
+.dossier-genres-wrap {
+  display: flex;
+  gap: 7px;
+  flex-wrap: wrap;
+}
+.dossier-genre-tag {
+  padding: 4px 11px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  background: rgba(0, 245, 255, 0.12);
+  border: 1px solid rgba(0, 245, 255, 0.35);
+  color: #b8fbff;
+}
+
+/* Нижняя секция сезонов в Досье */
+.dossier-body-section {
+  padding: 18px 30px 26px;
+  background: linear-gradient(180deg, #140f2d 0%, #191336 100%);
 }
 
 .modal-header {
@@ -871,7 +1026,7 @@ body.is-owner section.owner-only {
   justify-content: space-between;
   gap: 10px;
   flex-wrap: wrap;
-  margin: 12px 0 8px;
+  margin: 0 0 10px;
 }
 .dossier-filter-pills {
   display: flex;
@@ -879,26 +1034,26 @@ body.is-owner section.owner-only {
   flex-wrap: wrap;
 }
 .dossier-pill-btn {
-  padding: 4px 10px;
+  padding: 5px 12px;
   border-radius: 999px;
   font-size: 11px;
   font-weight: 700;
-  border: 1px solid var(--border-subtle);
-  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.14);
+  background: rgba(255,255,255,0.05);
   color: var(--ink-soft);
   cursor: pointer;
 }
 .dossier-pill-btn.active {
-  background: rgba(0, 245, 255, 0.18);
+  background: linear-gradient(135deg, rgba(0, 245, 255, 0.25), rgba(181, 124, 255, 0.25));
   border-color: #00f5ff;
   color: #fff;
 }
 .seasons-scroll-box {
-  max-height: 245px;
+  max-height: 230px;
   overflow-y: auto;
-  border: 1px solid var(--border-subtle);
-  border-radius: 10px;
-  background: rgba(14, 11, 26, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 12px;
+  background: rgba(24, 19, 48, 0.75);
 }
 .seasons-table {
   width: 100%;
@@ -908,18 +1063,18 @@ body.is-owner section.owner-only {
 .seasons-table thead th {
   position: sticky;
   top: 0;
-  background: #1b1636;
-  color: var(--ink-soft);
+  background: #231b47;
+  color: #d6d0f5;
   font-size: 10.5px;
   text-transform: uppercase;
-  padding: 8px 10px;
+  padding: 9px 12px;
   text-align: left;
-  border-bottom: 1px solid var(--border-subtle);
+  border-bottom: 1px solid rgba(255,255,255,0.14);
   z-index: 2;
 }
 .seasons-table td {
-  padding: 7px 10px;
-  border-bottom: 1px solid rgba(255,255,255,0.05);
+  padding: 8px 12px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
 }
 
 .shiki-results {
@@ -973,6 +1128,13 @@ body.is-owner section.owner-only {
 }
 
 @media (max-width: 860px) {
+  .dossier-hero-grid {
+    grid-template-columns: 1fr;
+  }
+  .dossier-poster-wrap {
+    max-width: 200px;
+    margin: 0 auto;
+  }
   .season-row {
     grid-template-columns: 1fr 1fr;
   }
