@@ -1,4 +1,4 @@
-/* ═══════════════════ MODALS: UNCLIPPED DOSSIER WITH STICKY TOPBAR ═══════════════════ */
+/* ═══════════════════ MODALS: POSTER BLOB RESOLUTION IN DOSSIER & 0-EPISODE UPCOMING SEASONS ═══════════════════ */
 const Modals = (() => {
   let deleteHandler = null;
 
@@ -14,18 +14,18 @@ const Modals = (() => {
     deleteHandler = fn;
   }
 
-  function showAnimeDetails(item, tier) {
+  async function showAnimeDetails(item, tier) {
     const body = document.getElementById("detailsModalBody");
     const topBadges = document.getElementById("dossierTopBadges");
     if (!body) return;
 
     const m = calcItemMetrics(item);
 
+    // Верхние плашки без бейджа реакции
     if (topBadges) {
       topBadges.innerHTML = `
         <span class="dossier-badge-pill gold">ТИР ${esc(tier.id)} · ${esc(tier.name)}</span>
         <span class="dossier-badge-pill">${esc(m.kind)}</span>
-        ${item.reaction ? `<span class="dossier-badge-pill">${esc(item.reaction)}</span>` : ""}
       `;
     }
 
@@ -38,16 +38,21 @@ const Modals = (() => {
       });
 
       return filtered.map((s, idx) => {
-        const partHours = formatHours((s.episodes * s.epMinutes) / 60);
+        const isUpcoming = Number(s.episodes) === 0;
+        const partHours = isUpcoming ? "0" : formatHours((s.episodes * s.epMinutes) / 60);
+        const volumeText = isUpcoming
+          ? `<span style="color:#ffd76a;font-weight:700;">⏳ Анонс (0 ${s.type === "Фильм" ? "ф." : "эп."})</span>`
+          : (s.type === "Фильм" ? formatMoviesCount(s.episodes) : formatEpisodesCount(s.episodes));
+
         return `
           <tr>
             <td><b>#${idx + 1}</b> ${esc(s.title)}</td>
             <td><span class="cum-kind">${esc(s.type)}</span></td>
-            <td>${s.type === "Фильм" ? formatMoviesCount(s.episodes) : formatEpisodesCount(s.episodes)}</td>
-            <td>${s.epMinutes} мин.</td>
+            <td>${volumeText}</td>
+            <td>${isUpcoming ? "—" : `${s.epMinutes} мин.`}</td>
             <td style="color:#00f5ff;font-weight:700;">${partHours} ч.</td>
             <td><b>${esc(s.date)}</b></td>
-            <td style="color:var(--ink-soft);">${esc(s.note || "—")}</td>
+            <td style="color:var(--ink-soft);">${esc(s.note || (isUpcoming ? "Ожидается" : "—"))}</td>
           </tr>
         `;
       }).join("");
@@ -55,12 +60,12 @@ const Modals = (() => {
 
     body.innerHTML = `
       <div class="dossier-hero-banner">
-        <div class="dossier-hero-backdrop" style="background-image:url('${esc(item.poster)}');"></div>
+        <div id="dossierHeroBackdrop" class="dossier-hero-backdrop" style="background-image:url('${esc(item.poster)}');"></div>
         <div class="dossier-hero-scrim"></div>
 
         <div class="dossier-hero-grid">
           <div class="dossier-poster-wrap">
-            <img src="${esc(item.poster)}" alt="${esc(item.title)}"
+            <img id="dossierMainPosterImg" src="${esc(item.poster)}" alt="${esc(item.title)}"
                  onerror="this.src='https://placehold.co/400x600/16122b/ffd76a?text=myTierAnime'">
             <span class="dossier-score-orb">★ ${esc(item.score)}</span>
           </div>
@@ -133,6 +138,17 @@ const Modals = (() => {
       </div>
     `;
 
+    // МГНОВЕННАЯ ПОДГРУЗКА ЗАЛИТОЙ ОБЛОЖКИ В ЛИЧНОЙ КАРТОЧКЕ ТАЙТЛА (ЧЕРЕЗ posterBlobSha ИЛИ GitHub RAW)!
+    if (typeof GitHubSync !== "undefined" && typeof GitHubSync.resolveAssetUrl === "function") {
+      GitHubSync.resolveAssetUrl(item.poster, item.posterBlobSha).then(resolvedUrl => {
+        if (!resolvedUrl) return;
+        const posterImg = document.getElementById("dossierMainPosterImg");
+        const backdropEl = document.getElementById("dossierHeroBackdrop");
+        if (posterImg) posterImg.src = resolvedUrl;
+        if (backdropEl) backdropEl.style.backgroundImage = `url("${resolvedUrl}")`;
+      }).catch(() => {});
+    }
+
     body.querySelectorAll("[data-s-filter]").forEach(btn => {
       btn.addEventListener("click", () => {
         body.querySelectorAll("[data-s-filter]").forEach(b => b.classList.toggle("active", b === btn));
@@ -173,13 +189,16 @@ const Modals = (() => {
     openModal("detailsModal");
   }
 
+  /* В конструкторе сезонов min="0" позволяет ставить 0 серий или 0 фильмов для ожидаемых релизов */
   function createSeasonRowElement(part = {}) {
     const row = document.createElement("div");
     row.className = "season-row";
     const type = part.type || "TV Сериал";
     const defaultMin = type === "Фильм" ? 110 : 24;
-    const eps = part.episodes ?? (type === "Фильм" ? 1 : 12);
-    const mins = part.epMinutes ?? defaultMin;
+    const parsedEp = parseInt(part.episodes, 10);
+    const eps = isNaN(parsedEp) ? (type === "Фильм" ? 1 : 12) : Math.max(0, parsedEp);
+    const parsedMin = parseFloat(part.epMinutes);
+    const mins = isNaN(parsedMin) ? defaultMin : Math.max(0, parsedMin);
     const dateStr = part.date || new Date().toLocaleDateString("ru-RU");
     const noteStr = part.note || "";
 
@@ -188,10 +207,10 @@ const Modals = (() => {
       <select class="form-control s-type">
         ${["TV Сериал", "Фильм", "OVA", "ONA", "Спешл"].map(t => `<option value="${t}" ${t === type ? "selected" : ""}>${t}</option>`).join("")}
       </select>
-      <input type="number" min="1" class="form-control s-eps" title="Кол-во серий" value="${eps}" required>
-      <input type="number" min="1" step="0.5" class="form-control s-mins" title="Длительность 1 серии (мин)" value="${mins}" required>
-      <input type="text" class="form-control s-date" placeholder="ДД.ММ.ГГГГ" value="${esc(dateStr)}" required>
-      <input type="text" class="form-control s-note" placeholder="Заметка" value="${esc(noteStr)}">
+      <input type="number" min="0" class="form-control s-eps" title="Кол-во серий или фильмов (0 = ожидается / анонс)" value="${eps}" required>
+      <input type="number" min="0" step="0.5" class="form-control s-mins" title="Длительность 1 серии (мин)" value="${mins}" required>
+      <input type="text" class="form-control s-date" placeholder="ДД.ММ.ГГГГ или Год" value="${esc(dateStr)}" required>
+      <input type="text" class="form-control s-note" placeholder="Заметка (напр. Ожидается)" value="${esc(noteStr)}">
       <span class="s-calc">0 ч.</span>
       <button type="button" class="btn btn-sm s-remove" title="Удалить часть">✕</button>
     `;
@@ -202,7 +221,7 @@ const Modals = (() => {
 
     typeSel.addEventListener("change", () => {
       if (typeSel.value === "Фильм") {
-        epsInp.value = 1;
+        if (+epsInp.value > 1) epsInp.value = 1;
         if (+minsInp.value === 24) minsInp.value = 110;
       } else if (+minsInp.value === 110) {
         minsInp.value = 24;
@@ -232,20 +251,27 @@ const Modals = (() => {
 
     rows.forEach(r => {
       const tp = r.querySelector(".s-type").value;
-      const ep = Math.max(1, parseInt(r.querySelector(".s-eps").value, 10) || 1);
-      const mn = Math.max(1, parseFloat(r.querySelector(".s-mins").value) || 24);
-      const partMins = ep * mn;
-      sumMins += partMins;
-      if (tp === "Фильм") sumMovies += ep;
-      else sumEps += ep;
-      r.querySelector(".s-calc").textContent = `${formatHours(partMins / 60)} ч.`;
+      const rawEp = parseInt(r.querySelector(".s-eps").value, 10);
+      const ep = isNaN(rawEp) ? 0 : Math.max(0, rawEp);
+      const rawMn = parseFloat(r.querySelector(".s-mins").value);
+      const mn = isNaN(rawMn) ? 24 : Math.max(0, rawMn);
+
+      if (ep > 0) {
+        const partMins = ep * mn;
+        sumMins += partMins;
+        if (tp === "Фильм") sumMovies += ep;
+        else sumEps += ep;
+        r.querySelector(".s-calc").textContent = `${formatHours(partMins / 60)} ч.`;
+      } else {
+        r.querySelector(".s-calc").textContent = `Анонс (0 ч.)`;
+      }
     });
 
     const preview = document.getElementById("seasonsTotalPreview");
     if (preview) {
       const hrs = sumMins / 60;
       preview.innerHTML = `
-        <span>Итого по тайтлу: <b>${formatEpisodesCount(sumEps)}</b> ${sumMovies ? `+ <b>${formatMoviesCount(sumMovies)}</b>` : ""}</span>
+        <span>Итого просмотрено: <b>${formatEpisodesCount(sumEps)}</b> ${sumMovies ? `+ <b>${formatMoviesCount(sumMovies)}</b>` : ""}</span>
         <span>Суммарное время: <b style="color:#00f5ff;">${formatHours(hrs)} часов</b> (${(hrs / 24).toFixed(2)} дней)</span>
       `;
     }
@@ -253,14 +279,20 @@ const Modals = (() => {
 
   function readSeasonsFromEditor() {
     const rows = [...document.querySelectorAll("#seasonsEditorList .season-row")];
-    return rows.map((r, i) => ({
-      title: r.querySelector(".s-title").value.trim() || `Часть ${i + 1}`,
-      type: r.querySelector(".s-type").value,
-      episodes: Math.max(1, parseInt(r.querySelector(".s-eps").value, 10) || 1),
-      epMinutes: Math.max(1, parseFloat(r.querySelector(".s-mins").value) || 24),
-      date: r.querySelector(".s-date").value.trim() || new Date().toLocaleDateString("ru-RU"),
-      note: r.querySelector(".s-note")?.value.trim() || ""
-    }));
+    return rows.map((r, i) => {
+      const rawEp = parseInt(r.querySelector(".s-eps").value, 10);
+      const ep = isNaN(rawEp) ? 0 : Math.max(0, rawEp);
+      const rawMn = parseFloat(r.querySelector(".s-mins").value);
+      const mn = isNaN(rawMn) ? 24 : Math.max(0, rawMn);
+      return {
+        title: r.querySelector(".s-title").value.trim() || `Часть ${i + 1}`,
+        type: r.querySelector(".s-type").value,
+        episodes: ep,
+        epMinutes: mn,
+        date: r.querySelector(".s-date").value.trim() || new Date().toLocaleDateString("ru-RU"),
+        note: r.querySelector(".s-note")?.value.trim() || ""
+      };
+    });
   }
 
   function openEditorModal(tierId = "S", existingItem = null) {
@@ -281,8 +313,11 @@ const Modals = (() => {
     document.getElementById("fYear").value = existingItem ? existingItem.year || 2026 : 2026;
     document.getElementById("fStudio").value = existingItem ? existingItem.studio || "" : "";
     document.getElementById("fScore").value = existingItem ? existingItem.score || 9.0 : 9.0;
-    document.getElementById("fReaction").value = existingItem ? existingItem.reaction || "👑 Шедевр" : "👑 Шедевр";
-    document.getElementById("fPoster").value = existingItem ? existingItem.poster || "" : "";
+
+    const posterInp = document.getElementById("fPoster");
+    posterInp.value = existingItem ? existingItem.poster || "" : "";
+    posterInp.dataset.existingBlobSha = existingItem?.posterBlobSha || "";
+
     const fileInp = document.getElementById("fPosterFile");
     if (fileInp) fileInp.value = "";
     document.getElementById("fGenres").value = existingItem ? (existingItem.genres || []).join(", ") : "";
