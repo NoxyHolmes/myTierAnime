@@ -1,32 +1,30 @@
-/* ═══════════════════ LARGER CARDS & NON-OVERLAPPING UNDER-META STATS ═══════════════════ */
+/* ═══════════════════ CROSS-BROWSER TIERS & 10-COLUMN POSTER GRID ═══════════════════ */
 .tiers-container {
-  max-width: var(--container-width, 1920px);
+  max-width: var(--container-width, 1780px);
   margin: 0 auto;
-  padding: 14px 18px 80px;
+  padding: 14px 20px 80px;
   display: flex;
   flex-direction: column;
-  gap: var(--tier-gap, 26px);
+  gap: var(--tier-gap, 24px);
 }
 
 .tier {
   position: relative;
   display: grid;
-  grid-template-columns: var(--badge-col-width, 175px) 1fr;
-  background: linear-gradient(
-    135deg,
-    rgba(20, 17, 38, var(--tier-bg-alpha, 0.88)),
-    rgba(10, 9, 20, calc(var(--tier-bg-alpha, 0.88) + 0.06))
-  );
-  border: 1px solid color-mix(in srgb, var(--t) 28%, rgba(255,255,255,0.08));
+  grid-template-columns: var(--badge-col-width, 185px) 1fr;
+  background: rgba(16, 13, 30, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-color: color-mix(in srgb, var(--t) 28%, rgba(255,255,255,0.08));
   border-radius: var(--tier-radius, 22px);
-  box-shadow: var(--shadow-lg), 0 0 40px -18px var(--tg);
+  box-shadow: 0 20px 50px -12px rgba(0, 0, 0, 0.85), 0 0 40px -18px var(--tg);
   overflow: hidden;
+  -webkit-backdrop-filter: blur(var(--glass-blur, 16px));
   backdrop-filter: blur(var(--glass-blur, 16px));
   transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .tier:hover {
-  border-color: color-mix(in srgb, var(--t) 55%, rgba(255,255,255,0.2));
+  border-color: var(--t);
 }
 
 .tier-badge {
@@ -37,17 +35,15 @@
   justify-content: center;
   gap: 6px;
   padding: 14px 10px;
-  background:
-    radial-gradient(circle at 50% 45%, color-mix(in srgb, var(--t) 18%, transparent), transparent 72%),
-    rgba(8, 6, 16, 0.65);
-  border-right: 1px solid color-mix(in srgb, var(--t) 24%, rgba(255,255,255,0.06));
+  background: rgba(8, 6, 16, 0.72);
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
   text-align: center;
 }
 
 .seal-index {
   font-size: 9.5px;
   letter-spacing: 0.16em;
-  color: var(--ink-soft);
+  color: #a6a0c4;
   text-transform: uppercase;
 }
 .seal-index b {
@@ -58,22 +54,22 @@
 .seal-caption {
   font-size: 11px;
   font-weight: 700;
-  color: var(--ink);
+  color: #f5f3ff;
   letter-spacing: 0.04em;
   text-shadow: 0 0 10px var(--tg);
 }
 
 .tier-meta-sub {
   font-size: 11px;
-  color: var(--ink-soft);
+  color: #a6a0c4;
   margin-top: 2px;
 }
 
 .tier-content {
-  padding: 18px 20px;
+  padding: 16px 18px;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 12px;
   min-width: 0;
 }
 
@@ -83,14 +79,14 @@
   justify-content: space-between;
   gap: 12px;
   padding-bottom: 8px;
-  border-bottom: 1px solid var(--border-subtle);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.09);
 }
 
 .tier-title-group h2 {
   font-family: var(--serif);
-  font-size: 18px;
+  font-size: 17px;
   font-weight: 700;
-  color: var(--ink);
+  color: #f5f3ff;
   margin: 0;
   display: flex;
   align-items: center;
@@ -102,35 +98,34 @@
   font-size: 11px;
   padding: 2px 9px;
   border-radius: 999px;
-  background: color-mix(in srgb, var(--t) 18%, rgba(255,255,255,0.05));
-  border: 1px solid color-mix(in srgb, var(--t) 45%, transparent);
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid var(--t);
   color: var(--t);
 }
 
-/* УВЕЛИЧЕННАЯ СЕТКА КАРТОЧЕК */
 .tier-grid {
   display: grid;
   grid-template-columns: repeat(var(--grid-cols, 10), minmax(0, 1fr));
-  gap: var(--grid-gap, 12px);
-  min-height: 225px;
-  align-items: stretch;
+  gap: var(--grid-gap, 10px);
+  min-height: 190px;
+  align-items: start;
 }
 
 .card-unit {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 5px;
   min-width: 0;
 }
 
 .card {
   position: relative;
-  aspect-ratio: 2 / 3.08;
-  border-radius: var(--card-radius, 12px);
+  aspect-ratio: 2 / 3;
+  border-radius: var(--card-radius, 10px);
   overflow: hidden;
   background: #120f24;
-  border: 1px solid rgba(255, 255, 255, 0.13);
-  box-shadow: 0 10px 24px -6px rgba(0, 0, 0, 0.78);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: 0 8px 20px -6px rgba(0, 0, 0, 0.75);
   cursor: pointer;
   transform-style: preserve-3d;
   transform: perspective(800px) rotateX(var(--crx, 0deg)) rotateY(var(--cry, 0deg));
@@ -139,7 +134,7 @@
 
 .card:hover {
   border-color: var(--t);
-  box-shadow: 0 16px 32px -6px rgba(0, 0, 0, 0.94), 0 0 22px -4px var(--tg);
+  box-shadow: 0 14px 28px -6px rgba(0, 0, 0, 0.92), 0 0 20px -4px var(--tg);
   z-index: 5;
 }
 
@@ -156,10 +151,13 @@
 
 .card .scrim {
   position: absolute;
-  inset: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   background: linear-gradient(
     to top,
-    rgba(6, 5, 14, var(--scrim-opacity, 0.95)) 0%,
+    rgba(6, 5, 14, 0.95) 0%,
     rgba(6, 5, 14, 0.5) 40%,
     transparent 72%
   );
@@ -169,15 +167,16 @@
 
 .card .rank {
   position: absolute;
-  top: 7px;
-  left: 7px;
+  top: 6px;
+  left: 6px;
   z-index: 4;
-  width: 20px;
-  height: 20px;
+  width: 19px;
+  height: 19px;
   border-radius: 5px;
-  display: grid;
-  place-items: center;
-  font-size: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9.5px;
   font-weight: 800;
   color: #090614;
   background: var(--t);
@@ -186,33 +185,31 @@
 
 .card-score-badge {
   position: absolute;
-  top: 7px;
-  right: 7px;
+  top: 6px;
+  right: 6px;
   z-index: 4;
-  padding: 2px 6px;
+  padding: 1.5px 5px;
   border-radius: 5px;
-  font-size: 9.5px;
+  font-size: 9px;
   font-weight: 800;
   color: #ffd76a;
-  background: rgba(10, 8, 20, 0.85);
+  background: rgba(10, 8, 20, 0.88);
   border: 1px solid rgba(255, 215, 106, 0.45);
-  backdrop-filter: blur(6px);
 }
 
 .card-reaction {
   position: absolute;
-  bottom: 52px;
-  left: 7px;
+  bottom: 48px;
+  left: 6px;
   z-index: 4;
-  padding: 2px 7px;
+  padding: 1.5px 6px;
   border-radius: 999px;
-  font-size: 9px;
+  font-size: 8.5px;
   font-weight: 700;
   color: #fff;
-  background: rgba(14, 11, 28, 0.84);
+  background: rgba(14, 11, 28, 0.88);
   border: 1px solid rgba(255, 255, 255, 0.16);
-  backdrop-filter: blur(4px);
-  max-width: calc(100% - 14px);
+  max-width: calc(100% - 12px);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -231,15 +228,15 @@ body.hide-under-meta .card-under-meta { display: none !important; }
   bottom: 0;
   left: 0;
   right: 0;
-  padding: 8px 8px 7px;
+  padding: 7px 7px 6px;
   z-index: 4;
   transform: translateZ(16px);
 }
 
 .card-title {
-  font-size: var(--card-title-size, 11.5px);
+  font-size: var(--card-title-size, 11px);
   font-weight: 700;
-  line-height: 1.22;
+  line-height: 1.2;
   color: #fff;
   margin: 0 0 2px;
   display: -webkit-box;
@@ -249,8 +246,8 @@ body.hide-under-meta .card-under-meta { display: none !important; }
 }
 
 .card-sub {
-  font-size: 9.5px;
-  color: var(--ink-soft);
+  font-size: 9px;
+  color: #a6a0c4;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -270,32 +267,32 @@ body.hide-under-meta .card-under-meta { display: none !important; }
 
 .floral-frame {
   position: absolute;
-  inset: 2px;
+  top: 2px;
+  left: 2px;
+  right: 2px;
+  bottom: 2px;
   border: 1px solid rgba(255, 215, 106, 0.38);
-  border-radius: calc(var(--card-radius, 12px) - 2px);
+  border-radius: 8px;
   z-index: 3;
   pointer-events: none;
 }
 
-/* ПЕРЕРАБОТАННАЯ НИЖНЯЯ ПЛАШКА ПОД КАРТОЧКОЙ (БЕЗ НАЛОЖЕНИЯ ТЕКСТА СЕРИЙ/ФИЛЬМОВ НА ВРЕМЯ!) */
 .card-under-meta {
-  background: linear-gradient(145deg, rgba(18, 15, 36, 0.92), rgba(11, 9, 22, 0.95));
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 10px;
-  padding: 7px 8px;
+  background: rgba(14, 12, 28, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 8px;
+  padding: 5px 7px;
   display: flex;
   flex-direction: column;
-  gap: 5px;
-  font-size: 10px;
-  flex: 1;
-  justify-content: space-between;
+  gap: 3px;
+  font-size: 9.5px;
 }
 
 .cum-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 4px;
+  gap: 3px;
 }
 
 .cum-kind {
@@ -303,52 +300,36 @@ body.hide-under-meta .card-under-meta { display: none !important; }
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  padding: 2px 6px;
-  border-radius: 5px;
-  background: color-mix(in srgb, var(--t) 18%, rgba(255,255,255,0.05));
+  padding: 1.5px 5px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.08);
   color: var(--t);
-  border: 1px solid color-mix(in srgb, var(--t) 40%, transparent);
+  border: 1px solid var(--t);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .cum-seasons-badge {
-  font-size: 9px;
-  color: var(--ink-soft);
+  font-size: 8.5px;
+  color: #a6a0c4;
   white-space: nowrap;
 }
 
-/* Свободная многострочная укладка для серий, фильмов и часов — никогда не слипаются и не накладываются! */
 .cum-stats {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 4px 6px;
-  color: var(--ink);
+  color: #f5f3ff;
   font-weight: 600;
-  font-size: 10px;
-  padding-top: 4px;
-  border-top: 1px solid rgba(255, 255, 255, 0.07);
-  line-height: 1.3;
+  font-size: 9.5px;
+  padding-top: 2px;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  white-space: nowrap;
 }
-
-.cum-count-text {
-  color: #e8e4ff;
-  word-break: break-word;
-}
-
 .cum-hours {
   color: #00f5ff;
-  font-weight: 800;
-  background: rgba(0, 245, 255, 0.1);
-  border: 1px solid rgba(0, 245, 255, 0.28);
-  padding: 1px 6px;
-  border-radius: 999px;
-  font-size: 9.5px;
-  white-space: nowrap;
-  margin-left: auto;
+  font-weight: 700;
 }
 
 .card-unit.dragging {
@@ -357,11 +338,11 @@ body.hide-under-meta .card-under-meta { display: none !important; }
 }
 .tier-grid.drag-over {
   background: rgba(255, 255, 255, 0.03);
-  border-radius: var(--radius-md);
+  border-radius: 14px;
   outline: 1.5px dashed var(--t);
 }
 
-@media (max-width: 1540px) {
+@media (max-width: 1480px) {
   .tier-grid { grid-template-columns: repeat(8, minmax(0, 1fr)); }
 }
 @media (max-width: 1180px) {
@@ -369,6 +350,6 @@ body.hide-under-meta .card-under-meta { display: none !important; }
 }
 @media (max-width: 860px) {
   .tier { grid-template-columns: 1fr; }
-  .tier-badge { border-right: none; border-bottom: 1px solid var(--border-subtle); }
+  .tier-badge { border-right: none; border-bottom: 1px solid rgba(255, 255, 255, 0.1); }
   .tier-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
