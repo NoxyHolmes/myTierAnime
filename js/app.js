@@ -1,6 +1,5 @@
-/* ═══════════════════ MAIN APPLICATION ORCHESTRATOR (myTierAnime v7.0 SELF-HEALING & CRASH-PROOF) ═══════════════════ */
+/* ═══════════════════ MAIN APPLICATION ORCHESTRATOR (myTierAnime v8.0 YANDEX BROWSER & CARD META FIX) ═══════════════════ */
 (() => {
-  /* 1. ВСТРОЕННЫЕ ЗАЩИТНЫЕ ФУНКЦИИ (на случай, если в браузере закешировался старый utils.js) */
   if (typeof window.pluralRu !== "function") {
     window.pluralRu = function (number, one, few, many) {
       const n = Math.abs(number) % 100;
@@ -31,7 +30,7 @@
     ];
   }
 
-  const LOCAL_STORAGE_KEY = "mta_2026_owner_draft_v14";
+  const LOCAL_STORAGE_KEY = "mta_2026_owner_draft_v15";
   let appData = null;
   let searchQuery = "";
   let selectedGenre = "ALL";
@@ -41,7 +40,6 @@
   let activeView = "tiers";
   let lastRenderedSignature = "";
 
-  /* Встроенные стартовые данные, чтобы экран НИКОГДА не был пустым */
   const BUILTIN_FALLBACK_TIERS = [
     {
       id: "S", rank: 1, name: "Шедевры", subtitle: "Лучшие и незабываемые тайтлы на все времена", hue: 45,
@@ -170,7 +168,6 @@
   }
 
   async function loadInitialState() {
-    // Сначала ставим стартовый шаблон, чтобы интерфейс отрисовался за 1 миллисекунду
     appData = ensureSixTiers(null);
 
     const hasOwnerToken = typeof GitHubSync !== "undefined" && !!GitHubSync.getToken();
@@ -218,12 +215,13 @@
     }
   }
 
+  /* Усиленный фоновый опрос для Яндекс Браузера и всех зрителей */
   function startLiveViewerPolling() {
     async function checkRemote() {
       if (document.hidden || (typeof GitHubSync !== "undefined" && GitHubSync.isOwner())) return;
       try {
         if (typeof GitHubSync === "undefined" || typeof GitHubSync.fetchFreshTiersFromApi !== "function") return;
-        const remoteRaw = await GitHubSync.fetchFreshTiersFromApi(false);
+        const remoteRaw = await GitHubSync.fetchFreshTiersFromApi(true);
         if (!remoteRaw) return;
         const remoteObj = ensureSixTiers(remoteRaw);
         const newSig = computeStateSignature(remoteObj);
@@ -234,14 +232,17 @@
             await FXController.applyGlobalBackground(appData.meta || {});
           }
           render();
-          showToast("✨ Информация на странице обновлена владельцем!", "#00f5ff");
+          showToast("✨ Информация обновлена!", "#00f5ff");
         }
       } catch {}
     }
 
-    setInterval(checkRemote, 8000);
+    setInterval(checkRemote, 6000);
     document.addEventListener("visibilitychange", () => {
       if (!document.hidden && !(typeof GitHubSync !== "undefined" && GitHubSync.isOwner())) checkRemote();
+    });
+    window.addEventListener("focus", () => {
+      if (!(typeof GitHubSync !== "undefined" && GitHubSync.isOwner())) checkRemote();
     });
   }
 
@@ -288,7 +289,7 @@
       setSyncIndicator(`☁ Синхронизировано (${new Date().toLocaleTimeString("ru-RU")})`, "#38ef7d");
       if (syncBtn) syncBtn.textContent = "🔄 Синхронизировать со всеми";
       if (showSuccessToast) {
-        showToast("✔ Вся информация и фон успешно синхронизированы со всеми пользователями по ссылке!", "#38ef7d");
+        showToast("✔ Вся информация и фон успешно синхронизированы со всеми браузерами по ссылке!", "#38ef7d");
       }
     } catch (err) {
       setSyncIndicator("⚠ Ошибка синхронизации: проверьте токен/репозиторий", "#ff5e7e");
@@ -303,6 +304,7 @@
     }
   }
 
+  /* Карточка тайтла с просторной 3-строчной нижней плашкой (серии + фильмы и часы на разных уровнях!) */
   function cardEl(item, idx, tierId) {
     const m = calcItemMetrics(item);
     const yr = m.latestYear || item.year || "";
@@ -331,14 +333,18 @@
           </div>
         </article>
 
+        <!-- ИСПРАВЛЕННАЯ 3-СТРОЧНАЯ НИЖНЯЯ ПЛАШКА (БЕЗ НАЛОЖЕНИЯ ЧАСОВ!) -->
         <div class="card-under-meta">
           <div class="cum-row">
             <span class="cum-kind">${esc(m.kind)}</span>
             <span class="cum-seasons-badge">Частей: <b>${m.seasons.length}</b></span>
           </div>
-          <div class="cum-stats">
-            <span>🎞 ${countLabel}</span>
-            <span class="cum-hours">⏱ ${formatHours(m.totalHours)} ч.</span>
+          <div class="cum-episodes-line" title="${esc(countLabel)}">
+            🎞 ${countLabel}
+          </div>
+          <div class="cum-hours-bar">
+            <span>⏱ Время:</span>
+            <b>${formatHours(m.totalHours)} ч.</b>
           </div>
         </div>
       </div>
@@ -951,17 +957,12 @@
       if (typeof FXController !== "undefined" && typeof FXController.init === "function") {
         FXController.init(rebuildAll3DLetters);
       }
-    } catch (e) {
-      console.warn("FX init warning:", e);
-    }
+    } catch {}
 
     try {
       bindGlobalUI();
-    } catch (e) {
-      console.warn("UI bind warning:", e);
-    }
+    } catch {}
 
-    // Немедленно рисуем стартовые тиры, не дожидаясь сети
     appData = ensureSixTiers(null);
     render();
 
