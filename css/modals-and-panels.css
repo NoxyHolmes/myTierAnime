@@ -1,4 +1,4 @@
-/* ═══════════════════ CROSS-BROWSER NORMALIZE, TOPBAR, DROPDOWNS & MODALS ═══════════════════ */
+/* ═══════════════════ CROSS-BROWSER NORMALIZE, TOPBAR, DROPDOWNS & WIDE DOSSIER ═══════════════════ */
 *, *::before, *::after {
   box-sizing: border-box;
   -webkit-tap-highlight-color: transparent;
@@ -103,7 +103,6 @@ body.fx-scanlines .screen-fx-overlay::after {
   );
 }
 
-/* Кроссбраузерные ползунки (WebKit + Firefox + Edge) */
 input[type="range"] {
   -webkit-appearance: none;
   -moz-appearance: none;
@@ -176,7 +175,6 @@ select option {
   z-index: 3;
 }
 
-/* Шапка с высоким z-index и overflow: visible, чтобы выпадающие списки открывались во всех браузерах */
 .topbar {
   position: -webkit-sticky;
   position: sticky;
@@ -305,7 +303,6 @@ body.hide-stats-ribbon .stats-ribbon { display: none !important; }
   pointer-events: none;
 }
 
-/* КРОССБРАУЗЕРНЫЕ ВЫПАДАЮЩИЕ СПИСКИ ЖАНРОВ И СТУДИЙ */
 .genre-dropdown {
   position: relative;
   display: inline-block;
@@ -752,6 +749,7 @@ body.is-owner .owner-only {
   border-radius: 6px;
 }
 
+/* ═══════════════════ ШИРОКОФОРМАТНАЯ КАРТОЧКА ТАЙТЛА (ВСЕ СЕЗОНЫ СРАЗУ ПЕРЕД ГЛАЗАМИ) ═══════════════════ */
 .modal-backdrop {
   position: fixed;
   top: 0;
@@ -765,7 +763,7 @@ body.is-owner .owner-only {
   display: none;
   align-items: center;
   justify-content: center;
-  padding: 24px;
+  padding: 16px;
   overflow-y: auto;
 }
 .modal-backdrop.open {
@@ -775,24 +773,24 @@ body.is-owner .owner-only {
 .modal-box {
   width: 100%;
   max-width: 680px;
-  max-height: calc(100vh - 48px);
+  max-height: calc(100vh - 32px);
   overflow-y: auto;
   background: #171230;
   border: 1px solid rgba(255, 255, 255, 0.22);
   border-radius: 22px;
-  padding: 24px;
+  padding: 22px;
   box-shadow: 0 25px 70px rgba(0, 0, 0, 0.95);
   margin: auto;
 }
 .modal-box-wide {
-  max-width: 940px;
+  max-width: 1180px;
 }
 
 .dossier-cinema-box {
   padding: 0 !important;
   display: flex;
   flex-direction: column;
-  max-height: calc(100vh - 48px);
+  max-height: calc(100vh - 28px);
   overflow: hidden;
   border: 1px solid rgba(255, 215, 106, 0.45);
   background: #140f2d;
@@ -804,7 +802,7 @@ body.is-owner .owner-only {
   justify-content: space-between;
   gap: 12px;
   flex-wrap: wrap;
-  padding: 14px 24px;
+  padding: 10px 22px;
   background: #120e26;
   border-bottom: 1px solid rgba(255, 255, 255, 0.14);
   z-index: 10;
@@ -822,9 +820,10 @@ body.is-owner .owner-only {
   flex: 1;
 }
 
+/* Компактная верхняя секция, чтобы больше места оставалось под список сезонов */
 .dossier-hero-banner {
   position: relative;
-  padding: 24px 28px;
+  padding: 16px 24px;
   overflow: hidden;
   border-bottom: 1px solid rgba(255, 255, 255, 0.12);
 }
@@ -861,17 +860,17 @@ body.is-owner .owner-only {
   position: relative;
   z-index: 3;
   display: grid;
-  grid-template-columns: 195px 1fr;
-  gap: 24px;
-  align-items: start;
+  grid-template-columns: 142px 1fr;
+  gap: 20px;
+  align-items: center;
 }
 
 .dossier-poster-wrap {
   position: relative;
-  border-radius: 14px;
+  border-radius: 12px;
   overflow: hidden;
   border: 2px solid rgba(255, 215, 106, 0.55);
-  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.85);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.85);
 }
 .dossier-poster-wrap img {
   width: 100%;
@@ -882,15 +881,15 @@ body.is-owner .owner-only {
 
 .dossier-score-orb {
   position: absolute;
-  bottom: 10px;
-  right: 10px;
+  bottom: 8px;
+  right: 8px;
   background: linear-gradient(135deg, #ffd76a, #ff5e7e);
   color: #090614;
   font-weight: 900;
-  font-size: 13.5px;
-  padding: 4px 10px;
+  font-size: 12.5px;
+  padding: 3px 9px;
   border-radius: 999px;
-  box-shadow: 0 4px 14px rgba(0,0,0,0.75);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.75);
 }
 
 .dossier-badges-row {
@@ -917,39 +916,39 @@ body.is-owner .owner-only {
 }
 
 .dossier-title-main {
-  margin: 0 0 4px;
+  margin: 0 0 3px;
   font-family: var(--serif);
-  font-size: 24px;
+  font-size: 22px;
   font-weight: 900;
   color: #ffffff;
 }
 .dossier-title-orig {
-  font-size: 13px;
+  font-size: 12.5px;
   color: #cbc4eb;
-  margin-bottom: 14px;
+  margin-bottom: 10px;
 }
 
 .dossier-metrics-row {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 10px;
-  margin-bottom: 14px;
+  margin-bottom: 10px;
 }
 .dossier-metric-card {
   background: rgba(255, 255, 255, 0.07);
   border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 12px;
-  padding: 10px 12px;
+  border-radius: 10px;
+  padding: 8px 12px;
 }
 .dossier-metric-card .dm-lbl {
-  font-size: 10px;
+  font-size: 9.5px;
   text-transform: uppercase;
   color: #bdb6de;
-  margin-bottom: 3px;
+  margin-bottom: 2px;
 }
 .dossier-metric-card .dm-val {
   font-family: var(--serif);
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 800;
   color: #fff;
 }
@@ -958,12 +957,12 @@ body.is-owner .owner-only {
   background: rgba(181, 124, 255, 0.11);
   border: 1px solid rgba(181, 124, 255, 0.3);
   border-left: 4px solid #ffd76a;
-  border-radius: 10px;
-  padding: 11px 14px;
-  font-size: 13px;
-  line-height: 1.55;
+  border-radius: 9px;
+  padding: 8px 12px;
+  font-size: 12.5px;
+  line-height: 1.45;
   color: #f5f3ff;
-  margin-bottom: 12px;
+  margin-bottom: 9px;
 }
 
 .dossier-genres-wrap {
@@ -972,18 +971,155 @@ body.is-owner .owner-only {
   flex-wrap: wrap;
 }
 .dossier-genre-tag {
-  padding: 4px 10px;
+  padding: 3px 9px;
   border-radius: 999px;
-  font-size: 11px;
+  font-size: 10.5px;
   font-weight: 700;
   background: rgba(0, 245, 255, 0.12);
   border: 1px solid rgba(0, 245, 255, 0.35);
   color: #b8fbff;
 }
 
+/* ──────── СЕКЦИЯ СЕЗОНОВ В 2 КОЛОНКИ БЕЗ ПРОКРУТКИ (ВСЁ СРАЗУ ПЕРЕД ГЛАЗАМИ) ──────── */
 .dossier-body-section {
-  padding: 18px 28px 24px;
+  padding: 14px 24px 20px;
   background: #140f2d;
+}
+
+.dossier-seasons-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 0 0 10px;
+}
+.dossier-filter-pills {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.dossier-pill-btn {
+  padding: 4px 11px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  border: 1px solid rgba(255,255,255,0.14);
+  background: rgba(255,255,255,0.05);
+  color: #a6a0c4;
+  cursor: pointer;
+}
+.dossier-pill-btn.active {
+  background: rgba(0, 245, 255, 0.22);
+  border-color: #00f5ff;
+  color: #fff;
+}
+
+/* 2-колоночная сетка карточек сезонов: вмещает 8–12 сезонов сразу на один экран! */
+.dossier-seasons-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 9px;
+}
+
+.dossier-season-card {
+  background: linear-gradient(135deg, rgba(28, 22, 56, 0.92), rgba(18, 14, 38, 0.95));
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  border-left: 3px solid #00f5ff;
+  border-radius: 10px;
+  padding: 8px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.dossier-season-card.is-upcoming {
+  border-left-color: #ffd76a;
+  background: linear-gradient(135deg, rgba(42, 30, 22, 0.55), rgba(18, 14, 38, 0.95));
+}
+
+.dsc-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.dsc-title-group {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+}
+.dsc-num {
+  font-size: 11px;
+  font-weight: 900;
+  color: #090614;
+  background: #ffd76a;
+  padding: 1px 6px;
+  border-radius: 5px;
+  flex-shrink: 0;
+}
+.dsc-name {
+  font-size: 13px;
+  font-weight: 800;
+  color: #ffffff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.dsc-badges {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.dsc-year {
+  font-size: 11.5px;
+  font-weight: 800;
+  color: #ffd76a;
+  background: rgba(255, 215, 106, 0.12);
+  border: 1px solid rgba(255, 215, 106, 0.35);
+  padding: 1px 7px;
+  border-radius: 5px;
+  white-space: nowrap;
+}
+
+.dsc-metrics {
+  display: grid;
+  grid-template-columns: 1.25fr 0.9fr 0.85fr 1fr;
+  gap: 6px;
+  padding-top: 5px;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  font-size: 11.5px;
+}
+.dsc-cell {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+.dsc-lbl {
+  color: #9e97bf;
+  font-size: 10.5px;
+}
+.s-chip-vol {
+  font-weight: 700;
+  color: #f5f3ff;
+}
+.s-chip-upcoming {
+  font-weight: 800;
+  color: #ffd76a;
+  font-size: 11px;
+}
+
+.dsc-note {
+  font-size: 11px;
+  color: #cbc4eb;
+  background: rgba(255, 255, 255, 0.04);
+  padding: 3px 8px;
+  border-radius: 6px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .modal-header {
@@ -1073,13 +1209,10 @@ body.is-owner .owner-only {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  max-height: 260px;
-  overflow-y: auto;
-  padding-right: 4px;
 }
 .season-row {
   display: grid;
-  grid-template-columns: minmax(120px, 1.3fr) minmax(105px, 0.95fr) 68px 74px 110px minmax(100px, 1fr) 72px 32px;
+  grid-template-columns: minmax(115px, 1.25fr) minmax(100px, 0.9fr) 74px 64px 70px 104px minmax(90px, 0.95fr) 72px 32px;
   gap: 6px;
   align-items: center;
   background: rgba(18, 14, 36, 0.95);
@@ -1105,64 +1238,6 @@ body.is-owner .owner-only {
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 8px;
-}
-
-.dossier-seasons-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  flex-wrap: wrap;
-  margin: 0 0 10px;
-}
-.dossier-filter-pills {
-  display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
-}
-.dossier-pill-btn {
-  padding: 5px 12px;
-  border-radius: 999px;
-  font-size: 11px;
-  font-weight: 700;
-  border: 1px solid rgba(255,255,255,0.14);
-  background: rgba(255,255,255,0.05);
-  color: #a6a0c4;
-  cursor: pointer;
-}
-.dossier-pill-btn.active {
-  background: rgba(0, 245, 255, 0.22);
-  border-color: #00f5ff;
-  color: #fff;
-}
-.seasons-scroll-box {
-  max-height: 220px;
-  overflow-y: auto;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  border-radius: 12px;
-  background: rgba(24, 19, 48, 0.75);
-}
-.seasons-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 12px;
-}
-.seasons-table thead th {
-  position: -webkit-sticky;
-  position: sticky;
-  top: 0;
-  background: #231b47;
-  color: #d6d0f5;
-  font-size: 10.5px;
-  text-transform: uppercase;
-  padding: 9px 12px;
-  text-align: left;
-  border-bottom: 1px solid rgba(255,255,255,0.14);
-  z-index: 2;
-}
-.seasons-table td {
-  padding: 8px 12px;
-  border-bottom: 1px solid rgba(255,255,255,0.06);
 }
 
 .shiki-results {
@@ -1215,24 +1290,20 @@ body.is-owner .owner-only {
   box-shadow: 0 15px 35px rgba(0, 0, 0, 0.85);
 }
 
-@media (max-width: 860px) {
+@media (max-width: 960px) {
+  .dossier-seasons-grid {
+    grid-template-columns: 1fr;
+  }
   .dossier-hero-grid {
     grid-template-columns: 1fr;
   }
   .dossier-poster-wrap {
-    max-width: 180px;
+    max-width: 160px;
     margin: 0 auto;
   }
   .season-row {
-  display: grid;
-  grid-template-columns: minmax(115px, 1.25fr) minmax(100px, 0.9fr) 74px 64px 70px 104px minmax(90px, 0.95fr) 72px 32px;
-  gap: 6px;
-  align-items: center;
-  background: rgba(18, 14, 36, 0.95);
-  padding: 8px;
-  border-radius: 9px;
-  border: 1px solid rgba(255,255,255,0.09);
-}
+    grid-template-columns: 1fr 1fr;
+  }
   .poster-upload-grid, .editor-genre-bar {
     grid-template-columns: 1fr;
   }
