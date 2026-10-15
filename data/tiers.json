@@ -4,12 +4,12 @@
     "owner": "geraltschwarzenegger-svg",
     "repo": "noxyholmes/myTierAnime",
     "branch": "main",
-    "updatedAt": "2026-10-15T11:31:45.490Z",
+    "updatedAt": "2026-10-15T11:31:53.147Z",
     "activeMode": "emblems-realism",
     "bgImage": "backgrounds/1792058756499____________________________________.png",
     "bgDim": 65,
     "bgBlur": 5,
-    "revision": 22,
+    "revision": 23,
     "bgBlobSha": "1de942c76368b8d317071e794ae55fed35d163ad",
     "bgMime": "image/png"
   },
@@ -278,34 +278,7 @@
       "name": "Нормальные",
       "subtitle": "Средние тайтлы на один вечер",
       "hue": 148,
-      "items": [
-        {
-          "uid": "anime-bartender-2024",
-          "kind": "TV Сериал",
-          "title": "Бармен: Бокал бога",
-          "origTitle": "Bartender: Kami no Glass",
-          "year": 2024,
-          "studio": "Liber",
-          "score": 7.9,
-          "reaction": "🍸 Уют",
-          "genres": [
-            "Повседневность",
-            "Драма"
-          ],
-          "poster": "https://shikimori.one/system/animes/original/53407.jpg",
-          "comment": "Спокойный вечерний сериал с приятной атмосферой камерного бара.",
-          "seasons": [
-            {
-              "title": "Сезон 1",
-              "type": "TV Сериал",
-              "episodes": 12,
-              "epMinutes": 24,
-              "date": "11.05.2026",
-              "note": "Для вечернего отдыха"
-            }
-          ]
-        }
-      ]
+      "items": []
     },
     {
       "id": "D",
