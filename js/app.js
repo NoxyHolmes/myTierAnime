@@ -1,6 +1,37 @@
-/* ═══════════════════ MAIN APPLICATION ORCHESTRATOR (myTierAnime v6.1 CROSS-BROWSER BULLETPROOF) ═══════════════════ */
+/* ═══════════════════ MAIN APPLICATION ORCHESTRATOR (myTierAnime v7.0 SELF-HEALING & CRASH-PROOF) ═══════════════════ */
 (() => {
-  const LOCAL_STORAGE_KEY = "mta_2026_owner_draft_v12";
+  /* 1. ВСТРОЕННЫЕ ЗАЩИТНЫЕ ФУНКЦИИ (на случай, если в браузере закешировался старый utils.js) */
+  if (typeof window.pluralRu !== "function") {
+    window.pluralRu = function (number, one, few, many) {
+      const n = Math.abs(number) % 100;
+      const n1 = n % 10;
+      if (n > 10 && n < 20) return many;
+      if (n1 > 1 && n1 < 5) return few;
+      if (n1 === 1) return one;
+      return many;
+    };
+  }
+  if (typeof window.formatTitlesCount !== "function") {
+    window.formatTitlesCount = n => `${n} ${window.pluralRu(n, "тайтл", "тайтла", "тайтлов")}`;
+  }
+  if (typeof window.formatEpisodesCount !== "function") {
+    window.formatEpisodesCount = n => `${n} ${window.pluralRu(n, "серия", "серии", "серий")}`;
+  }
+  if (typeof window.formatMoviesCount !== "function") {
+    window.formatMoviesCount = n => `${n} ${window.pluralRu(n, "фильм", "фильма", "фильмов")}`;
+  }
+  if (!Array.isArray(window.ALL_ANIME_STUDIOS)) {
+    window.ALL_ANIME_STUDIOS = [
+      "A-1 Pictures", "Bones", "CloverWorks", "CoMix Wave Films", "David Production",
+      "Doga Kobo", "J.C.Staff", "Kyoto Animation", "Lerche", "Liber", "Liden Films",
+      "Madhouse", "MAPPA", "OLM", "OLM / TOHO animation", "P.A. Works", "Pierrot",
+      "Production I.G", "Science SARU", "Shaft", "Silver Link.", "Studio Bind",
+      "Studio Deen", "Studio Ghibli", "Sunrise", "TMS Entertainment", "Toei Animation",
+      "Trigger", "Ufotable", "White Fox", "Wit Studio"
+    ];
+  }
+
+  const LOCAL_STORAGE_KEY = "mta_2026_owner_draft_v14";
   let appData = null;
   let searchQuery = "";
   let selectedGenre = "ALL";
@@ -10,29 +41,93 @@
   let activeView = "tiers";
   let lastRenderedSignature = "";
 
-  /* Автоматическая очистка старых Service Worker и Cache Storage во всех браузерах */
-  async function purgeLegacyBrowserCaches() {
-    try {
-      if ("serviceWorker" in navigator) {
-        const regs = await navigator.serviceWorker.getRegistrations();
-        for (const reg of regs) {
-          await reg.unregister();
+  /* Встроенные стартовые данные, чтобы экран НИКОГДА не был пустым */
+  const BUILTIN_FALLBACK_TIERS = [
+    {
+      id: "S", rank: 1, name: "Шедевры", subtitle: "Лучшие и незабываемые тайтлы на все времена", hue: 45,
+      items: [
+        {
+          uid: "anime-cotn-2022", kind: "TV Сериал", title: "Песнь ночных сов", origTitle: "Yofukashi no Uta",
+          year: 2022, studio: "Liden Films", score: 10.0, reaction: "👑 Шедевр",
+          genres: ["Сверхъестественное", "Романтика", "Вампиры"],
+          poster: "https://shikimori.one/system/animes/original/48926.jpg",
+          comment: "Неоновая эстетика ночного города, потрясающий саундтрек Creepy Nuts и харизма Надзуны Нанакусы.",
+          seasons: [
+            { title: "Сезон 1", type: "TV Сериал", episodes: 13, epMinutes: 23, date: "12.08.2024", note: "Первый просмотр" },
+            { title: "Сезон 1 (Rewatch)", type: "TV Сериал", episodes: 13, epMinutes: 23, date: "18.06.2026", note: "Пересмотр" }
+          ]
+        },
+        {
+          uid: "anime-frieren-2023", kind: "TV Сериал", title: "Провожающая в последний путь Фрирен", origTitle: "Sousou no Frieren",
+          year: 2023, studio: "Madhouse", score: 9.9, reaction: "💎 Эталон",
+          genres: ["Фэнтези", "Приключения", "Драма"],
+          poster: "https://shikimori.one/system/animes/original/52991.jpg",
+          comment: "Глубокая, меланхоличная и невероятно красивая история о течении времени и памяти о товарищах.",
+          seasons: [
+            { title: "Сезон 1", type: "TV Сериал", episodes: 28, epMinutes: 24, date: "24.04.2026", note: "Полный просмотр" }
+          ]
+        },
+        {
+          uid: "anime-oshinoko-2023", kind: "TV Сериал", title: "Звёздное дитя", origTitle: "Oshi no Ko",
+          year: 2023, studio: "Doga Kobo", score: 9.8, reaction: "✨ Фаворит",
+          genres: ["Драма", "Музыка", "Триллер"],
+          poster: "https://shikimori.one/system/animes/original/52034.jpg",
+          comment: "Феноменальная режиссура, пронзительный пролог и легендарный трек Idol от YOASOBI.",
+          seasons: [
+            { title: "Пролог", type: "Спешл", episodes: 1, epMinutes: 82, date: "10.05.2025", note: "Премьера" },
+            { title: "Сезон 1", type: "TV Сериал", episodes: 10, epMinutes: 24, date: "15.05.2025", note: "1 сезон" },
+            { title: "Сезон 2", type: "TV Сериал", episodes: 13, epMinutes: 24, date: "05.10.2026", note: "2 сезон" }
+          ]
         }
-      }
-      if ("caches" in window) {
-        const keys = await caches.keys();
-        for (const k of keys) {
-          await caches.delete(k);
+      ]
+    },
+    {
+      id: "A", rank: 2, name: "Отличные", subtitle: "Яркие и очень качественные работы", hue: 185,
+      items: [
+        {
+          uid: "anime-apothecary-2023", kind: "TV Сериал", title: "Монолог фармацевта", origTitle: "Kusuriya no Hitorigoto",
+          year: 2023, studio: "OLM / TOHO animation", score: 9.3, reaction: "🧪 Интрига",
+          genres: ["Детектив", "Исторический", "Драма"],
+          poster: "https://shikimori.one/system/animes/original/54492.jpg",
+          comment: "Блестящий детективный сюжет в декорациях императорского двора.",
+          seasons: [{ title: "Сезон 1", type: "TV Сериал", episodes: 24, epMinutes: 24, date: "14.03.2026", note: "1 сезон" }]
+        },
+        {
+          uid: "anime-yourname-2016", kind: "Фильм", title: "Твоё имя", origTitle: "Kimi no Na wa.",
+          year: 2016, studio: "CoMix Wave Films", score: 9.4, reaction: "☄️ Классика",
+          genres: ["Романтика", "Драма", "Сверхъестественное"],
+          poster: "https://shikimori.one/system/animes/original/32281.jpg",
+          comment: "Визуальный шедевр Макото Синкая с музыкой RADWIMPS.",
+          seasons: [{ title: "Полнометражный фильм", type: "Фильм", episodes: 1, epMinutes: 106, date: "19.01.2026", note: "4K" }]
         }
-      }
-    } catch {}
-  }
-
-  const DEFAULT_TIERS_TEMPLATE = [
-    { id: "S", rank: 1, name: "Шедевры", subtitle: "Лучшие и незабываемые тайтлы на все времена", hue: 45, items: [] },
-    { id: "A", rank: 2, name: "Отличные", subtitle: "Яркие и очень качественные работы", hue: 185, items: [] },
-    { id: "B", rank: 3, name: "Хорошие", subtitle: "Достойные внимания и атмосферные тайтлы", hue: 275, items: [] },
-    { id: "C", rank: 4, name: "Нормальные", subtitle: "Средние тайтлы на один вечер", hue: 148, items: [] },
+      ]
+    },
+    {
+      id: "B", rank: 3, name: "Хорошие", subtitle: "Достойные внимания и атмосферные тайтлы", hue: 275,
+      items: [
+        {
+          uid: "anime-sololeveling-2024", kind: "TV Сериал", title: "Поднятие уровня в одиночку", origTitle: "Ore dake Level Up na Ken",
+          year: 2024, studio: "A-1 Pictures", score: 8.5, reaction: "🔥 Экшен",
+          genres: ["Экшен", "Фэнтези", "Приключения"],
+          poster: "https://shikimori.one/system/animes/original/52299.jpg",
+          comment: "Отличная динамика боёв и музыка Хироюки Савано.",
+          seasons: [{ title: "Сезон 1", type: "TV Сериал", episodes: 12, epMinutes: 24, date: "02.02.2026", note: "Просмотр" }]
+        }
+      ]
+    },
+    {
+      id: "C", rank: 4, name: "Нормальные", subtitle: "Средние тайтлы на один вечер", hue: 148,
+      items: [
+        {
+          uid: "anime-bartender-2024", kind: "TV Сериал", title: "Бармен: Бокал бога", origTitle: "Bartender: Kami no Glass",
+          year: 2024, studio: "Liber", score: 7.9, reaction: "🍸 Уют",
+          genres: ["Повседневность", "Драма"],
+          poster: "https://shikimori.one/system/animes/original/53407.jpg",
+          comment: "Спокойный вечерний сериал с приятной атмосферой камерного бара.",
+          seasons: [{ title: "Сезон 1", type: "TV Сериал", episodes: 12, epMinutes: 24, date: "11.05.2026", note: "Вечерний отдых" }]
+        }
+      ]
+    },
     { id: "D", rank: 5, name: "Слабые", subtitle: "Проходные или скучные проекты", hue: 28, items: [] },
     { id: "E", rank: 6, name: "Плохие", subtitle: "Разочарования и брошенные тайтлы", hue: 215, items: [] }
   ];
@@ -47,12 +142,15 @@
   };
 
   function ensureSixTiers(data) {
-    if (!data || !Array.isArray(data.tiers)) {
-      return { meta: { title: "myTierAnime", bgImage: "", bgBlobSha: "", bgDim: 55, bgBlur: 0, revision: 1 }, tiers: DEFAULT_TIERS_TEMPLATE };
+    if (!data || !Array.isArray(data.tiers) || data.tiers.length === 0) {
+      return {
+        meta: { title: "myTierAnime", bgImage: "", bgBlobSha: "", bgDim: 55, bgBlur: 0, revision: 1 },
+        tiers: JSON.parse(JSON.stringify(BUILTIN_FALLBACK_TIERS))
+      };
     }
     data.meta = data.meta || {};
     data.meta.revision = Number(data.meta.revision || 1);
-    DEFAULT_TIERS_TEMPLATE.forEach(def => {
+    BUILTIN_FALLBACK_TIERS.forEach(def => {
       if (!data.tiers.find(t => t.id === def.id)) {
         data.tiers.push(JSON.parse(JSON.stringify(def)));
       }
@@ -72,7 +170,10 @@
   }
 
   async function loadInitialState() {
-    const hasOwnerToken = !!GitHubSync.getToken();
+    // Сначала ставим стартовый шаблон, чтобы интерфейс отрисовался за 1 миллисекунду
+    appData = ensureSixTiers(null);
+
+    const hasOwnerToken = typeof GitHubSync !== "undefined" && !!GitHubSync.getToken();
     let localObj = null;
 
     if (hasOwnerToken) {
@@ -81,15 +182,19 @@
         try {
           localObj = ensureSixTiers(JSON.parse(cached));
           appData = localObj;
-          FXController.applyGlobalBackground(appData.meta || {});
         } catch {}
       }
-    } else {
-      localStorage.removeItem(LOCAL_STORAGE_KEY);
     }
 
     try {
-      const remoteRaw = await GitHubSync.fetchFreshTiersFromApi(true);
+      let remoteRaw = null;
+      if (typeof GitHubSync !== "undefined" && typeof GitHubSync.fetchFreshTiersFromApi === "function") {
+        remoteRaw = await GitHubSync.fetchFreshTiersFromApi(true);
+      } else {
+        const res = await fetch(`data/tiers.json?nocache=${Date.now()}`, { cache: "no-store" });
+        if (res.ok) remoteRaw = await res.json();
+      }
+
       if (remoteRaw) {
         const remoteObj = ensureSixTiers(remoteRaw);
         if (!hasOwnerToken) {
@@ -107,15 +212,17 @@
       console.warn("Remote load fallback:", e);
     }
 
-    if (!appData) appData = ensureSixTiers(null);
     lastRenderedSignature = computeStateSignature(appData);
-    await FXController.applyGlobalBackground(appData.meta || {});
+    if (typeof FXController !== "undefined" && typeof FXController.applyGlobalBackground === "function") {
+      await FXController.applyGlobalBackground(appData.meta || {});
+    }
   }
 
   function startLiveViewerPolling() {
     async function checkRemote() {
-      if (document.hidden || GitHubSync.isOwner()) return;
+      if (document.hidden || (typeof GitHubSync !== "undefined" && GitHubSync.isOwner())) return;
       try {
+        if (typeof GitHubSync === "undefined" || typeof GitHubSync.fetchFreshTiersFromApi !== "function") return;
         const remoteRaw = await GitHubSync.fetchFreshTiersFromApi(false);
         if (!remoteRaw) return;
         const remoteObj = ensureSixTiers(remoteRaw);
@@ -123,7 +230,9 @@
         if (newSig && newSig !== lastRenderedSignature) {
           appData = remoteObj;
           lastRenderedSignature = newSig;
-          await FXController.applyGlobalBackground(appData.meta || {});
+          if (typeof FXController !== "undefined" && typeof FXController.applyGlobalBackground === "function") {
+            await FXController.applyGlobalBackground(appData.meta || {});
+          }
           render();
           showToast("✨ Информация на странице обновлена владельцем!", "#00f5ff");
         }
@@ -132,7 +241,7 @@
 
     setInterval(checkRemote, 8000);
     document.addEventListener("visibilitychange", () => {
-      if (!document.hidden && !GitHubSync.isOwner()) checkRemote();
+      if (!document.hidden && !(typeof GitHubSync !== "undefined" && GitHubSync.isOwner())) checkRemote();
     });
   }
 
@@ -156,12 +265,13 @@
 
     try {
       localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(appData));
-    } catch (e) {
-      console.warn("LocalStorage quota warning:", e);
-    }
-    StatsEngine.updateStats(appData.tiers);
+    } catch {}
 
-    if (!GitHubSync.isOwner()) return;
+    if (typeof StatsEngine !== "undefined" && typeof StatsEngine.updateStats === "function") {
+      StatsEngine.updateStats(appData.tiers);
+    }
+
+    if (typeof GitHubSync === "undefined" || !GitHubSync.isOwner()) return;
 
     if (isSyncing) {
       pendingSync = true;
@@ -199,8 +309,8 @@
     const yearBadgeHtml = yr ? `<span class="card-year-3d" aria-hidden="true">${yr}</span>` : "";
 
     const countLabel = m.totalMovies > 0 && m.totalEpisodes === 0
-      ? formatMoviesCount(m.totalMovies)
-      : `${formatEpisodesCount(m.totalEpisodes)}${m.totalMovies ? ` + ${formatMoviesCount(m.totalMovies)}` : ""}`;
+      ? window.formatMoviesCount(m.totalMovies)
+      : `${window.formatEpisodesCount(m.totalEpisodes)}${m.totalMovies ? ` + ${window.formatMoviesCount(m.totalMovies)}` : ""}`;
 
     return `
       <div class="card-unit" draggable="true" data-uid="${esc(item.uid)}" data-tier-id="${esc(tierId)}">
@@ -236,10 +346,10 @@
   }
 
   function rebuildAll3DLetters() {
-    if (!appData) return;
+    if (!appData || typeof build3DLetter !== "function") return;
     document.querySelectorAll("#tiersRoot .tier").forEach((tierEl, idx) => {
       const l3dHost = tierEl.querySelector(".l3d");
-      build3DLetter(l3dHost, appData.tiers[idx], idx);
+      if (appData.tiers[idx]) build3DLetter(l3dHost, appData.tiers[idx], idx);
     });
     const demoSeal = document.querySelector("#fxDemo .l3d");
     if (demoSeal && appData.tiers[0]) {
@@ -251,7 +361,9 @@
     const host = document.getElementById("tiersRoot");
     if (!host || !appData || !Array.isArray(appData.tiers)) return;
 
-    FXController.applyGlobalBackground(appData.meta || {});
+    if (typeof FXController !== "undefined" && typeof FXController.applyGlobalBackground === "function") {
+      FXController.applyGlobalBackground(appData.meta || {});
+    }
 
     let grandTotal = 0;
     appData.tiers.forEach(t => grandTotal += (t.items || []).length);
@@ -272,17 +384,19 @@
 
       const tierCount = (tier.items || []).length;
       const tierPercent = grandTotal > 0 ? Math.round((tierCount / grandTotal) * 100) : 0;
-      const titlesStr = formatTitlesCount(tierCount);
+      const titlesStr = window.formatTitlesCount(tierCount);
 
       const badgeBodyHtml = `
         <span class="seal-index">ТИР <b>${esc(tier.id)}</b></span>
         <div class="lstage">
-          ${realismMarkup(tierIdx, tier)}${elementMarkup(tierIdx)}${orbitalMarkup()}
+          ${typeof realismMarkup === "function" ? realismMarkup(tierIdx, tier) : ""}
+          ${typeof elementMarkup === "function" ? elementMarkup(tierIdx) : ""}
+          ${typeof orbitalMarkup === "function" ? orbitalMarkup() : ""}
           <span class="seal-floor" aria-hidden="true"></span>
           <span class="ring r1"></span><span class="ring r2"></span>
           <div class="l3d" data-l="${esc(tier.id)}"></div>
         </div>
-        <span class="seal-caption">${REALISM_NAMES[tierIdx % 6]}</span>
+        <span class="seal-caption">${esc(tier.name)}</span>
       `;
 
       return `
@@ -311,26 +425,32 @@
       `;
     }).join("");
 
-    host.querySelectorAll("img.card-poster[data-blob-sha]").forEach(async img => {
-      const sha = img.dataset.blobSha;
-      if (sha) {
-        const resolved = await GitHubSync.resolveAssetUrl(img.getAttribute("src"), sha);
-        if (resolved) img.src = resolved;
-      }
-    });
+    if (typeof GitHubSync !== "undefined" && typeof GitHubSync.resolveAssetUrl === "function") {
+      host.querySelectorAll("img.card-poster[data-blob-sha]").forEach(async img => {
+        const sha = img.dataset.blobSha;
+        if (sha) {
+          const resolved = await GitHubSync.resolveAssetUrl(img.getAttribute("src"), sha);
+          if (resolved) img.src = resolved;
+        }
+      });
+    }
 
     rebuildAll3DLetters();
-    FXController.observeTiers();
-    StatsEngine.updateStats(appData.tiers);
+    if (typeof FXController !== "undefined" && typeof FXController.observeTiers === "function") {
+      FXController.observeTiers();
+    }
+    if (typeof StatsEngine !== "undefined" && typeof StatsEngine.updateStats === "function") {
+      StatsEngine.updateStats(appData.tiers);
+    }
     populateGenreDropdowns();
     populateStudioDropdown();
     bindTierInteractions();
 
-    if (activeView === "calendar") {
+    if (activeView === "calendar" && typeof CalendarView !== "undefined") {
       CalendarView.renderCalendar(appData.tiers, (uid, tierId) => {
         const tier = appData.tiers.find(t => t.id === tierId);
         const item = tier?.items.find(i => i.uid === uid);
-        if (item && tier) Modals.showAnimeDetails(item, tier);
+        if (item && tier && typeof Modals !== "undefined") Modals.showAnimeDetails(item, tier);
       });
     }
   }
@@ -355,24 +475,15 @@
 
   function populateGenreDropdowns(editorSearchTerm = "") {
     const listEl = document.getElementById("genreOptionsList");
-    const legacySelect = document.getElementById("genreFilter");
     const picker = document.getElementById("genreQuickPicker");
     const sorted = getSortedAllGenres();
 
-    // Поддержка нового выпадающего списка с поиском
     if (listEl) {
       const q = genreFilterSearch.trim().toLowerCase();
       const matching = sorted.filter(g => !q || g.toLowerCase().includes(q));
       listEl.innerHTML =
         `<div class="genre-opt-item ${selectedGenre === "ALL" ? "active" : ""}" data-g-val="ALL">🎭 Все жанры (${sorted.length})</div>` +
         matching.map(g => `<div class="genre-opt-item ${selectedGenre === g ? "active" : ""}" data-g-val="${esc(g)}">${esc(g)}</div>`).join("");
-    }
-
-    // Обратная совместимость, если в браузере осталась старая разметка <select id="genreFilter">
-    if (legacySelect) {
-      const cur = legacySelect.value || "ALL";
-      legacySelect.innerHTML = `<option value="ALL">Все жанры (${sorted.length})</option>` +
-        sorted.map(g => `<option value="${esc(g)}" ${g === cur ? "selected" : ""}>${esc(g)}</option>`).join("");
     }
 
     if (picker) {
@@ -404,46 +515,48 @@
 
   function bindTierInteractions() {
     document.querySelectorAll("[data-add-to-tier]").forEach(btn => {
-      btn.addEventListener("click", () => {
-        if (!GitHubSync.isOwner()) {
+      btn.onclick = () => {
+        if (typeof GitHubSync === "undefined" || !GitHubSync.isOwner()) {
           showToast("Для добавления войдите как владелец", "#ff3c8c");
           Modals.openModal("authModal");
           return;
         }
         Modals.openEditorModal(btn.dataset.addToTier, null);
-      });
+      };
     });
 
     document.querySelectorAll(".card-unit").forEach(unit => {
-      unit.addEventListener("click", () => {
+      unit.onclick = () => {
         const uid = unit.dataset.uid;
         const tierId = unit.dataset.tierId;
         const tier = appData.tiers.find(t => t.id === tierId);
         const item = tier?.items.find(i => i.uid === uid);
-        if (item && tier) Modals.showAnimeDetails(item, tier);
+        if (item && tier && typeof Modals !== "undefined") Modals.showAnimeDetails(item, tier);
+      };
+    });
+
+    if (typeof DragDropEngine !== "undefined" && typeof DragDropEngine.bindCardsAndGrids === "function") {
+      DragDropEngine.bindCardsAndGrids((uid, fromTierId, toTierId, targetUid) => {
+        if (!GitHubSync.isOwner()) return;
+        const fromTier = appData.tiers.find(t => t.id === fromTierId);
+        const toTier = appData.tiers.find(t => t.id === toTierId);
+        if (!fromTier || !toTier) return;
+        const idx = fromTier.items.findIndex(i => i.uid === uid);
+        if (idx === -1) return;
+        const [moved] = fromTier.items.splice(idx, 1);
+
+        if (targetUid) {
+          const destIdx = toTier.items.findIndex(i => i.uid === targetUid);
+          if (destIdx !== -1) toTier.items.splice(destIdx, 0, moved);
+          else toTier.items.push(moved);
+        } else {
+          toTier.items.push(moved);
+        }
+        render();
+        saveAndAutoSync(`Move ${moved.title} to ${toTierId}`, false);
+        showToast(`«${moved.title}» перемещён в тир ${toTierId}`, "#00f5ff");
       });
-    });
-
-    DragDropEngine.bindCardsAndGrids((uid, fromTierId, toTierId, targetUid) => {
-      if (!GitHubSync.isOwner()) return;
-      const fromTier = appData.tiers.find(t => t.id === fromTierId);
-      const toTier = appData.tiers.find(t => t.id === toTierId);
-      if (!fromTier || !toTier) return;
-      const idx = fromTier.items.findIndex(i => i.uid === uid);
-      if (idx === -1) return;
-      const [moved] = fromTier.items.splice(idx, 1);
-
-      if (targetUid) {
-        const destIdx = toTier.items.findIndex(i => i.uid === targetUid);
-        if (destIdx !== -1) toTier.items.splice(destIdx, 0, moved);
-        else toTier.items.push(moved);
-      } else {
-        toTier.items.push(moved);
-      }
-      render();
-      saveAndAutoSync(`Move ${moved.title} to ${toTierId}`, false);
-      showToast(`«${moved.title}» перемещён в тир ${toTierId}`, "#00f5ff");
-    });
+    }
   }
 
   function toggleCalendarView(forceMode) {
@@ -459,11 +572,13 @@
         calBtn.classList.add("active");
         calBtn.innerHTML = "🏛 Вернуться к тирам";
       }
-      CalendarView.renderCalendar(appData.tiers, (uid, tierId) => {
-        const tier = appData.tiers.find(t => t.id === tierId);
-        const item = tier?.items.find(i => i.uid === uid);
-        if (item && tier) Modals.showAnimeDetails(item, tier);
-      });
+      if (typeof CalendarView !== "undefined") {
+        CalendarView.renderCalendar(appData.tiers, (uid, tierId) => {
+          const tier = appData.tiers.find(t => t.id === tierId);
+          const item = tier?.items.find(i => i.uid === uid);
+          if (item && tier) Modals.showAnimeDetails(item, tier);
+        });
+      }
     } else {
       calEl.style.display = "none";
       tiersEl.style.display = "flex";
@@ -475,14 +590,20 @@
   }
 
   function bindGlobalUI() {
-    Modals.setDeleteHandler((uid, tierId) => {
-      if (!GitHubSync.isOwner()) return;
-      const tier = appData.tiers.find(t => t.id === tierId);
-      if (!tier) return;
-      const item = tier.items.find(i => i.uid === uid);
-      tier.items = tier.items.filter(i => i.uid !== uid);
-      render();
-      saveAndAutoSync(`Delete ${item?.title || uid}`, true);
+    if (typeof Modals !== "undefined" && typeof Modals.setDeleteHandler === "function") {
+      Modals.setDeleteHandler((uid, tierId) => {
+        if (!GitHubSync.isOwner()) return;
+        const tier = appData.tiers.find(t => t.id === tierId);
+        if (!tier) return;
+        const item = tier.items.find(i => i.uid === uid);
+        tier.items = tier.items.filter(i => i.uid !== uid);
+        render();
+        saveAndAutoSync(`Delete ${item?.title || uid}`, true);
+      });
+    }
+
+    document.getElementById("btnCloseFxPanel")?.addEventListener("click", () => {
+      document.getElementById("fxPanel")?.classList.remove("show");
     });
 
     document.getElementById("btnToggleCalendar")?.addEventListener("click", () => toggleCalendarView());
@@ -501,12 +622,10 @@
       await saveAndAutoSync("Manual owner full sync", true);
     });
 
-    /* ПУЛЕНЕПРОБИВАЕМОЕ ДЕЛЕГИРОВАНИЕ КЛИКОВ ДЛЯ СПИСКОВ ЖАНРОВ И СТУДИЙ ВО ВСЕХ БРАУЗЕРАХ */
     document.addEventListener("click", e => {
       const gMenu = document.getElementById("genreDropdownMenu");
       const stMenu = document.getElementById("studioDropdownMenu");
 
-      // 1. Клик по кнопке открытия списка Жанров
       if (e.target.closest("#genreDropdownBtn")) {
         e.preventDefault();
         stMenu?.classList.remove("open");
@@ -517,7 +636,6 @@
         return;
       }
 
-      // 2. Клик по пункту выбора Жанра
       const gOpt = e.target.closest("[data-g-val]");
       if (gOpt) {
         selectedGenre = gOpt.dataset.gVal;
@@ -528,7 +646,6 @@
         return;
       }
 
-      // 3. Клик по кнопке открытия списка Студий
       if (e.target.closest("#studioDropdownBtn")) {
         e.preventDefault();
         gMenu?.classList.remove("open");
@@ -539,7 +656,6 @@
         return;
       }
 
-      // 4. Клик по пункту выбора Студии
       const stOpt = e.target.closest("[data-st-val]");
       if (stOpt) {
         selectedStudio = stOpt.dataset.stVal;
@@ -550,7 +666,6 @@
         return;
       }
 
-      // 5. Закрытие при клике вне меню
       if (!e.target.closest("#genreDropdown")) gMenu?.classList.remove("open");
       if (!e.target.closest("#studioDropdown")) stMenu?.classList.remove("open");
     });
@@ -563,12 +678,6 @@
     document.getElementById("studioSearchInput")?.addEventListener("input", e => {
       studioFilterSearch = e.target.value;
       populateStudioDropdown();
-    });
-
-    // Поддержка старого <select id="genreFilter">, если он открыт из кэша
-    document.getElementById("genreFilter")?.addEventListener("change", e => {
-      selectedGenre = e.target.value;
-      render();
     });
 
     const editorGSearch = document.getElementById("editorGenreSearch");
@@ -612,7 +721,9 @@
       try {
         const localBlobUrl = URL.createObjectURL(file);
         appData.meta = appData.meta || {};
-        await FXController.applyGlobalBackground(appData.meta, localBlobUrl);
+        if (typeof FXController !== "undefined") {
+          await FXController.applyGlobalBackground(appData.meta, localBlobUrl);
+        }
         showToast("⚡ Отправка фона в GitHub для всех зрителей...", "#00f5ff");
 
         const uploaded = await GitHubSync.uploadAssetFile(file, "backgrounds");
@@ -776,10 +887,20 @@
       Modals.openModal("authModal");
     });
 
+    document.getElementById("btnLogoutOwner")?.addEventListener("click", () => {
+      GitHubSync.logout();
+      updateOwnerBadge(null);
+      Modals.closeModal("authModal");
+      showToast("Вы вышли из режима владельца");
+    });
+
     document.getElementById("authForm")?.addEventListener("submit", async e => {
       e.preventDefault();
       const tk = document.getElementById("ghTokenInput").value.trim();
-      const rp = document.getElementById("ghRepoInput").value.trim() || GitHubSync.detectRepoFromLocation();
+      const dep = typeof GitHubSync.detectRepoFromLocation === "function"
+        ? GitHubSync.detectRepoFromLocation()
+        : "geraltschwarzenegger-svg/myTierAnime";
+      const rp = document.getElementById("ghRepoInput").value.trim() || dep;
 
       if (!tk) {
         GitHubSync.logout();
@@ -825,12 +946,26 @@
     }
   }
 
-  window.addEventListener("DOMContentLoaded", async () => {
-    await purgeLegacyBrowserCaches();
-    FXController.init(rebuildAll3DLetters);
-    bindGlobalUI();
+  async function bootstrapApp() {
+    try {
+      if (typeof FXController !== "undefined" && typeof FXController.init === "function") {
+        FXController.init(rebuildAll3DLetters);
+      }
+    } catch (e) {
+      console.warn("FX init warning:", e);
+    }
 
-    if (GitHubSync.getToken()) {
+    try {
+      bindGlobalUI();
+    } catch (e) {
+      console.warn("UI bind warning:", e);
+    }
+
+    // Немедленно рисуем стартовые тиры, не дожидаясь сети
+    appData = ensureSixTiers(null);
+    render();
+
+    if (typeof GitHubSync !== "undefined" && GitHubSync.getToken()) {
       document.body.classList.add("is-owner");
       GitHubSync.verifyToken().then(u => {
         if (u) updateOwnerBadge(u);
@@ -841,5 +976,11 @@
     await loadInitialState();
     render();
     startLiveViewerPolling();
-  });
+  }
+
+  if (document.readyState === "loading") {
+    window.addEventListener("DOMContentLoaded", bootstrapApp);
+  } else {
+    bootstrapApp();
+  }
 })();
