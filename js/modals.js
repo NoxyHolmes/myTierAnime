@@ -1,4 +1,4 @@
-/* ═══════════════════ MODALS: POSTER BLOB RESOLUTION IN DOSSIER & 0-EPISODE UPCOMING SEASONS ═══════════════════ */
+/* ═══════════════════ MODALS: SEASON RELEASE YEAR COLUMN AFTER TYPE & POSTER BLOB RESOLVER ═══════════════════ */
 const Modals = (() => {
   let deleteHandler = null;
 
@@ -21,7 +21,6 @@ const Modals = (() => {
 
     const m = calcItemMetrics(item);
 
-    // Верхние плашки без бейджа реакции
     if (topBadges) {
       topBadges.innerHTML = `
         <span class="dossier-badge-pill gold">ТИР ${esc(tier.id)} · ${esc(tier.name)}</span>
@@ -40,6 +39,7 @@ const Modals = (() => {
       return filtered.map((s, idx) => {
         const isUpcoming = Number(s.episodes) === 0;
         const partHours = isUpcoming ? "0" : formatHours((s.episodes * s.epMinutes) / 60);
+        const relYr = s.releaseYear || item.year || "2026";
         const volumeText = isUpcoming
           ? `<span style="color:#ffd76a;font-weight:700;">⏳ Анонс (0 ${s.type === "Фильм" ? "ф." : "эп."})</span>`
           : (s.type === "Фильм" ? formatMoviesCount(s.episodes) : formatEpisodesCount(s.episodes));
@@ -48,6 +48,7 @@ const Modals = (() => {
           <tr>
             <td><b>#${idx + 1}</b> ${esc(s.title)}</td>
             <td><span class="cum-kind">${esc(s.type)}</span></td>
+            <td style="color:#ffd76a;font-weight:700;">${esc(relYr)} г.</td>
             <td>${volumeText}</td>
             <td>${isUpcoming ? "—" : `${s.epMinutes} мин.`}</td>
             <td style="color:#00f5ff;font-weight:700;">${partHours} ч.</td>
@@ -125,6 +126,7 @@ const Modals = (() => {
               <tr>
                 <th>Сезон / Часть</th>
                 <th>Тип</th>
+                <th>Год выпуска</th>
                 <th>Объём</th>
                 <th>1 серия</th>
                 <th>Всего времени</th>
@@ -138,7 +140,6 @@ const Modals = (() => {
       </div>
     `;
 
-    // МГНОВЕННАЯ ПОДГРУЗКА ЗАЛИТОЙ ОБЛОЖКИ В ЛИЧНОЙ КАРТОЧКЕ ТАЙТЛА (ЧЕРЕЗ posterBlobSha ИЛИ GitHub RAW)!
     if (typeof GitHubSync !== "undefined" && typeof GitHubSync.resolveAssetUrl === "function") {
       GitHubSync.resolveAssetUrl(item.poster, item.posterBlobSha).then(resolvedUrl => {
         if (!resolvedUrl) return;
@@ -189,12 +190,13 @@ const Modals = (() => {
     openModal("detailsModal");
   }
 
-  /* В конструкторе сезонов min="0" позволяет ставить 0 серий или 0 фильмов для ожидаемых релизов */
+  /* Строка сезона в редакторе: Сезон -> Тип -> Год выпуска -> Объём (серии) -> 1 серия (мин) -> Дата -> Заметка */
   function createSeasonRowElement(part = {}) {
     const row = document.createElement("div");
     row.className = "season-row";
     const type = part.type || "TV Сериал";
     const defaultMin = type === "Фильм" ? 110 : 24;
+    const defaultYear = part.releaseYear || document.getElementById("fYear")?.value || 2026;
     const parsedEp = parseInt(part.episodes, 10);
     const eps = isNaN(parsedEp) ? (type === "Фильм" ? 1 : 12) : Math.max(0, parsedEp);
     const parsedMin = parseFloat(part.epMinutes);
@@ -207,10 +209,11 @@ const Modals = (() => {
       <select class="form-control s-type">
         ${["TV Сериал", "Фильм", "OVA", "ONA", "Спешл"].map(t => `<option value="${t}" ${t === type ? "selected" : ""}>${t}</option>`).join("")}
       </select>
+      <input type="number" min="1960" max="2040" class="form-control s-rel-year" title="Год выпуска этого сезона/фильма" placeholder="Год" value="${esc(defaultYear)}" required>
       <input type="number" min="0" class="form-control s-eps" title="Кол-во серий или фильмов (0 = ожидается / анонс)" value="${eps}" required>
       <input type="number" min="0" step="0.5" class="form-control s-mins" title="Длительность 1 серии (мин)" value="${mins}" required>
-      <input type="text" class="form-control s-date" placeholder="ДД.ММ.ГГГГ или Год" value="${esc(dateStr)}" required>
-      <input type="text" class="form-control s-note" placeholder="Заметка (напр. Ожидается)" value="${esc(noteStr)}">
+      <input type="text" class="form-control s-date" placeholder="ДД.ММ.ГГГГ" value="${esc(dateStr)}" required>
+      <input type="text" class="form-control s-note" placeholder="Заметка" value="${esc(noteStr)}">
       <span class="s-calc">0 ч.</span>
       <button type="button" class="btn btn-sm s-remove" title="Удалить часть">✕</button>
     `;
@@ -279,14 +282,17 @@ const Modals = (() => {
 
   function readSeasonsFromEditor() {
     const rows = [...document.querySelectorAll("#seasonsEditorList .season-row")];
+    const fallbackYr = parseInt(document.getElementById("fYear")?.value, 10) || 2026;
     return rows.map((r, i) => {
       const rawEp = parseInt(r.querySelector(".s-eps").value, 10);
       const ep = isNaN(rawEp) ? 0 : Math.max(0, rawEp);
       const rawMn = parseFloat(r.querySelector(".s-mins").value);
       const mn = isNaN(rawMn) ? 24 : Math.max(0, rawMn);
+      const relYr = parseInt(r.querySelector(".s-rel-year")?.value, 10) || fallbackYr;
       return {
         title: r.querySelector(".s-title").value.trim() || `Часть ${i + 1}`,
         type: r.querySelector(".s-type").value,
+        releaseYear: relYr,
         episodes: ep,
         epMinutes: mn,
         date: r.querySelector(".s-date").value.trim() || new Date().toLocaleDateString("ru-RU"),
@@ -325,9 +331,10 @@ const Modals = (() => {
 
     const listHost = document.getElementById("seasonsEditorList");
     listHost.innerHTML = "";
+    const baseYear = existingItem?.year || 2026;
     const parts = existingItem
       ? normSeasons(existingItem)
-      : [{ title: "Сезон 1", type: "TV Сериал", episodes: 12, epMinutes: 24, date: new Date().toLocaleDateString("ru-RU"), note: "" }];
+      : [{ title: "Сезон 1", type: "TV Сериал", releaseYear: baseYear, episodes: 12, epMinutes: 24, date: new Date().toLocaleDateString("ru-RU"), note: "" }];
 
     parts.forEach(p => listHost.appendChild(createSeasonRowElement(p)));
     recalculateSeasonsPreview();
@@ -339,9 +346,11 @@ const Modals = (() => {
     if (!listHost) return;
     const idx = listHost.querySelectorAll(".season-row").length + 1;
     const defaultTitle = type === "Фильм" ? `Фильм ${idx}` : (type === "TV Сериал" ? `Сезон ${idx}` : `${type} ${idx}`);
+    const baseYear = parseInt(document.getElementById("fYear")?.value, 10) || 2026;
     listHost.appendChild(createSeasonRowElement({
       title: defaultTitle,
       type,
+      releaseYear: baseYear,
       episodes: type === "Фильм" ? 1 : 12,
       epMinutes: type === "Фильм" ? 110 : 24,
       date: new Date().toLocaleDateString("ru-RU"),
