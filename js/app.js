@@ -1,4 +1,4 @@
-/* ═══════════════════ MAIN APPLICATION ORCHESTRATOR (myTierAnime v11.1 STABLE) ═══════════════════ */
+/* ═══════════════════ MAIN APPLICATION ORCHESTRATOR (myTierAnime v12.1 FIXED SAVE & BGM UPLOAD) ═══════════════════ */
 (() => {
   if (typeof window.pluralRu !== "function") {
     window.pluralRu = function (number, one, few, many) {
@@ -30,6 +30,13 @@
   let activeView = "tiers";
   let lastRenderedSignature = "";
 
+  /* Переменные загружаемых файлов объявлены на верхнем уровне, чтобы кнопка Сохранить никогда не падала с ошибкой! */
+  let pendingPosterBlobSha = "";
+  let pendingPosterInline = "";
+  let pendingBgmBlobSha = "";
+  let pendingBgmUrl = "";
+  let isUploadingAsset = false;
+
   const EMPTY_TIERS_SKELETON = [
     { id: "S", rank: 1, name: "Шедевры", subtitle: "Лучшие и незабываемые тайтлы на все времена", hue: 45, items: [] },
     { id: "A", rank: 2, name: "Отличные", subtitle: "Яркие и очень качественные работы", hue: 185, items: [] },
@@ -51,12 +58,15 @@
   function ensureSixTiers(data) {
     if (!data || !Array.isArray(data.tiers) || data.tiers.length === 0) {
       return {
-        meta: { title: "myTierAnime", bgImage: "", bgBlobSha: "", bgInline: "", bgDim: 55, bgBlur: 0, revision: 1 },
+        meta: { title: "myTierAnime", bgImage: "", bgBlobSha: "", bgInline: "", bgDim: 55, bgBlur: 0, bgmVolume: 30, revision: 1 },
         tiers: JSON.parse(JSON.stringify(EMPTY_TIERS_SKELETON))
       };
     }
     data.meta = data.meta || {};
     data.meta.revision = Number(data.meta.revision || 1);
+    if (data.meta.bgmVolume !== undefined) {
+      localStorage.setItem("mta_bgm_volume", String(Number(data.meta.bgmVolume) / 100));
+    }
     EMPTY_TIERS_SKELETON.forEach(def => {
       if (!data.tiers.find(t => t.id === def.id)) {
         data.tiers.push(JSON.parse(JSON.stringify(def)));
@@ -73,7 +83,7 @@
 
   function computeStateSignature(data) {
     if (!data || !Array.isArray(data.tiers)) return "";
-    return `${data.meta?.revision || 0}_${JSON.stringify(data.tiers).length}_${data.meta?.bgBlobSha || ""}`;
+    return `${data.meta?.revision || 0}_${JSON.stringify(data.tiers).length}_${data.meta?.bgBlobSha || ""}_${data.meta?.bgmVolume ?? 30}`;
   }
 
   function readCachedSnapshot() {
@@ -112,8 +122,15 @@
       }
 
       if (remoteRaw) {
-        appData = ensureSixTiers(remoteRaw);
-        writeCachedSnapshot(appData);
+        const remoteObj = ensureSixTiers(remoteRaw);
+        const localRev = Number(cached?.meta?.revision || 0);
+        const remoteRev = Number(remoteObj?.meta?.revision || 0);
+        const hasOwnerToken = typeof GitHubSync !== "undefined" && !!GitHubSync.getToken();
+
+        if (!cached || !hasOwnerToken || remoteRev >= localRev) {
+          appData = remoteObj;
+          writeCachedSnapshot(appData);
+        }
       }
     } catch (e) {
       console.warn("Remote load fallback:", e);
@@ -187,11 +204,11 @@
       await GitHubSync.commitTiersToGitHub(appData, reason);
       setSyncIndicator(`☁ Синхронизировано`, "#38ef7d");
       if (syncBtn) syncBtn.textContent = "🔄 Синхронизировать со всеми";
-      if (showSuccessToast) showToast("✔ Изменения успешно синхронизированы!", "#38ef7d");
+      if (showSuccessToast) showToast("✔ Все изменения и музыка успешно сохранены!", "#38ef7d");
     } catch (err) {
       setSyncIndicator("⚠ Ошибка синхронизации", "#ff5e7e");
       if (syncBtn) syncBtn.textContent = "🔄 Повторить";
-      showToast("Ошибка: " + err.message, "#ff3c8c");
+      showToast("Ошибка отправки в GitHub: " + err.message, "#ff3c8c");
     } finally {
       isSyncing = false;
       if (pendingSync) {
@@ -209,6 +226,7 @@
       ? window.formatMoviesCount(m.totalMovies)
       : `${window.formatEpisodesCount(m.totalEpisodes)}${m.totalMovies ? ` + ${window.formatMoviesCount(m.totalMovies)}` : ""}`;
     const displayPosterSrc = item.posterInline || item.poster || "https://placehold.co/400x600/16122b/ffd76a?text=myTierAnime";
+    const hasMusicBadge = (item.bgmUrl || item.bgmBlobSha) ? `<span title="Есть фоновая музыка" style="color:#ffd76a;">🎵</span> ` : "";
 
     return `
       <div class="card-unit" draggable="true" data-uid="${esc(item.uid)}" data-tier-id="${esc(tierId)}">
@@ -223,8 +241,8 @@
           ${item.score ? `<span class="card-score-badge">★ ${esc(item.score)}</span>` : ""}
 
           <div class="card-info">
-            <h3 class="card-title">${esc(item.title)}</h3>
-            <div class="card-sub">${esc(item.year || "")} · ${esc(item.studio || "")}</div>
+            <h3 class="card-title">${hasMusicBadge}${esc(item.title)}</h3>
+            <div class="card-sub">${esc(item.year || "")}${item.studio ? ` · ${esc(item.studio)}` : ""}</div>
           </div>
         </article>
 
@@ -430,6 +448,10 @@
           Modals.openModal("authModal");
           return;
         }
+        pendingPosterBlobSha = "";
+        pendingPosterInline = "";
+        pendingBgmBlobSha = "";
+        pendingBgmUrl = "";
         Modals.openEditorModal(btn.dataset.addToTier, null);
       };
     });
@@ -523,6 +545,10 @@
         Modals.openModal("authModal");
         return;
       }
+      pendingPosterBlobSha = "";
+      pendingPosterInline = "";
+      pendingBgmBlobSha = "";
+      pendingBgmUrl = "";
       Modals.openEditorModal("S", null);
     });
 
@@ -613,6 +639,8 @@
     document.getElementById("btnClearEditorPoster")?.addEventListener("click", () => {
       const pInp = document.getElementById("fPoster");
       if (pInp) { pInp.value = ""; pInp.dataset.existingBlobSha = ""; }
+      pendingPosterBlobSha = "";
+      pendingPosterInline = "";
     });
 
     document.getElementById("btnClearAllEditorGenres")?.addEventListener("click", () => {
@@ -644,14 +672,14 @@
       if (typeof Modals.syncEditorGenreChips === "function") Modals.syncEditorGenreChips();
     });
 
+    /* Загрузка обложки с ПК */
     const posterFileInp = document.getElementById("fPosterFile");
-    let pendingPosterBlobSha = "";
-    let pendingPosterInline = "";
     posterFileInp?.addEventListener("change", async () => {
       const file = posterFileInp.files?.[0];
       if (!file) return;
       try {
-        showToast("Загрузка обложки в GitHub...", "#00f5ff");
+        isUploadingAsset = true;
+        showToast("⏳ Загрузка обложки в GitHub...", "#00f5ff");
         const uploaded = await GitHubSync.uploadAssetFile(file, "posters");
         const posterInputEl = document.getElementById("fPoster");
         posterInputEl.value = uploaded.path;
@@ -661,8 +689,67 @@
         showToast("✔ Обложка загружена!", "#38ef7d");
       } catch (err) {
         showToast("Ошибка загрузки обложки: " + err.message, "#ff3c8c");
+      } finally {
+        isUploadingAsset = false;
       }
     });
+
+    /* ИСПРАВЛЕННАЯ ЗАГРУЗКА МУЗЫКИ ТАЙТЛА (MP3 / WAV / OGG) */
+    const bgmFileInp = document.getElementById("fBgmFile");
+    bgmFileInp?.addEventListener("change", async () => {
+      const file = bgmFileInp.files?.[0];
+      if (!file) return;
+      const lbl = document.getElementById("bgmFileNameLabel");
+      try {
+        isUploadingAsset = true;
+        if (lbl) {
+          lbl.style.color = "#00f5ff";
+          lbl.textContent = `⏳ Загрузка «${file.name}»...`;
+        }
+        showToast(`⏳ Загрузка аудиофайла «${file.name}» в GitHub...`, "#00f5ff");
+
+        const uploaded = await GitHubSync.uploadAssetFile(file, "audio");
+        const bgmUrlInp = document.getElementById("fBgmUrl");
+        if (bgmUrlInp) {
+          bgmUrlInp.value = uploaded.path;
+          bgmUrlInp.dataset.existingBlobSha = uploaded.blobSha;
+        }
+        pendingBgmUrl = uploaded.path;
+        pendingBgmBlobSha = uploaded.blobSha;
+
+        if (lbl) {
+          lbl.style.color = "#38ef7d";
+          lbl.textContent = `🎵 Готово: ${file.name}`;
+        }
+        showToast("✔ Музыка успешно загружена! Теперь нажмите «Сохранить и синхронизировать».", "#38ef7d");
+      } catch (err) {
+        if (lbl) {
+          lbl.style.color = "#ff5e7e";
+          lbl.textContent = `⚠ Ошибка загрузки файла`;
+        }
+        showToast("Ошибка загрузки музыки: " + err.message, "#ff3c8c");
+      } finally {
+        isUploadingAsset = false;
+      }
+    });
+
+    /* Настройка громкости фоновой музыки (сохраняется глобально для всех зрителей) */
+    const rngBgmVol = document.getElementById("rngBgmVol");
+    const lblBgmVol = document.getElementById("lblBgmVol");
+    if (rngBgmVol) {
+      const savedVol = localStorage.getItem("mta_bgm_volume") || "0.3";
+      rngBgmVol.value = Math.round(parseFloat(savedVol) * 100);
+      if (lblBgmVol) lblBgmVol.textContent = rngBgmVol.value + "%";
+      rngBgmVol.addEventListener("input", () => {
+        const pct = parseInt(rngBgmVol.value, 10);
+        const volVal = pct / 100;
+        if (lblBgmVol) lblBgmVol.textContent = pct + "%";
+        localStorage.setItem("mta_bgm_volume", String(volVal));
+        if (appData?.meta) {
+          appData.meta.bgmVolume = pct;
+        }
+      });
+    }
 
     const ownerBgFile = document.getElementById("ownerBgFileInput");
     ownerBgFile?.addEventListener("change", async () => {
@@ -787,10 +874,16 @@
       }, 320);
     });
 
-    document.getElementById("animeEditorForm")?.addEventListener("submit", e => {
+    /* ИСПРАВЛЕННОЕ СОХРАНЕНИЕ КАРТОЧКИ ТАЙТЛА */
+    document.getElementById("animeEditorForm")?.addEventListener("submit", async e => {
       e.preventDefault();
       if (!GitHubSync.isOwner()) {
         showToast("Ошибка: сохранять может только владелец!", "#ff3c8c");
+        return;
+      }
+
+      if (isUploadingAsset) {
+        showToast("⏳ Подождите пару секунд, завершается загрузка файла в GitHub...", "#00f5ff");
         return;
       }
 
@@ -868,9 +961,9 @@
         destTier.items.unshift(newItem);
       }
 
-      render();
-      saveAndAutoSync(`Save ${newItem.title} in tier ${targetTierId}`, true);
       Modals.closeModal("editorModal");
+      render();
+      await saveAndAutoSync(`Save ${newItem.title} in tier ${targetTierId}`, true);
     });
 
     document.getElementById("btnOwnerAuth")?.addEventListener("click", () => {
