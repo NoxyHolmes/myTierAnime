@@ -1,4 +1,4 @@
-/* ═══════════════════ CROSS-BROWSER NORMALIZE, CLEAR BUTTONS & TYPE/YEAR STACKED DOSSIER ═══════════════════ */
+/* ═══════════════════ CROSS-BROWSER NORMALIZE, RECENT STRIP, TIME SPLIT & DOSSIER ═══════════════════ */
 *, *::before, *::after {
   box-sizing: border-box;
   -webkit-tap-highlight-color: transparent;
@@ -560,12 +560,13 @@ body.is-owner .owner-only {
   display: inline-flex !important;
 }
 
+/* ──────── ВЕРХНЯЯ ПАНЕЛЬ СТАТИСТИКИ И ДВОЙНОЙ СПЛИТ ЧАСОВ/ДНЕЙ ──────── */
 .stats-ribbon {
   max-width: var(--container-width, 1780px);
-  margin: 18px auto 6px;
+  margin: 18px auto 8px;
   padding: 0 20px;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 14px;
 }
 
@@ -619,6 +620,130 @@ body.is-owner .owner-only {
   background: linear-gradient(135deg, rgba(255, 60, 140, 0.16), rgba(255, 215, 106, 0.12));
   border-color: rgba(255, 94, 126, 0.5);
   box-shadow: 0 0 16px -4px rgba(255, 60, 140, 0.35);
+}
+.stat-split-box.time-hours-highlight {
+  background: linear-gradient(135deg, rgba(0, 245, 255, 0.14), rgba(20, 35, 60, 0.4));
+  border-color: rgba(0, 245, 255, 0.45);
+  box-shadow: 0 0 16px -4px rgba(0, 245, 255, 0.28);
+}
+.stat-split-box.time-days-highlight {
+  background: linear-gradient(135deg, rgba(181, 124, 255, 0.18), rgba(255, 215, 106, 0.1));
+  border-color: rgba(181, 124, 255, 0.5);
+  box-shadow: 0 0 16px -4px rgba(181, 124, 255, 0.32);
+}
+
+/* ──────── СЕКЦИЯ ПОСЛЕДНИХ ДОБАВЛЕННЫХ ТАЙТЛОВ МЕЖДУ СТАТИСТИКОЙ И ТИРАМИ ──────── */
+.recent-strip-wrap {
+  max-width: var(--container-width, 1780px);
+  margin: 6px auto 8px;
+  padding: 0 20px;
+}
+.recent-strip-box {
+  background: rgba(16, 13, 32, 0.88);
+  border: 1px solid rgba(0, 245, 255, 0.22);
+  border-radius: 16px;
+  padding: 12px 16px;
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  box-shadow: 0 12px 30px -12px rgba(0, 0, 0, 0.75);
+}
+.recent-strip-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.recent-strip-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #e2cdff;
+}
+.recent-pulse-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #00f5ff;
+  box-shadow: 0 0 10px #00f5ff;
+}
+.recent-strip-sub {
+  font-size: 11px;
+  color: #a6a0c4;
+}
+.recent-strip-grid {
+  display: grid;
+  gap: 10px;
+}
+.recent-mini-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(255, 255, 255, 0.035);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 11px;
+  padding: 7px 9px;
+  cursor: pointer;
+  min-width: 0;
+  transition: transform 0.18s ease, border-color 0.2s ease, background 0.2s ease;
+}
+.recent-mini-card:hover {
+  transform: translateY(-2px);
+  border-color: #00f5ff;
+  background: rgba(0, 245, 255, 0.07);
+}
+.rmc-poster {
+  width: 42px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 6px;
+  flex-shrink: 0;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+}
+.rmc-info {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.rmc-badges {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.rmc-tier-tag {
+  font-size: 9px;
+  font-weight: 800;
+  text-transform: uppercase;
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: rgba(255, 215, 106, 0.16);
+  border: 1px solid rgba(255, 215, 106, 0.45);
+  color: #ffd76a;
+}
+.rmc-score {
+  font-size: 10px;
+  font-weight: 800;
+  color: #ffd76a;
+}
+.rmc-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: #ffffff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.rmc-meta {
+  font-size: 10px;
+  color: #a6a0c4;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .fx-drawer {
@@ -742,6 +867,7 @@ body.is-owner .owner-only {
   cursor: pointer;
 }
 
+/* ──────── КАЛЕНДАРЬ И СЕЛЕКТОРЫ КОНКРЕТНОГО МЕСЯЦА И ГОДА ──────── */
 .calendar-container {
   max-width: var(--container-width, 1780px);
   margin: 16px auto 80px;
@@ -759,6 +885,37 @@ body.is-owner .owner-only {
   border-radius: 14px;
   margin-bottom: 18px;
 }
+.cal-nav-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+  background: rgba(18, 14, 38, 0.85);
+  border: 1px solid rgba(255, 215, 106, 0.3);
+  border-radius: 12px;
+  padding: 10px 14px;
+}
+.cal-direct-selectors {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.cal-select-pill {
+  width: auto !important;
+  min-width: 145px;
+  padding: 7px 14px !important;
+  border-radius: 999px !important;
+  font-family: var(--serif);
+  font-size: 14px !important;
+  font-weight: 800;
+  color: #ffd76a !important;
+  border: 1px solid rgba(255, 215, 106, 0.55) !important;
+  background: #1b1438 !important;
+  cursor: pointer;
+}
+
 .cal-grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
@@ -980,469 +1137,3 @@ body.is-owner .owner-only {
 .dossier-poster-large img {
   width: 100%;
   aspect-ratio: 2 / 3;
-  object-fit: cover;
-  display: block;
-}
-
-.dossier-score-orb {
-  position: absolute;
-  bottom: 12px;
-  right: 12px;
-  background: linear-gradient(135deg, #ffd76a, #ff5e7e);
-  color: #090614;
-  font-weight: 900;
-  font-size: 15px;
-  padding: 5px 12px;
-  border-radius: 999px;
-  box-shadow: 0 4px 14px rgba(0,0,0,0.85);
-}
-
-.dossier-right-info-col {
-  position: relative;
-  z-index: 3;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.dossier-badges-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-.dossier-badge-pill {
-  padding: 4px 11px;
-  border-radius: 999px;
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.22);
-  color: #fff;
-}
-.dossier-badge-pill.gold {
-  background: rgba(255, 215, 106, 0.22);
-  border-color: #ffd76a;
-  color: #ffe8a3;
-}
-
-.dossier-title-main {
-  margin: 0 0 4px;
-  font-family: var(--serif);
-  font-size: 26px;
-  font-weight: 900;
-  color: #ffffff;
-}
-.dossier-title-orig {
-  font-size: 13.5px;
-  color: #cbc4eb;
-  margin-bottom: 12px;
-}
-
-.dossier-metrics-row {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
-  margin-bottom: 10px;
-}
-.dossier-metric-card {
-  background: rgba(255, 255, 255, 0.07);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 10px;
-  padding: 9px 12px;
-}
-.dossier-metric-card .dm-lbl {
-  font-size: 9.5px;
-  text-transform: uppercase;
-  color: #bdb6de;
-  margin-bottom: 2px;
-}
-.dossier-metric-card .dm-val {
-  font-family: var(--serif);
-  font-size: 16px;
-  font-weight: 800;
-  color: #fff;
-}
-
-.dossier-comment-card {
-  background: rgba(181, 124, 255, 0.11);
-  border: 1px solid rgba(181, 124, 255, 0.3);
-  border-left: 4px solid #ffd76a;
-  border-radius: 9px;
-  padding: 9px 13px;
-  font-size: 13px;
-  line-height: 1.45;
-  color: #f5f3ff;
-  margin-bottom: 10px;
-}
-
-.dossier-genres-wrap {
-  display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
-}
-.dossier-genre-tag {
-  padding: 4px 10px;
-  border-radius: 999px;
-  font-size: 11px;
-  font-weight: 700;
-  background: rgba(0, 245, 255, 0.12);
-  border: 1px solid rgba(0, 245, 255, 0.35);
-  color: #b8fbff;
-}
-
-/* ──────── СИНХРОННАЯ СЕТКА СЕЗОНОВ: ТИП И ГОД СТОЯТ СТРОГО ДРУГ ПОД ДРУГОМ ──────── */
-.dossier-seasons-block {
-  background: rgba(14, 11, 30, 0.72);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 14px;
-  padding: 14px 16px;
-  overflow-x: auto;
-}
-
-.dossier-seasons-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  flex-wrap: wrap;
-  margin: 0 0 10px;
-}
-.dossier-filter-pills {
-  display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
-}
-.dossier-pill-btn {
-  padding: 4px 11px;
-  border-radius: 999px;
-  font-size: 11px;
-  font-weight: 700;
-  border: 1px solid rgba(255,255,255,0.14);
-  background: rgba(255,255,255,0.05);
-  color: #a6a0c4;
-  cursor: pointer;
-}
-.dossier-pill-btn.active {
-  background: rgba(0, 245, 255, 0.22);
-  border-color: #00f5ff;
-  color: #fff;
-}
-
-.dossier-seasons-vertical-list {
-  display: grid;
-  grid-template-columns: minmax(280px, 1fr) 140px max-content max-content max-content max-content;
-  row-gap: 7px;
-  width: 100%;
-}
-
-.dossier-season-bar {
-  grid-column: 1 / -1;
-  display: grid;
-  grid-template-columns: subgrid;
-  align-items: center;
-  column-gap: 16px;
-  background: linear-gradient(135deg, rgba(28, 22, 56, 0.92), rgba(18, 14, 38, 0.96));
-  border: 1px solid rgba(255, 255, 255, 0.13);
-  border-left: 3px solid #00f5ff;
-  border-radius: 9px;
-  padding: 9px 14px;
-}
-
-@supports not (grid-template-columns: subgrid) {
-  .dossier-seasons-vertical-list {
-    display: flex;
-    flex-direction: column;
-    gap: 7px;
-  }
-  .dossier-season-bar {
-    display: grid;
-    grid-template-columns: minmax(240px, 1fr) 120px 124px 96px 118px;
-    align-items: center;
-    column-gap: 14px;
-  }
-}
-
-.dossier-season-bar.is-upcoming {
-  border-left-color: #ffd76a;
-  background: linear-gradient(135deg, rgba(42, 30, 22, 0.55), rgba(18, 14, 38, 0.95));
-}
-
-.dsb-col-left {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  min-width: 0;
-}
-
-.dsc-num {
-  font-size: 11px;
-  font-weight: 900;
-  color: #090614;
-  background: #ffd76a;
-  padding: 2px 6px;
-  border-radius: 5px;
-  flex-shrink: 0;
-}
-
-.dsc-title-wrap {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 0;
-}
-
-.dsc-name {
-  font-size: 13.5px;
-  font-weight: 800;
-  color: #ffffff;
-  line-height: 1.25;
-}
-
-.dsb-note-inline {
-  font-size: 11px;
-  color: #cbc4eb;
-  opacity: 0.85;
-}
-
-/* Стек: тип тайтла и год выпуска строго ДРУГ ПОД ДРУГОМ */
-.dsb-col-typeyear {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  align-items: flex-start;
-  white-space: nowrap;
-}
-
-.dsc-year {
-  font-size: 10.5px;
-  font-weight: 800;
-  color: #ffd76a;
-  background: rgba(255, 215, 106, 0.12);
-  border: 1px solid rgba(255, 215, 106, 0.35);
-  padding: 1px 6px;
-  border-radius: 4px;
-  white-space: nowrap;
-}
-
-.dsb-col-stat {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  white-space: nowrap;
-  font-size: 12px;
-  justify-self: start;
-}
-
-.dsc-lbl {
-  color: #9e97bf;
-  font-size: 11px;
-}
-
-.s-chip-vol {
-  font-weight: 800;
-  color: #ffffff;
-}
-
-.s-chip-upcoming {
-  font-weight: 800;
-  color: #ffd76a;
-  font-size: 11.5px;
-}
-
-.modal-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 16px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-.modal-header h3 {
-  margin: 0;
-  font-family: var(--serif);
-  font-size: 20px;
-}
-
-.form-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-}
-.form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-  margin-bottom: 10px;
-  min-width: 0;
-}
-.form-group.full {
-  grid-column: 1 / -1;
-}
-.form-group label {
-  font-size: 11px;
-  color: #a6a0c4;
-  font-weight: 600;
-}
-.form-control {
-  width: 100%;
-  min-width: 0;
-  background: #1b1636;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 9px;
-  padding: 8px 11px;
-  color: #fff;
-  font-size: 12.5px;
-}
-.form-control:focus {
-  outline: none;
-  border-color: #00f5ff;
-}
-
-.poster-upload-box {
-  background: rgba(0, 245, 255, 0.04);
-  border: 1px dashed rgba(0, 245, 255, 0.35);
-  border-radius: 12px;
-  padding: 12px;
-}
-.poster-upload-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-}
-
-.editor-genre-bar {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-}
-
-.seasons-builder-box {
-  margin-top: 10px;
-  padding: 14px;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-.seasons-builder-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  flex-wrap: wrap;
-  margin-bottom: 12px;
-}
-.seasons-editor-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-.season-row {
-  display: grid;
-  grid-template-columns: minmax(115px, 1.25fr) minmax(100px, 0.9fr) 74px 64px 70px 104px minmax(90px, 0.95fr) 72px 32px;
-  gap: 6px;
-  align-items: center;
-  background: rgba(18, 14, 36, 0.95);
-  padding: 8px;
-  border-radius: 9px;
-  border: 1px solid rgba(255,255,255,0.09);
-}
-.season-row .s-calc {
-  font-size: 11px;
-  font-weight: 700;
-  color: #00f5ff;
-  text-align: right;
-  white-space: nowrap;
-}
-.seasons-total-preview {
-  margin-top: 10px;
-  padding-top: 10px;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  font-size: 12.5px;
-  color: #ffd76a;
-  font-weight: 700;
-  display: flex;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.shiki-results {
-  margin-top: 6px;
-  max-height: 180px;
-  overflow-y: auto;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 10px;
-  background: #15112b;
-  display: none;
-}
-.shiki-results.show {
-  display: block !important;
-}
-.shiki-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 8px 12px;
-  cursor: pointer;
-  border-bottom: 1px solid rgba(255,255,255,0.05);
-}
-.shiki-item:hover {
-  background: rgba(0, 245, 255, 0.12);
-}
-.shiki-item img {
-  width: 34px;
-  height: 48px;
-  object-fit: cover;
-  border-radius: 4px;
-}
-
-#toastContainer {
-  position: fixed;
-  bottom: 24px;
-  right: 24px;
-  z-index: 9500;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-.toast {
-  background: rgba(18, 15, 36, 0.96);
-  border: 1px solid rgba(255, 255, 255, 0.22);
-  border-left: 4px solid #ffd76a;
-  color: #fff;
-  padding: 10px 16px;
-  border-radius: 10px;
-  font-size: 12.5px;
-  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.85);
-}
-
-@media (max-width: 980px) {
-  .dossier-split-layout {
-    grid-template-columns: 1fr;
-  }
-  .dossier-left-poster-col {
-    max-width: 250px;
-    margin: 0 auto;
-  }
-  .dossier-seasons-vertical-list {
-    display: flex;
-    flex-direction: column;
-    gap: 7px;
-  }
-  .dossier-season-bar {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-  }
-  .season-row {
-    grid-template-columns: 1fr 1fr;
-  }
-  .poster-upload-grid, .editor-genre-bar {
-    grid-template-columns: 1fr;
-  }
-}
