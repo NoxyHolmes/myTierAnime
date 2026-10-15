@@ -4,12 +4,12 @@
     "owner": "geraltschwarzenegger-svg",
     "repo": "noxyholmes/myTierAnime",
     "branch": "main",
-    "updatedAt": "2026-10-15T11:32:19.419Z",
+    "updatedAt": "2026-10-15T11:32:32.019Z",
     "activeMode": "emblems-realism",
     "bgImage": "backgrounds/1792058756499____________________________________.png",
     "bgDim": 65,
     "bgBlur": 5,
-    "revision": 29,
+    "revision": 30,
     "bgBlobSha": "1de942c76368b8d317071e794ae55fed35d163ad",
     "bgMime": "image/png"
   },
@@ -20,14 +20,6 @@
       "name": "Шедевры",
       "subtitle": "Лучшие и незабываемые тайтлы на все времена",
       "hue": 45,
-      "items": []
-    },
-    {
-      "id": "A",
-      "rank": 2,
-      "name": "Отличные",
-      "subtitle": "Яркие и очень качественные работы",
-      "hue": 185,
       "items": [
         {
           "uid": "anime-apothecary-2023",
@@ -36,7 +28,7 @@
           "origTitle": "Kusuriya no Hitorigoto",
           "year": 2023,
           "studio": "OLM / TOHO animation",
-          "score": 9.3,
+          "score": 9,
           "poster": "posters/1792063847049_1920x__3_.webp",
           "posterBlobSha": "f0889a22b42dfccd04c8732000302d5613a912b4",
           "genres": [
@@ -105,6 +97,14 @@
           ]
         }
       ]
+    },
+    {
+      "id": "A",
+      "rank": 2,
+      "name": "Отличные",
+      "subtitle": "Яркие и очень качественные работы",
+      "hue": 185,
+      "items": []
     },
     {
       "id": "B",
