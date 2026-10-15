@@ -4,12 +4,12 @@
     "owner": "geraltschwarzenegger-svg",
     "repo": "noxyholmes/myTierAnime",
     "branch": "main",
-    "updatedAt": "2026-10-15T12:08:52.094Z",
+    "updatedAt": "2026-10-15T12:45:39.573Z",
     "activeMode": "emblems-realism",
     "bgImage": "backgrounds/1792058756499____________________________________.png",
     "bgDim": 65,
     "bgBlur": 5,
-    "revision": 41,
+    "revision": 42,
     "bgBlobSha": "1de942c76368b8d317071e794ae55fed35d163ad",
     "bgMime": "image/png"
   },
@@ -21,6 +21,47 @@
       "subtitle": "Лучшие и незабываемые тайтлы на все времена",
       "hue": 45,
       "items": [
+        {
+          "uid": "anime-1792068339564",
+          "kind": "TV Сериал",
+          "title": "Тетрадь Смерти",
+          "origTitle": "Death Note",
+          "year": 2006,
+          "studio": "Madhouse",
+          "score": 8,
+          "poster": "posters/1792068330380_w1500_52740958.png",
+          "posterBlobSha": "1736f657f23b7e3888ad3387e701d5c5f20f2c16",
+          "genres": [
+            "Сёнэн",
+            "Детектив",
+            "Драма",
+            "Мистика",
+            "Триллер",
+            "Альтернативная реальность",
+            "Божества",
+            "Полицейские",
+            "Психология",
+            "Сверхъестественное"
+          ],
+          "comment": "",
+          "seasons": [
+            {
+              "title": "Сезон 1",
+              "type": "TV Сериал",
+              "releaseYear": 2006,
+              "episodes": 37,
+              "epMinutes": 24,
+              "date": "12.07.2026",
+              "note": ""
+            }
+          ],
+          "watched": [
+            {
+              "date": "12.07.2026",
+              "note": "Сезон 1"
+            }
+          ]
+        },
         {
           "uid": "anime-apothecary-2023",
           "kind": "TV Сериал",
