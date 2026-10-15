@@ -4,14 +4,14 @@
     "owner": "geraltschwarzenegger-svg",
     "repo": "noxyholmes/myTierAnime",
     "branch": "main",
-    "updatedAt": "2026-10-15T10:00:53.992Z",
+    "updatedAt": "2026-10-15T10:05:59.544Z",
     "activeMode": "emblems-realism",
-    "bgImage": "backgrounds/1792058452130_girl_city_hoodie_1010273_3840x2160.jpg",
+    "bgImage": "backgrounds/1792058756499____________________________________.png",
     "bgDim": 65,
     "bgBlur": 4,
-    "revision": 11,
-    "bgBlobSha": "3100d958af9afd09652c000f68f8b8bc45118e35",
-    "bgMime": "image/jpeg"
+    "revision": 12,
+    "bgBlobSha": "1de942c76368b8d317071e794ae55fed35d163ad",
+    "bgMime": "image/png"
   },
   "tiers": [
     {
