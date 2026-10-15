@@ -1,14 +1,15 @@
-/* ═══════════════════ 3D EMBLEMS (10 ARCHITECTURES FOR S · A · B · C · D · E) & HOLO FOIL ═══════════════════ */
+/* ═══════════════════ 3D EMBLEMS (10 ARCHITECTURES) & HOLOGRAPHIC FOIL ═══════════════════ */
 .lstage {
   position: relative;
   width: 140px;
-  height: 154px;
+  height: 152px;
   display: grid;
   place-items: center;
-  perspective: 780px;
+  perspective: var(--letter-perspective, 780px);
   transform-style: preserve-3d;
   margin: 4px auto;
   user-select: none;
+  transform: scale(var(--seal-scale, 1));
 }
 
 .l3d {
@@ -54,6 +55,11 @@
   opacity: 0.55;
 }
 
+body.hide-letter-halo .ll.halo { display: none !important; }
+body.hide-seal-floor .seal-floor { display: none !important; }
+body.hide-gimbal-rings .realism-gimbal { display: none !important; }
+body.hide-seal-caption .seal-caption { display: none !important; }
+
 .seal-floor {
   position: absolute;
   bottom: 10px;
@@ -75,7 +81,6 @@
   perspective: 720px;
 }
 
-/* Все 8 canvas-ориентированных 3D-режимов активируют .realism-system */
 body.emblems-realism .realism-system,
 body.emblems-quantum .realism-system,
 body.emblems-crystal .realism-system,
@@ -98,7 +103,7 @@ body.emblems-cyber .realism-system {
     rotateX(calc(var(--bry, 0deg) * 0.65))
     rotateY(calc(var(--brx, 0deg) * 0.65));
   pointer-events: none;
-  filter: drop-shadow(0 0 14px var(--tg));
+  filter: drop-shadow(0 0 calc(14px * var(--seal-glow-mult, 1)) var(--tg));
   transition: transform 0.22s cubic-bezier(.2, .8, .2, 1);
 }
 
@@ -162,7 +167,6 @@ body.emblems-cyber .realism-system {
   100% { transform: rotateX(-58deg) rotateY(34deg) rotateZ(360deg); }
 }
 
-/* Кинематика букв S · A · B · C · D · E */
 .l3d {
   transform: translateY(-2px) rotateX(var(--bry, 0deg)) rotateY(var(--brx, 0deg));
 }
@@ -241,7 +245,7 @@ body.emblems-cyber .realism-system {
     drop-shadow(0 1px 0 rgba(255, 255, 255, 0.72))
     drop-shadow(0 4px 12px var(--tg))
     drop-shadow(0 0 22px color-mix(in srgb, var(--t) 55%, transparent));
-  animation: pbrMetalSheen 5.2s ease-in-out infinite;
+  animation: pbrMetalSheen var(--metal-sheen-dur, 5.2s) ease-in-out infinite;
 }
 .tier[data-rank="2"] .ll.face {
   filter:
@@ -254,7 +258,6 @@ body.emblems-cyber .realism-system {
   50%      { background-position: 100% 80%; }
 }
 
-/* 3D-бейдж года и OKLCH голографическая фольга на карточках постеров */
 .card-year-3d {
   position: absolute;
   top: 6px;
@@ -299,7 +302,7 @@ body.emblems-cyber .realism-system {
   transition: opacity 0.28s ease;
 }
 body.fx-tilt:not(.editing) .card:hover .holo-foil {
-  opacity: 0.88;
+  opacity: var(--holo-max-opacity, 0.88);
 }
 
 .element-system, .orbit-system {
