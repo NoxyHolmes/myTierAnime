@@ -1,4 +1,4 @@
-/* ═══════════════════ CROSS-BROWSER NORMALIZE, CLEAR BUTTONS & SYNCHRONIZED SEASONS ═══════════════════ */
+/* ═══════════════════ CROSS-BROWSER NORMALIZE, CLEAR BUTTONS & TYPE/YEAR STACKED DOSSIER ═══════════════════ */
 *, *::before, *::after {
   box-sizing: border-box;
   -webkit-tap-highlight-color: transparent;
@@ -854,7 +854,7 @@ body.is-owner .owner-only {
   border-radius: 6px;
 }
 
-/* ═══════════════════ ЛИЧНАЯ КАРТОЧКА ТАЙТЛА (ОФОРМЛЕНИЕ КАК НА СКРИНШОТЕ, НО С СИНХРОННЫМ ВЫРАВНИВАНИЕМ ВСЕХ СТОЛБЦОВ) ═══════════════════ */
+/* ═══════════════════ ШИРОКАЯ ЛИЧНАЯ КАРТОЧКА: ШИРИНА ПОСТЕРА СЛЕВА 310PX, ТИП И ГОД СЕЗОНОВ СТРОГО ДРУГ ПОД ДРУГОМ СПРАВА ═══════════════════ */
 .modal-backdrop {
   position: fixed;
   top: 0;
@@ -888,7 +888,7 @@ body.is-owner .owner-only {
   margin: auto;
 }
 .modal-box-wide {
-  max-width: 1240px;
+  max-width: 1280px;
 }
 
 .dossier-cinema-box {
@@ -928,9 +928,9 @@ body.is-owner .owner-only {
 .dossier-split-layout {
   position: relative;
   display: grid;
-  grid-template-columns: 260px 1fr;
-  gap: 24px;
-  padding: 24px 26px;
+  grid-template-columns: 310px 1fr;
+  gap: 28px;
+  padding: 24px 28px;
   align-items: start;
   overflow: hidden;
 }
@@ -1032,12 +1032,12 @@ body.is-owner .owner-only {
 .dossier-title-main {
   margin: 0 0 4px;
   font-family: var(--serif);
-  font-size: 25px;
+  font-size: 26px;
   font-weight: 900;
   color: #ffffff;
 }
 .dossier-title-orig {
-  font-size: 13px;
+  font-size: 13.5px;
   color: #cbc4eb;
   margin-bottom: 12px;
 }
@@ -1094,7 +1094,7 @@ body.is-owner .owner-only {
   color: #b8fbff;
 }
 
-/* ──────── СИНХРОННАЯ СЕТКА СЕЗОНОВ: КАРТОЧКИ ВЫГЛЯДЯТ КАК НА СКРИНШОТЕ, НО ВСЕ СТОЛБЦЫ ДВИГАЮТСЯ СИНХРОННО И СТОЯТ РОВНО ДРУГ ПОД ДРУГОМ ──────── */
+/* ──────── СИНХРОННАЯ СЕТКА СЕЗОНОВ: ТИП И ГОД СТОЯТ СТРОГО ДРУГ ПОД ДРУГОМ ──────── */
 .dossier-seasons-block {
   background: rgba(14, 11, 30, 0.72);
   border: 1px solid rgba(255, 255, 255, 0.12);
@@ -1132,12 +1132,9 @@ body.is-owner .owner-only {
   color: #fff;
 }
 
-/* Общий родительский Grid для всех карточек сезонов:
-   Колонка 1: левый блок (# + Название + Тип + Год) — растягивается под самое длинное название
-   Колонки 2, 3, 4, 5: Объём | 1 серия | Время | Дата — синхронно выравниваются во всех карточках! */
 .dossier-seasons-vertical-list {
   display: grid;
-  grid-template-columns: minmax(260px, 1fr) max-content max-content max-content max-content;
+  grid-template-columns: minmax(280px, 1fr) 140px max-content max-content max-content max-content;
   row-gap: 7px;
   width: 100%;
 }
@@ -1147,7 +1144,7 @@ body.is-owner .owner-only {
   display: grid;
   grid-template-columns: subgrid;
   align-items: center;
-  column-gap: 18px;
+  column-gap: 16px;
   background: linear-gradient(135deg, rgba(28, 22, 56, 0.92), rgba(18, 14, 38, 0.96));
   border: 1px solid rgba(255, 255, 255, 0.13);
   border-left: 3px solid #00f5ff;
@@ -1155,7 +1152,6 @@ body.is-owner .owner-only {
   padding: 9px 14px;
 }
 
-/* Fallback для браузеров без поддержки subgrid — фиксированные синхронные колонки */
 @supports not (grid-template-columns: subgrid) {
   .dossier-seasons-vertical-list {
     display: flex;
@@ -1164,7 +1160,7 @@ body.is-owner .owner-only {
   }
   .dossier-season-bar {
     display: grid;
-    grid-template-columns: minmax(240px, 1fr) 128px 124px 96px 118px;
+    grid-template-columns: minmax(240px, 1fr) 120px 124px 96px 118px;
     align-items: center;
     column-gap: 14px;
   }
@@ -1200,28 +1196,36 @@ body.is-owner .owner-only {
 }
 
 .dsc-name {
-  font-size: 13px;
+  font-size: 13.5px;
   font-weight: 800;
   color: #ffffff;
   line-height: 1.25;
 }
 
 .dsb-note-inline {
-  font-size: 10.5px;
+  font-size: 11px;
   color: #cbc4eb;
   opacity: 0.85;
 }
 
+/* Стек: тип тайтла и год выпуска строго ДРУГ ПОД ДРУГОМ */
+.dsb-col-typeyear {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  align-items: flex-start;
+  white-space: nowrap;
+}
+
 .dsc-year {
-  font-size: 11px;
+  font-size: 10.5px;
   font-weight: 800;
   color: #ffd76a;
   background: rgba(255, 215, 106, 0.12);
   border: 1px solid rgba(255, 215, 106, 0.35);
-  padding: 1.5px 7px;
-  border-radius: 5px;
+  padding: 1px 6px;
+  border-radius: 4px;
   white-space: nowrap;
-  flex-shrink: 0;
 }
 
 .dsb-col-stat {
@@ -1422,7 +1426,7 @@ body.is-owner .owner-only {
     grid-template-columns: 1fr;
   }
   .dossier-left-poster-col {
-    max-width: 230px;
+    max-width: 250px;
     margin: 0 auto;
   }
   .dossier-seasons-vertical-list {
