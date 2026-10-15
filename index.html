@@ -16,8 +16,12 @@
   <link rel="stylesheet" href="css/cards-and-tiers.css">
   <link rel="stylesheet" href="css/modals-and-panels.css">
 </head>
-<body class="emblems-realism letter-style-gold fx-tier-motion fx-tilt">
-  <div id="globalOwnerBg" class="global-owner-bg" aria-hidden="true"></div>
+<body class="emblems-realism letter-style-gold motion-precession fx-tier-motion fx-tilt">
+  <!-- Глобальный фон сайта с прямым тегом img для 100% надёжного отображения -->
+  <div id="globalOwnerBg" class="global-owner-bg" aria-hidden="true">
+    <img id="globalOwnerBgImg" class="global-owner-bg-img" alt="">
+    <div id="globalOwnerBgDimmer" class="global-owner-bg-dimmer"></div>
+  </div>
   <div id="screenFxOverlay" class="screen-fx-overlay" aria-hidden="true"></div>
   <canvas id="bgStarsCanvas" aria-hidden="true"></canvas>
 
@@ -30,16 +34,15 @@
           <div class="brand-text">
             <h1>myTierAnime</h1>
           </div>
+          <span id="syncStatusBadge" class="sync-status-badge owner-only">☁ Автосохранение активно</span>
         </div>
 
         <div class="toolbar-controls">
-          <!-- Поиск -->
           <div class="search-input-wrap">
             <span class="search-icon">🔍</span>
             <input type="search" id="searchInput" class="search-input" placeholder="Поиск тайтла, студии...">
           </div>
 
-          <!-- Жанры с живым поиском (3 лишние кнопки после жанров убраны!) -->
           <div class="genre-dropdown" id="genreDropdown">
             <button type="button" class="genre-dropdown-btn" id="genreDropdownBtn">
               <span>🎭</span>
@@ -54,12 +57,10 @@
             </div>
           </div>
 
-          <!-- Кнопка Календаря (сразу открывает календарную сетку) -->
           <button type="button" id="btnToggleCalendar" class="btn btn-neon-purple">
             📅 Календарь
           </button>
 
-          <!-- Кнопка Добавить тайтл (только для владельца) -->
           <button type="button" id="btnAddTitleTop" class="btn btn-neon-gold owner-only">
             ➕ Добавить тайтл
           </button>
@@ -68,7 +69,6 @@
             ⚙️ Настройки
           </button>
 
-          <!-- Скачать резервную копию (только для владельца, кнопка Сохранить убрана — всё сохраняется автоматически) -->
           <button type="button" id="btnExportJson" class="btn owner-only" title="Скачать резервную копию JSON">
             ⬇ JSON
           </button>
@@ -86,7 +86,7 @@
     <section id="calendarRoot" class="calendar-container" style="display:none;"></section>
   </div>
 
-  <!-- Мега-панель «⚙️ Настройки» (с новой кастомизацией 3D-букв тира) -->
+  <!-- Панель «⚙️ Настройки» (Загрузка фона теперь строго ТОЛЬКО в 1 вкладке «🖼 Фон сайта») -->
   <aside id="fxPanel" class="fx-drawer" aria-label="Настройки">
     <div class="fx-drawer-head">
       <strong>⚙️ Студия Кастомизации</strong>
@@ -105,9 +105,9 @@
       <button type="button" class="fx-tab-btn owner-only" data-fx-tab="tabOwnerBg">🖼 Фон сайта</button>
     </div>
 
-    <!-- ВКЛАДКА 1: 3D-эмблемы и 8 вариаций 3D-букв тира -->
+    <!-- ВКЛАДКА 1: 3D и Буквы -->
     <div class="fx-tab-pane active" id="tab3d">
-      <div class="fx-section-title">1. 3D-стиль букв тира (S · A · B · C · D · E):</div>
+      <div class="fx-section-title">1. 3D-стиль букв тира:</div>
       <div class="fx-seg">
         <button type="button" data-letter-style="letter-style-gold" class="active">👑 Литое золото</button>
         <button type="button" data-letter-style="letter-style-prism">💎 Кристалл-Призма</button>
@@ -122,8 +122,8 @@
       <div class="fx-section-title">2. Кинематика движения 3D-букв:</div>
       <div class="fx-seg">
         <button type="button" data-letter-motion="motion-precession" class="active">🪐 Прецессия 3D</button>
-        <button type="button" data-letter-motion="motion-spin360">🔄 Полный оборот 360°</button>
-        <button type="button" data-letter-motion="motion-float">🌊 Плавная левитация</button>
+        <button type="button" data-letter-motion="motion-spin360">🔄 Оборот 360°</button>
+        <button type="button" data-letter-motion="motion-float">🌊 Левитация</button>
         <button type="button" data-letter-motion="motion-pulse">💓 Энерго-Пульс</button>
       </div>
 
@@ -301,40 +301,44 @@
       </div>
     </div>
 
-    <!-- ВКЛАДКА 6: Фон сайта (Мгновенная установка с ПК или по ссылке, сохраняется автоматически!) -->
-    <div class="fx-tab-pane owner-only" id="tabOwnerBg">
-      <div class="fx-section-title">🖼 Глобальный фон сайта (Видят все по ссылке):</div>
+    <!-- ВКЛАДКА 6: Фон сайта (БЕЗ класса .owner-only на самом div, чтобы он не дублировался в других вкладках!) -->
+    <div class="fx-tab-pane" id="tabOwnerBg">
+      <div class="fx-section-title">🖼 Глобальный фон сайта:</div>
       <p style="font-size:11px;color:var(--ink-soft);line-height:1.45;margin:0 0 10px;">
-        Выберите картинку с компьютера или вставьте прямую ссылку — фон применится и сохранится <b>моментально за долю секунды</b>!
+        Выберите картинку с компьютера — фон установится на весь экран <b>моментально</b> и автоматически загрузится в ваш GitHub, чтобы его видели все посетители по ссылке!
       </p>
       <div class="form-group">
-        <label>1. Выбрать картинку с компьютера (применится мгновенно):</label>
+        <label>Загрузить картинку фона с компьютера:</label>
         <input type="file" id="ownerBgFileInput" accept="image/*" class="form-control">
-      </div>
-      <div class="form-group">
-        <label>2. Или вставить URL / путь к картинке:</label>
-        <input type="text" id="ownerBgUrlInput" class="form-control" placeholder="https://... или backgrounds/bg.jpg">
       </div>
       <div class="fx-sliders">
         <label class="fx-slider-row">
-          <span>Затемнение поверх фона: <b id="lblOwnerBgDim">60%</b></span>
-          <input type="range" id="rngOwnerBgDim" min="5" max="92" step="5" value="60">
+          <span>Затемнение поверх фона: <b id="lblOwnerBgDim">55%</b></span>
+          <input type="range" id="rngOwnerBgDim" min="0" max="90" step="5" value="55">
         </label>
         <label class="fx-slider-row">
-          <span>Размытие фона (Blur): <b id="lblOwnerBgBlur">2px</b></span>
-          <input type="range" id="rngOwnerBgBlur" min="0" max="24" step="1" value="2">
+          <span>Размытие фона (Blur): <b id="lblOwnerBgBlur">0px</b></span>
+          <input type="range" id="rngOwnerBgBlur" min="0" max="20" step="1" value="0">
         </label>
       </div>
       <div style="display:flex;gap:8px;margin-top:8px;">
-        <button type="button" id="btnClearOwnerBg" class="btn btn-danger" style="width:100%;justify-content:center;">✕ Убрать картинку фона</button>
+        <button type="button" id="btnClearOwnerBg" class="btn btn-danger" style="width:100%;justify-content:center;">✕ Сбросить на стандартный фон</button>
       </div>
     </div>
   </aside>
 
-  <!-- Модальное окно 1: НОВЫЙ КИНЕМАТОГРАФИЧНЫЙ ДИЗАЙН КАРТОЧКИ ТАЙТЛА -->
+  <!-- Модальное окно 1: Карточка тайтла (ИСПРАВЛЕНА ОБРЕЗКА, ШАПКА С КНОПКАМИ ЗАКРЕПЛЕНА СВЕРХУ) -->
   <div id="detailsModal" class="modal-backdrop">
     <div class="modal-box modal-box-wide dossier-cinema-box">
-      <div id="detailsModalBody"></div>
+      <div class="dossier-sticky-topbar">
+        <div id="dossierTopBadges" class="dossier-badges-row" style="margin:0;"></div>
+        <div class="dossier-top-btns">
+          <button type="button" id="btnDetailsEdit" class="btn btn-sm btn-neon-gold owner-only">✎ Редактировать тайтл</button>
+          <button type="button" id="btnDetailsDelete" class="btn btn-sm btn-danger owner-only">🗑 Удалить</button>
+          <button type="button" id="btnDetailsClose" class="btn btn-sm" data-close-modal="detailsModal">✕ Закрыть</button>
+        </div>
+      </div>
+      <div id="detailsModalBody" class="dossier-scroll-content"></div>
     </div>
   </div>
 
@@ -459,7 +463,7 @@
 
         <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:14px;">
           <button type="button" class="btn" data-close-modal="editorModal">Отмена</button>
-          <button type="submit" class="btn btn-primary">✔ Готово (Автосохранение)</button>
+          <button type="submit" class="btn btn-primary">✔ Готово</button>
         </div>
       </form>
     </div>
@@ -473,7 +477,7 @@
         <button type="button" class="btn" data-close-modal="authModal">✕</button>
       </div>
       <p style="font-size:12.5px;color:var(--ink-soft);line-height:1.5;">
-        Обычные посетители по ссылке могут только просматривать коллекцию. Введите ваш <b>GitHub Personal Access Token</b> — и любое ваше редактирование будет <b>моментально</b> сохраняться на сайте и в репозитории.
+        Введите ваш <b>GitHub Personal Access Token</b> — и любое ваше редактирование или перетаскивание карточки будет сохраняться моментально и навсегда.
       </p>
       <form id="authForm">
         <div class="form-group full">
