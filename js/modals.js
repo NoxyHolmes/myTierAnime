@@ -1,4 +1,4 @@
-/* ═══════════════════ MODALS: CINEMATIC HERO DOSSIER & MULTI-SEASON BUILDER ═══════════════════ */
+/* ═══════════════════ MODALS: UNCLIPPED DOSSIER WITH STICKY TOPBAR ═══════════════════ */
 const Modals = (() => {
   let deleteHandler = null;
 
@@ -16,9 +16,18 @@ const Modals = (() => {
 
   function showAnimeDetails(item, tier) {
     const body = document.getElementById("detailsModalBody");
+    const topBadges = document.getElementById("dossierTopBadges");
     if (!body) return;
 
     const m = calcItemMetrics(item);
+
+    if (topBadges) {
+      topBadges.innerHTML = `
+        <span class="dossier-badge-pill gold">ТИР ${esc(tier.id)} · ${esc(tier.name)}</span>
+        <span class="dossier-badge-pill">${esc(m.kind)}</span>
+        ${item.reaction ? `<span class="dossier-badge-pill">${esc(item.reaction)}</span>` : ""}
+      `;
+    }
 
     function renderSeasonsRows(filterType = "ALL") {
       const filtered = m.seasons.filter(s => {
@@ -45,24 +54,9 @@ const Modals = (() => {
     }
 
     body.innerHTML = `
-      <!-- Верхний кинематографичный баннер с размытым постером аниме -->
       <div class="dossier-hero-banner">
         <div class="dossier-hero-backdrop" style="background-image:url('${esc(item.poster)}');"></div>
         <div class="dossier-hero-scrim"></div>
-
-        <div class="dossier-top-actions">
-          <div class="dossier-badges-row" style="margin:0;">
-            <span class="dossier-badge-pill gold">РАНГ ${esc(tier.id)} · ${esc(tier.name)}</span>
-            <span class="dossier-badge-pill">${esc(m.kind)}</span>
-            ${item.reaction ? `<span class="dossier-badge-pill">${esc(item.reaction)}</span>` : ""}
-          </div>
-
-          <div style="display:flex;gap:8px;flex-wrap:wrap;">
-            <button type="button" id="btnDetailsEdit" class="btn btn-sm btn-neon-gold owner-only">✎ Редактировать</button>
-            <button type="button" id="btnDetailsDelete" class="btn btn-sm btn-danger owner-only">🗑 Удалить</button>
-            <button type="button" id="btnDetailsClose" class="btn btn-sm">✕ Закрыть</button>
-          </div>
-        </div>
 
         <div class="dossier-hero-grid">
           <div class="dossier-poster-wrap">
@@ -107,7 +101,6 @@ const Modals = (() => {
         </div>
       </div>
 
-      <!-- Нижняя секция: таблица всех сезонов, фильмов, OVA, ONA -->
       <div class="dossier-body-section">
         <div class="dossier-seasons-header">
           <strong style="font-size:12px;text-transform:uppercase;color:#d6d0f5;letter-spacing:0.06em;">
@@ -148,27 +141,34 @@ const Modals = (() => {
       });
     });
 
-    body.querySelector("#btnDetailsClose")?.addEventListener("click", () => closeModal("detailsModal"));
+    const closeBtn = document.getElementById("btnDetailsClose");
+    if (closeBtn) closeBtn.onclick = () => closeModal("detailsModal");
 
-    body.querySelector("#btnDetailsEdit")?.addEventListener("click", () => {
-      if (!GitHubSync.isOwner()) {
-        showToast("Редактирование доступно только владельцу", "#ff3c8c");
-        return;
-      }
-      closeModal("detailsModal");
-      openEditorModal(tier.id, item);
-    });
-
-    body.querySelector("#btnDetailsDelete")?.addEventListener("click", () => {
-      if (!GitHubSync.isOwner()) {
-        showToast("Удаление доступно только владельцу", "#ff3c8c");
-        return;
-      }
-      if (confirm(`Удалить тайтл «${item.title}» из тира ${tier.id}?`)) {
+    const editBtn = document.getElementById("btnDetailsEdit");
+    if (editBtn) {
+      editBtn.onclick = () => {
+        if (!GitHubSync.isOwner()) {
+          showToast("Редактирование доступно только владельцу", "#ff3c8c");
+          return;
+        }
         closeModal("detailsModal");
-        if (typeof deleteHandler === "function") deleteHandler(item.uid, tier.id);
-      }
-    });
+        openEditorModal(tier.id, item);
+      };
+    }
+
+    const delBtn = document.getElementById("btnDetailsDelete");
+    if (delBtn) {
+      delBtn.onclick = () => {
+        if (!GitHubSync.isOwner()) {
+          showToast("Удаление доступно только владельцу", "#ff3c8c");
+          return;
+        }
+        if (confirm(`Удалить тайтл «${item.title}» из тира ${tier.id}?`)) {
+          closeModal("detailsModal");
+          if (typeof deleteHandler === "function") deleteHandler(item.uid, tier.id);
+        }
+      };
+    }
 
     openModal("detailsModal");
   }
