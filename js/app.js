@@ -1,4 +1,4 @@
-/* ═══════════════════ MAIN APPLICATION ORCHESTRATOR (myTierAnime v8.1 ZERO-FLICKER ON RELOAD) ═══════════════════ */
+/* ═══════════════════ MAIN APPLICATION ORCHESTRATOR (myTierAnime v9.0) ═══════════════════ */
 (() => {
   if (typeof window.pluralRu !== "function") {
     window.pluralRu = function (number, one, few, many) {
@@ -30,8 +30,6 @@
     ];
   }
 
-  /* Единый ключ мгновенного снимка состояния (и для владельца, и для зрителей),
-     чтобы при нажатии F5 сразу открывалась последняя актуальная расстановка без прыжков! */
   const SNAPSHOT_STORAGE_KEY = "mta_2026_instant_snapshot_v16";
   const LEGACY_KEYS = ["mta_2026_owner_draft_v15", "mta_2026_owner_draft_v14", "mta_2026_owner_draft_v12"];
 
@@ -87,7 +85,7 @@
 
   function computeStateSignature(data) {
     if (!data || !Array.isArray(data.tiers)) return "";
-    const tierSummary = data.tiers.map(t => `${t.id}:${(t.items || []).map(i => `${i.uid}_${i.score}_${(i.seasons || []).length}`).join(",")}`).join("|");
+    const tierSummary = data.tiers.map(t => `${t.id}:${(t.items || []).map(i => `${i.uid}_${i.score}_${i.posterBlobSha || ""}_${(i.seasons || []).map(s => s.episodes).join("+")}`).join(",")}`).join("|");
     return `${data.meta?.revision || 0}_${tierSummary}_${data.meta?.bgBlobSha || ""}_${data.meta?.bgImage || ""}_${data.meta?.bgDim}_${data.meta?.bgBlur}`;
   }
 
@@ -113,10 +111,6 @@
     } catch {}
   }
 
-  /* БЕСШОВНАЯ ЗАГРУЗКА БЕЗ ВРЕМЕННОГО ПРЫЖКА КАРТОЧЕК:
-     1. Если в браузере уже есть сохранённый снимок (SNAPSHOT_STORAGE_KEY), он рисуется в 0-ю миллисекунду.
-     2. Затем в фоне проверяется GitHub: если там более новая ревизия (или если мы зритель и вышло обновление),
-        данные мягко актуализируются. Старый зашитый шаблон больше НИКОГДА не рисуется поверх ваших данных! */
   async function loadInitialState() {
     const hasOwnerToken = typeof GitHubSync !== "undefined" && !!GitHubSync.getToken();
     const cachedSnapshot = readCachedSnapshot();
@@ -145,13 +139,11 @@
           appData = remoteObj;
           writeCachedSnapshot(appData);
         } else if (!hasOwnerToken) {
-          // У зрителя обновляем снимок, если на сервере ревизия >= локальной
           if (remoteRev >= localRev) {
             appData = remoteObj;
             writeCachedSnapshot(appData);
           }
         } else {
-          // У владельца обновляем только если на сервере ревизия строго выше локальной
           if (remoteRev > localRev) {
             appData = remoteObj;
             writeCachedSnapshot(appData);
@@ -247,7 +239,7 @@
       setSyncIndicator(`☁ Синхронизировано (${new Date().toLocaleTimeString("ru-RU")})`, "#38ef7d");
       if (syncBtn) syncBtn.textContent = "🔄 Синхронизировать со всеми";
       if (showSuccessToast) {
-        showToast("✔ Вся информация и фон успешно синхронизированы!", "#38ef7d");
+        showToast("✔ Вся информация, обложки и фон успешно синхронизированы!", "#38ef7d");
       }
     } catch (err) {
       setSyncIndicator("⚠ Ошибка синхронизации: проверьте токен/репозиторий", "#ff5e7e");
@@ -282,7 +274,6 @@
           <span class="rank">${idx + 1}</span>
           ${yearBadgeHtml}
           <span class="card-score-badge">★ ${esc(item.score)}</span>
-          ${reactionHtml(item)}
 
           <div class="card-info">
             <h3 class="card-title">${esc(item.title)}</h3>
@@ -388,10 +379,11 @@
     }).join("");
 
     if (typeof GitHubSync !== "undefined" && typeof GitHubSync.resolveAssetUrl === "function") {
-      host.querySelectorAll("img.card-poster[data-blob-sha]").forEach(async img => {
+      host.querySelectorAll("img.card-poster").forEach(async img => {
         const sha = img.dataset.blobSha;
-        if (sha) {
-          const resolved = await GitHubSync.resolveAssetUrl(img.getAttribute("src"), sha);
+        const rawSrc = img.getAttribute("src") || "";
+        if (sha || (rawSrc && !rawSrc.startsWith("http") && !rawSrc.startsWith("data:") && !rawSrc.startsWith("blob:"))) {
+          const resolved = await GitHubSync.resolveAssetUrl(rawSrc, sha);
           if (resolved) img.src = resolved;
         }
       });
@@ -668,7 +660,9 @@
       try {
         showToast("Загрузка оригинальной обложки в GitHub...", "#00f5ff");
         const uploaded = await GitHubSync.uploadAssetFile(file, "posters");
-        document.getElementById("fPoster").value = uploaded.path;
+        const posterInputEl = document.getElementById("fPoster");
+        posterInputEl.value = uploaded.path;
+        posterInputEl.dataset.existingBlobSha = uploaded.blobSha;
         pendingPosterBlobSha = uploaded.blobSha;
         showToast("✔ Обложка загружена!", "#38ef7d");
       } catch (err) {
@@ -774,7 +768,9 @@
             document.getElementById("fKind").value = picked.kind;
             document.getElementById("fYear").value = picked.year;
             document.getElementById("fScore").value = picked.score;
-            document.getElementById("fPoster").value = picked.poster;
+            const posterInp = document.getElementById("fPoster");
+            posterInp.value = picked.poster;
+            posterInp.dataset.existingBlobSha = "";
             pendingPosterBlobSha = "";
             document.getElementById("fStudio").value = picked.studio;
             document.getElementById("fGenres").value = (picked.genres || []).join(", ");
@@ -803,6 +799,8 @@
       const uid = document.getElementById("fUid").value || ("anime-" + Date.now());
       const targetTierId = document.getElementById("fTier").value;
       const seasons = Modals.readSeasonsFromEditor();
+      const posterInp = document.getElementById("fPoster");
+      const finalBlobSha = pendingPosterBlobSha || posterInp.dataset.existingBlobSha || undefined;
 
       const newItem = {
         uid,
@@ -812,9 +810,8 @@
         year: parseInt(document.getElementById("fYear").value, 10) || 2026,
         studio: document.getElementById("fStudio").value.trim(),
         score: parseFloat(document.getElementById("fScore").value) || 9.0,
-        reaction: document.getElementById("fReaction").value.trim(),
-        poster: document.getElementById("fPoster").value.trim(),
-        posterBlobSha: pendingPosterBlobSha || undefined,
+        poster: posterInp.value.trim(),
+        posterBlobSha: finalBlobSha,
         genres: document.getElementById("fGenres").value.split(",").map(s => s.trim()).filter(Boolean),
         comment: document.getElementById("fComment").value.trim(),
         seasons,
@@ -908,7 +905,6 @@
     }
   }
 
-  /* ИСПРАВЛЕННЫЙ ЗАПУСК БЕЗ МИГАНИЯ СТАРОГО ШАБЛОНА */
   async function bootstrapApp() {
     try {
       if (typeof FXController !== "undefined" && typeof FXController.init === "function") {
@@ -928,7 +924,6 @@
       });
     }
 
-    // Сразу загружаем сохранённый снимок и проверяем GitHub (без промежуточной отрисовки старого дефолтного списка!)
     await loadInitialState();
     startLiveViewerPolling();
   }
