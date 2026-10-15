@@ -78,7 +78,7 @@
             ➕ Добавить тайтл
           </button>
 
-          <button type="button" id="btnSyncNowOwner" class="btn btn-primary owner-only" title="Принудительно опубликовать все изменения и фон для всех пользователей по ссылке">
+          <button type="button" id="btnSyncNowOwner" class="btn btn-primary owner-only" title="Опубликовать все изменения и настройки фона для всех пользователей по ссылке">
             🔄 Синхронизировать со всеми
           </button>
 
@@ -109,7 +109,7 @@
       <strong>⚙️ Студия Кастомизации</strong>
       <div style="display:flex;gap:6px;">
         <button type="button" id="btnResetSettings" class="btn btn-sm">↺ Сброс</button>
-        <button type="button" class="btn btn-sm" onclick="document.getElementById('fxPanel').classList.remove('show')">✕</button>
+        <button type="button" id="btnCloseFxPanel" class="btn btn-sm" onclick="document.getElementById('fxPanel').classList.remove('show')">✕</button>
       </div>
     </div>
 
@@ -243,12 +243,12 @@
           <input type="range" data-setting="gridCols" min="4" max="14" step="1" value="10">
         </label>
         <label class="fx-slider-row">
-          <span>Отступ между карточками: <b data-val="gridGap">10px</b></span>
-          <input type="range" data-setting="gridGap" min="4" max="26" step="1" value="10">
+          <span>Отступ между карточками: <b data-val="gridGap">12px</b></span>
+          <input type="range" data-setting="gridGap" min="4" max="26" step="1" value="12">
         </label>
         <label class="fx-slider-row">
-          <span>Скругление карточек: <b data-val="cardRadius">10px</b></span>
-          <input type="range" data-setting="cardRadius" min="0" max="26" step="1" value="10">
+          <span>Скругление карточек: <b data-val="cardRadius">12px</b></span>
+          <input type="range" data-setting="cardRadius" min="0" max="26" step="1" value="12">
         </label>
         <label class="fx-slider-row">
           <span>Угол 3D-наклона: <b id="lblTiltPower">14°</b></span>
@@ -284,8 +284,8 @@
           <input type="range" data-setting="glassBlur" min="0" max="36" step="2" value="16">
         </label>
         <label class="fx-slider-row">
-          <span>Ширина контейнера: <b data-val="containerWidth">1780px</b></span>
-          <input type="range" data-setting="containerWidth" min="1200" max="2400" step="40" value="1780">
+          <span>Ширина контейнера: <b data-val="containerWidth">1920px</b></span>
+          <input type="range" data-setting="containerWidth" min="1200" max="2400" step="40" value="1920">
         </label>
       </div>
     </div>
@@ -313,26 +313,27 @@
       </div>
     </div>
 
+    <!-- ВКЛАДКА 6: Глобальный фон сайта (Синхронизирует картинку, затемнение и размытие со всеми зрителями!) -->
     <div class="fx-tab-pane" id="tabOwnerBg">
-      <div class="fx-section-title">🖼 Глобальный фон сайта:</div>
+      <div class="fx-section-title">🖼 Глобальный фон сайта (Для всех по ссылке):</div>
       <p style="font-size:11px;color:var(--ink-soft);line-height:1.45;margin:0 0 10px;">
-        Выберите картинку с компьютера — после загрузки нажмите <b>«🔄 Синхронизировать со всеми»</b> в шапке, чтобы этот фон тут же появился у всех по ссылке!
+        Картинка фона, уровень <b>затемнения</b> и <b>размытия</b> автоматически синхронизируются с GitHub и меняются у всех пользователей по вашей ссылке!
       </p>
       <div class="form-group">
-        <label>Загрузить картинку фона с компьютера:</label>
-        <label class="neon-file-upload" for="ownerBgFileInput">
-          <input type="file" id="ownerBgFileInput" accept="image/*">
-          <span class="nfu-btn">📁 Выбрать файл</span>
-          <span class="nfu-name" id="ownerBgFileName">Файл не выбран</span>
+        <label>Картинка фона:</label>
+        <label class="custom-file-upload" for="ownerBgFileInput">
+          <span class="cfu-btn">🌌 Выбрать картинку фона</span>
+          <span class="cfu-name" id="ownerBgFileName">Файл не выбран</span>
         </label>
+        <input type="file" id="ownerBgFileInput" accept="image/*" class="hidden-file-input">
       </div>
       <div class="fx-sliders">
         <label class="fx-slider-row">
-          <span>Затемнение поверх фона: <b id="lblOwnerBgDim">55%</b></span>
+          <span>Затемнение поверх фона (у всех): <b id="lblOwnerBgDim">55%</b></span>
           <input type="range" id="rngOwnerBgDim" min="0" max="90" step="5" value="55">
         </label>
         <label class="fx-slider-row">
-          <span>Размытие фона (Blur): <b id="lblOwnerBgBlur">0px</b></span>
+          <span>Размытие фона Blur (у всех): <b id="lblOwnerBgBlur">0px</b></span>
           <input type="range" id="rngOwnerBgBlur" min="0" max="20" step="1" value="0">
         </label>
       </div>
@@ -357,7 +358,7 @@
     </div>
   </div>
 
-  <!-- Модальное окно 2: Добавление / Редактирование тайтла (БЕЗ Shikimori, обязательным является ТОЛЬКО Название!) -->
+  <!-- Модальное окно 2: Добавление / Редактирование тайтла -->
   <div id="editorModal" class="modal-backdrop">
     <div class="modal-box modal-box-wide">
       <div class="modal-header">
@@ -365,7 +366,13 @@
         <button type="button" class="btn" data-close-modal="editorModal">✕</button>
       </div>
 
-      <form id="animeEditorForm" novalidate>
+      <div class="form-group full" style="position:relative;">
+        <label>⚡ Автозаполнение из базы Shikimori / MyAnimeList:</label>
+        <input type="search" id="shikiSearchInput" class="form-control" placeholder="Например: Песнь ночных сов, Фрирен, Oshi no Ko...">
+        <div id="shikiResults" class="shiki-results"></div>
+      </div>
+
+      <form id="animeEditorForm">
         <input type="hidden" id="fUid">
         <div class="form-grid">
           <div class="form-group">
@@ -392,54 +399,55 @@
           </div>
 
           <div class="form-group">
-            <label>Название тайтла (единственное обязательное поле) *:</label>
-            <input type="text" id="fTitle" class="form-control" placeholder="Введите название тайтла..." required>
+            <label>Название (RU):</label>
+            <input type="text" id="fTitle" class="form-control" required>
           </div>
           <div class="form-group">
-            <label>Оригинальное название (необязательно):</label>
-            <input type="text" id="fOrigTitle" class="form-control" placeholder="Romaji / English...">
+            <label>Оригинальное название (EN / Romaji):</label>
+            <input type="text" id="fOrigTitle" class="form-control">
           </div>
 
           <div class="form-group">
-            <label>Год релиза (необязательно):</label>
+            <label>Год релиза:</label>
             <input type="number" id="fYear" class="form-control" value="2026">
           </div>
           <div class="form-group">
-            <label>Личная оценка 1–10 (необязательно):</label>
-            <input type="number" step="0.1" min="1" max="10" id="fScore" class="form-control" value="9.0">
+            <label>Личная оценка (1–10):</label>
+            <input type="number" step="0.1" min="1" max="10" id="fScore" class="form-control" value="9.0" required>
           </div>
 
           <div class="form-group">
-            <label>🎬 Студия (необязательно):</label>
+            <label>🎬 Студия (введите или выберите из списка):</label>
             <input type="text" id="fStudio" list="studioPresetList" class="form-control" placeholder="Madhouse, MAPPA, Liden Films...">
             <datalist id="studioPresetList"></datalist>
           </div>
 
           <div class="form-group">
-            <label>Бейдж реакции (необязательно):</label>
+            <label>Бейдж реакции:</label>
             <input type="text" id="fReaction" class="form-control" placeholder="👑 Шедевр">
           </div>
 
+          <!-- Кастомная стильная кнопка выбора файла обложки (без белой системной плашки) -->
           <div class="form-group full poster-upload-box">
-            <label>🖼 Обложка тайтла (необязательно — выберите файл с ПК или укажите ссылку/путь):</label>
+            <label>🖼 Обложка (выберите файл с ПК или укажите путь в папке <code>posters/</code>):</label>
             <div class="poster-upload-grid">
               <div>
-                <div style="font-size:11px;color:var(--ink-soft);margin-bottom:5px;">1. Загрузить картинку с компьютера:</div>
-                <label class="neon-file-upload" for="fPosterFile">
-                  <input type="file" id="fPosterFile" accept="image/*">
-                  <span class="nfu-btn">🖼 Выбрать обложку</span>
-                  <span class="nfu-name" id="fPosterFileName">Файл не выбран</span>
+                <div style="font-size:11px;color:var(--ink-soft);margin-bottom:4px;">1. Загрузить обложку с ПК:</div>
+                <label class="custom-file-upload" for="fPosterFile">
+                  <span class="cfu-btn">📂 Выбрать файл обложки</span>
+                  <span class="cfu-name" id="fPosterFileName">Файл не выбран</span>
                 </label>
+                <input type="file" id="fPosterFile" accept="image/*" class="hidden-file-input">
               </div>
               <div>
-                <div style="font-size:11px;color:var(--ink-soft);margin-bottom:5px;">2. Или путь в <code>posters/</code> / прямая ссылка:</div>
-                <input type="text" id="fPoster" class="form-control" placeholder="Оставьте пустым для авто-обложки или укажите путь...">
+                <div style="font-size:11px;color:var(--ink-soft);margin-bottom:4px;">2. Путь в posters/ или ссылка:</div>
+                <input type="text" id="fPoster" class="form-control" placeholder="posters/my-anime.jpg" required>
               </div>
             </div>
           </div>
 
           <div class="form-group full">
-            <label>🎭 Жанры (необязательно — поиск и быстрый выбор):</label>
+            <label>🎭 Жанры (поиск и быстрый выбор):</label>
             <div class="editor-genre-bar">
               <input type="search" id="editorGenreSearch" class="form-control" placeholder="🔎 Поиск по жанрам...">
               <select id="genreQuickPicker" class="form-control">
@@ -453,7 +461,7 @@
         <div class="seasons-builder-box">
           <div class="seasons-builder-head">
             <div>
-              <strong>🎬 Сезоны, Фильмы, OVA, ONA и Спешлы (необязательно)</strong>
+              <strong>🎬 Сезоны, Фильмы, OVA, ONA и Спешлы</strong>
               <div style="font-size:11px;color:var(--ink-soft);">
                 Укажите кол-во серий и минут на 1 серию — время конвертируется автоматически.
               </div>
@@ -472,8 +480,8 @@
         </div>
 
         <div class="form-group full" style="margin-top:12px;">
-          <label>Личная рецензия / комментарий (необязательно):</label>
-          <textarea id="fComment" rows="3" class="form-control" placeholder="Ваши впечатления от просмотра..."></textarea>
+          <label>Личная рецензия / комментарий:</label>
+          <textarea id="fComment" rows="3" class="form-control"></textarea>
         </div>
 
         <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:14px;">
@@ -492,7 +500,7 @@
         <button type="button" class="btn" data-close-modal="authModal">✕</button>
       </div>
       <p style="font-size:12.5px;color:var(--ink-soft);line-height:1.5;">
-        Укажите ваш <b>GitHub Personal Access Token</b> (с правом записи <code>repo</code> или <code>contents:write</code>). Имя репозитория определяется автоматически из вашей ссылки!
+        Укажите ваш <b>GitHub Personal Access Token</b> (с правом записи <code>repo</code> или <code>contents:write</code>).
       </p>
       <form id="authForm">
         <div class="form-group full">
@@ -517,6 +525,7 @@
   <script src="js/realism-core.js"></script>
   <script src="js/realism-engine.js"></script>
   <script src="js/github-sync.js"></script>
+  <script src="js/shikimori-api.js"></script>
   <script src="js/fx-controller.js"></script>
   <script src="js/stats-engine.js"></script>
   <script src="js/calendar-view.js"></script>
