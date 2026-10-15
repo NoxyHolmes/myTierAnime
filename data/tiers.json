@@ -4,12 +4,12 @@
     "owner": "geraltschwarzenegger-svg",
     "repo": "noxyholmes/myTierAnime",
     "branch": "main",
-    "updatedAt": "2026-10-15T21:41:56.070Z",
+    "updatedAt": "2026-10-15T21:42:15.081Z",
     "activeMode": "emblems-realism",
     "bgImage": "backgrounds/1792058756499____________________________________.png",
     "bgDim": 65,
     "bgBlur": 5,
-    "revision": 66,
+    "revision": 67,
     "bgBlobSha": "1de942c76368b8d317071e794ae55fed35d163ad",
     "bgMime": "image/png",
     "bgmVolume": 20
@@ -416,7 +416,7 @@
               "releaseYear": 2027,
               "episodes": 0,
               "epMinutes": 24,
-              "date": "2027",
+              "date": "",
               "note": ""
             }
           ],
@@ -426,7 +426,7 @@
               "note": "Сезон 1"
             },
             {
-              "date": "2027",
+              "date": "",
               "note": "Сезон 2"
             }
           ]
