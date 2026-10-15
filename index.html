@@ -3,7 +3,6 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <!-- Запрет агрессивного кэширования в Яндекс Браузере и Chromium -->
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
@@ -15,10 +14,10 @@
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;900&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&family=Montserrat:wght@500;700;800&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
   <link rel="manifest" href="manifest.json">
 
-  <link rel="stylesheet" href="css/tokens.css?v=8.0">
-  <link rel="stylesheet" href="css/realism-3d.css?v=8.0">
-  <link rel="stylesheet" href="css/cards-and-tiers.css?v=8.0">
-  <link rel="stylesheet" href="css/modals-and-panels.css?v=8.0">
+  <link rel="stylesheet" href="css/tokens.css?v=9.0">
+  <link rel="stylesheet" href="css/realism-3d.css?v=9.0">
+  <link rel="stylesheet" href="css/cards-and-tiers.css?v=9.0">
+  <link rel="stylesheet" href="css/modals-and-panels.css?v=9.0">
 </head>
 <body class="emblems-realism letter-style-gold motion-precession fx-tier-motion fx-tilt">
   <div id="globalOwnerBg" class="global-owner-bg" aria-hidden="true">
@@ -264,7 +263,6 @@
         <label class="fx-check-row"><input type="checkbox" data-toggle="showCardRank" checked><span>Порядковый номер</span></label>
         <label class="fx-check-row"><input type="checkbox" data-toggle="showCardScore" checked><span>Оценка (★)</span></label>
         <label class="fx-check-row"><input type="checkbox" data-toggle="showCardYear" checked><span>Бейдж года</span></label>
-        <label class="fx-check-row"><input type="checkbox" data-toggle="showCardReaction" checked><span>Эмоция / реакция</span></label>
         <label class="fx-check-row"><input type="checkbox" data-toggle="showCardCrown" checked><span>Золотая корона S-тира</span></label>
         <label class="fx-check-row"><input type="checkbox" data-toggle="showUnderMeta" checked><span>Нижняя плашка (серии/часы)</span></label>
       </div>
@@ -357,7 +355,7 @@
     </div>
   </div>
 
-  <!-- Модальное окно 2: Добавление / Редактирование тайтла -->
+  <!-- Модальное окно 2: Добавление / Редактирование тайтла (БЕЗ поля Бейдж реакции) -->
   <div id="editorModal" class="modal-backdrop">
     <div class="modal-box modal-box-wide">
       <div class="modal-header">
@@ -415,15 +413,10 @@
             <input type="number" step="0.1" min="1" max="10" id="fScore" class="form-control" value="9.0" required>
           </div>
 
-          <div class="form-group">
+          <div class="form-group full">
             <label>🎬 Студия (введите или выберите из списка):</label>
             <input type="text" id="fStudio" list="studioPresetList" class="form-control" placeholder="Madhouse, MAPPA, Liden Films...">
             <datalist id="studioPresetList"></datalist>
-          </div>
-
-          <div class="form-group">
-            <label>Бейдж реакции:</label>
-            <input type="text" id="fReaction" class="form-control" placeholder="👑 Шедевр">
           </div>
 
           <div class="form-group full poster-upload-box">
@@ -457,7 +450,7 @@
             <div>
               <strong>🎬 Сезоны, Фильмы, OVA, ONA и Спешлы</strong>
               <div style="font-size:11px;color:var(--ink-soft);">
-                Укажите кол-во серий и минут на 1 серию — время конвертируется автоматически.
+                Если сезон или фильм только ожидается (анонс), укажите <b>0</b> серий/фильмов — он не будет прибавляться к просмотренным сериям, фильмам и часам.
               </div>
             </div>
             <div style="display:flex;gap:6px;flex-wrap:wrap;">
@@ -515,16 +508,16 @@
 
   <div id="toastContainer"></div>
 
-  <script src="js/utils.js?v=8.0"></script>
-  <script src="js/realism-core.js?v=8.0"></script>
-  <script src="js/realism-engine.js?v=8.0"></script>
-  <script src="js/github-sync.js?v=8.0"></script>
-  <script src="js/shikimori-api.js?v=8.0"></script>
-  <script src="js/fx-controller.js?v=8.0"></script>
-  <script src="js/stats-engine.js?v=8.0"></script>
-  <script src="js/calendar-view.js?v=8.0"></script>
-  <script src="js/drag-drop.js?v=8.0"></script>
-  <script src="js/modals.js?v=8.0"></script>
-  <script src="js/app.js?v=8.0"></script>
+  <script src="js/utils.js?v=9.0"></script>
+  <script src="js/realism-core.js?v=9.0"></script>
+  <script src="js/realism-engine.js?v=9.0"></script>
+  <script src="js/github-sync.js?v=9.0"></script>
+  <script src="js/shikimori-api.js?v=9.0"></script>
+  <script src="js/fx-controller.js?v=9.0"></script>
+  <script src="js/stats-engine.js?v=9.0"></script>
+  <script src="js/calendar-view.js?v=9.0"></script>
+  <script src="js/drag-drop.js?v=9.0"></script>
+  <script src="js/modals.js?v=9.0"></script>
+  <script src="js/app.js?v=9.0"></script>
 </body>
 </html>
