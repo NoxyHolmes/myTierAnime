@@ -1,4 +1,4 @@
-/* ═══════════════════ MAIN APPLICATION ORCHESTRATOR (myTierAnime v11.0 BGM & CLUSTER SYNC) ═══════════════════ */
+/* ═══════════════════ MAIN APPLICATION ORCHESTRATOR (myTierAnime v11.1 STABLE) ═══════════════════ */
 (() => {
   if (typeof window.pluralRu !== "function") {
     window.pluralRu = function (number, one, few, many) {
@@ -20,9 +20,7 @@
     window.formatMoviesCount = n => `${n} ${window.pluralRu(n, "фильм", "фильма", "фильмов")}`;
   }
 
-  const SNAPSHOT_STORAGE_KEY = "mta_2026_instant_snapshot_v18";
-  const LEGACY_KEYS = ["mta_2026_instant_snapshot_v17", "mta_2026_instant_snapshot_v16"];
-
+  const SNAPSHOT_STORAGE_KEY = "mta_2026_instant_snapshot_v19";
   let appData = null;
   let searchQuery = "";
   let selectedGenre = "ALL";
@@ -53,7 +51,7 @@
   function ensureSixTiers(data) {
     if (!data || !Array.isArray(data.tiers) || data.tiers.length === 0) {
       return {
-        meta: { title: "myTierAnime", bgImage: "", bgBlobSha: "", bgInline: "", bgDim: 55, bgBlur: 0, revision: 0 },
+        meta: { title: "myTierAnime", bgImage: "", bgBlobSha: "", bgInline: "", bgDim: 55, bgBlur: 0, revision: 1 },
         tiers: JSON.parse(JSON.stringify(EMPTY_TIERS_SKELETON))
       };
     }
@@ -75,21 +73,16 @@
 
   function computeStateSignature(data) {
     if (!data || !Array.isArray(data.tiers)) return "";
-    const tierSummary = data.tiers.map(t => `${t.id}:${(t.items || []).map(i => `${i.uid}_${i.score}_${i.posterBlobSha \vert{}\vert{} ""}_${(i.seasons || []).map(s => s.episodes).join("+")}`).join(",")}`).join("|");
-    return `${data.meta?.revision || 0}_${tierSummary}_${data.meta?.bgBlobSha || ""}_${data.meta?.bgImage || ""}_${data.meta?.bgDim}_${data.meta?.bgBlur}`;
+    return `${data.meta?.revision || 0}_${JSON.stringify(data.tiers).length}_${data.meta?.bgBlobSha || ""}`;
   }
 
   function readCachedSnapshot() {
-    for (const key of [SNAPSHOT_STORAGE_KEY, ...LEGACY_KEYS]) {
-      const raw = localStorage.getItem(key);
-      if (raw) {
-        try {
-          const parsed = JSON.parse(raw);
-          if (parsed && Array.isArray(parsed.tiers) && parsed.tiers.length > 0) {
-            return ensureSixTiers(parsed);
-          }
-        } catch {}
-      }
+    const raw = localStorage.getItem(SNAPSHOT_STORAGE_KEY);
+    if (raw) {
+      try {
+        const parsed = JSON.parse(raw);
+        if (parsed && Array.isArray(parsed.tiers)) return ensureSixTiers(parsed);
+      } catch {}
     }
     return null;
   }
@@ -102,11 +95,9 @@
   }
 
   async function loadInitialState() {
-    const hasOwnerToken = typeof GitHubSync !== "undefined" && !!GitHubSync.getToken();
-    const cachedSnapshot = readCachedSnapshot();
-
-    if (cachedSnapshot) {
-      appData = cachedSnapshot;
+    const cached = readCachedSnapshot();
+    if (cached) {
+      appData = cached;
       lastRenderedSignature = computeStateSignature(appData);
       render();
     }
@@ -121,48 +112,27 @@
       }
 
       if (remoteRaw) {
-        const remoteObj = ensureSixTiers(remoteRaw);
-        const localRev = Number(cachedSnapshot?.meta?.revision || 0);
-        const remoteRev = Number(remoteObj?.meta?.revision || 0);
-
-        if (!cachedSnapshot) {
-          appData = remoteObj;
-          writeCachedSnapshot(appData);
-        } else if (!hasOwnerToken) {
-          if (remoteRev >= localRev) {
-            appData = remoteObj;
-            writeCachedSnapshot(appData);
-          }
-        } else {
-          if (remoteRev > localRev) {
-            appData = remoteObj;
-            writeCachedSnapshot(appData);
-          }
-        }
+        appData = ensureSixTiers(remoteRaw);
+        writeCachedSnapshot(appData);
       }
     } catch (e) {
       console.warn("Remote load fallback:", e);
     }
 
-    if (!appData) {
-      appData = ensureSixTiers(null);
-    }
-
-    const newSig = computeStateSignature(appData);
-    if (newSig !== lastRenderedSignature || !cachedSnapshot) {
-      lastRenderedSignature = newSig;
-      render();
-    } else if (typeof FXController !== "undefined" && typeof FXController.applyGlobalBackground === "function") {
+    if (!appData) appData = ensureSixTiers(null);
+    lastRenderedSignature = computeStateSignature(appData);
+    render();
+    if (typeof FXController !== "undefined" && typeof FXController.applyGlobalBackground === "function") {
       FXController.applyGlobalBackground(appData.meta || {});
     }
   }
 
   function startLiveViewerPolling() {
-    async function checkRemote() {
+    setInterval(async () => {
       if (document.hidden || (typeof GitHubSync !== "undefined" && GitHubSync.isOwner())) return;
       try {
         if (typeof GitHubSync === "undefined" || typeof GitHubSync.fetchFreshTiersFromApi !== "function") return;
-        const remoteRaw = await GitHubSync.fetchFreshTiersFromApi(true);
+        const remoteRaw = await GitHubSync.fetchFreshTiersFromApi(false);
         if (!remoteRaw) return;
         const remoteObj = ensureSixTiers(remoteRaw);
         const newSig = computeStateSignature(remoteObj);
@@ -170,22 +140,11 @@
           appData = remoteObj;
           lastRenderedSignature = newSig;
           writeCachedSnapshot(appData);
-          if (typeof FXController !== "undefined" && typeof FXController.applyGlobalBackground === "function") {
-            await FXController.applyGlobalBackground(appData.meta || {});
-          }
           render();
-          showToast("✨ Информация обновлена!", "#00f5ff");
+          showToast("✨ Список обновлён!", "#00f5ff");
         }
       } catch {}
-    }
-
-    setInterval(checkRemote, 6000);
-    document.addEventListener("visibilitychange", () => {
-      if (!document.hidden && !(typeof GitHubSync !== "undefined" && GitHubSync.isOwner())) checkRemote();
-    });
-    window.addEventListener("focus", () => {
-      if (!(typeof GitHubSync !== "undefined" && GitHubSync.isOwner())) checkRemote();
-    });
+    }, 6000);
   }
 
   function setSyncIndicator(text, col = "#38ef7d") {
@@ -220,21 +179,19 @@
     }
 
     isSyncing = true;
-    setSyncIndicator("⏳ Синхронизация с GitHub...", "#00f5ff");
+    setSyncIndicator("⏳ Синхронизация...", "#00f5ff");
     const syncBtn = document.getElementById("btnSyncNowOwner");
     if (syncBtn) syncBtn.textContent = "⏳ Синхронизация...";
 
     try {
       await GitHubSync.commitTiersToGitHub(appData, reason);
-      setSyncIndicator(`☁ Синхронизировано (${new Date().toLocaleTimeString("ru-RU")})`, "#38ef7d");
+      setSyncIndicator(`☁ Синхронизировано`, "#38ef7d");
       if (syncBtn) syncBtn.textContent = "🔄 Синхронизировать со всеми";
-      if (showSuccessToast) {
-        showToast("✔ Вся информация, музыка и фон успешно синхронизированы для всех браузеров!", "#38ef7d");
-      }
+      if (showSuccessToast) showToast("✔ Изменения успешно синхронизированы!", "#38ef7d");
     } catch (err) {
-      setSyncIndicator("⚠ Ошибка синхронизации: проверьте токен/репозиторий", "#ff5e7e");
-      if (syncBtn) syncBtn.textContent = "🔄 Повторить синхронизацию";
-      showToast("Ошибка отправки в GitHub: " + err.message, "#ff3c8c");
+      setSyncIndicator("⚠ Ошибка синхронизации", "#ff5e7e");
+      if (syncBtn) syncBtn.textContent = "🔄 Повторить";
+      showToast("Ошибка: " + err.message, "#ff3c8c");
     } finally {
       isSyncing = false;
       if (pendingSync) {
@@ -248,11 +205,9 @@
     const m = calcItemMetrics(item);
     const yr = m.latestYear || item.year || "";
     const yearBadgeHtml = yr ? `<span class="card-year-3d" aria-hidden="true">${yr}</span>` : "";
-
     const countLabel = m.totalMovies > 0 && m.totalEpisodes === 0
       ? window.formatMoviesCount(m.totalMovies)
       : `${window.formatEpisodesCount(m.totalEpisodes)}${m.totalMovies ? ` + ${window.formatMoviesCount(m.totalMovies)}` : ""}`;
-
     const displayPosterSrc = item.posterInline || item.poster || "https://placehold.co/400x600/16122b/ffd76a?text=myTierAnime";
 
     return `
@@ -278,9 +233,7 @@
             <span class="cum-kind">${esc(m.kind)}</span>
             <span class="cum-seasons-badge">Частей: <b>${m.seasons.length}</b></span>
           </div>
-          <div class="cum-episodes-line" title="${esc(countLabel)}">
-            🎞 ${countLabel}
-          </div>
+          <div class="cum-episodes-line" title="${esc(countLabel)}">🎞 ${countLabel}</div>
           <div class="cum-hours-bar">
             <span>⏱ Время:</span>
             <b>${formatHours(m.totalHours)} ч.</b>
@@ -302,6 +255,13 @@
     }
   }
 
+  function updateFilterClearButtons() {
+    const gClear = document.getElementById("btnClearGenreFilter");
+    const stClear = document.getElementById("btnClearStudioFilter");
+    if (gClear) gClear.style.display = selectedGenre === "ALL" ? "none" : "inline-flex";
+    if (stClear) stClear.style.display = selectedStudio === "ALL" ? "none" : "inline-flex";
+  }
+
   function render() {
     const host = document.getElementById("tiersRoot");
     if (!host || !appData || !Array.isArray(appData.tiers)) return;
@@ -310,9 +270,10 @@
       FXController.applyGlobalBackground(appData.meta || {});
     }
 
+    updateFilterClearButtons();
+
     let grandTotal = 0;
     appData.tiers.forEach(t => grandTotal += (t.items || []).length);
-
     const q = searchQuery.trim().toLowerCase();
 
     host.innerHTML = appData.tiers.map((tier, tierIdx) => {
@@ -469,4 +430,540 @@
           Modals.openModal("authModal");
           return;
         }
-        Modals.openEditor
+        Modals.openEditorModal(btn.dataset.addToTier, null);
+      };
+    });
+
+    document.querySelectorAll(".card-unit").forEach(unit => {
+      unit.onclick = () => {
+        const uid = unit.dataset.uid;
+        const tierId = unit.dataset.tierId;
+        const tier = appData.tiers.find(t => t.id === tierId);
+        const item = tier?.items.find(i => i.uid === uid);
+        if (item && tier && typeof Modals !== "undefined") Modals.showAnimeDetails(item, tier);
+      };
+    });
+
+    if (typeof DragDropEngine !== "undefined" && typeof DragDropEngine.bindCardsAndGrids === "function") {
+      DragDropEngine.bindCardsAndGrids((uid, fromTierId, toTierId, targetUid) => {
+        if (!GitHubSync.isOwner()) return;
+        const fromTier = appData.tiers.find(t => t.id === fromTierId);
+        const toTier = appData.tiers.find(t => t.id === toTierId);
+        if (!fromTier || !toTier) return;
+        const idx = fromTier.items.findIndex(i => i.uid === uid);
+        if (idx === -1) return;
+        const [moved] = fromTier.items.splice(idx, 1);
+
+        if (targetUid) {
+          const destIdx = toTier.items.findIndex(i => i.uid === targetUid);
+          if (destIdx !== -1) toTier.items.splice(destIdx, 0, moved);
+          else toTier.items.push(moved);
+        } else {
+          toTier.items.push(moved);
+        }
+        render();
+        saveAndAutoSync(`Move ${moved.title} to ${toTierId}`, false);
+        showToast(`«${moved.title}» перемещён в тир ${toTierId}`, "#00f5ff");
+      });
+    }
+  }
+
+  function toggleCalendarView(forceMode) {
+    activeView = forceMode || (activeView === "tiers" ? "calendar" : "tiers");
+    const tiersEl = document.getElementById("tiersRoot");
+    const calEl = document.getElementById("calendarRoot");
+    const calBtn = document.getElementById("btnToggleCalendar");
+
+    if (activeView === "calendar") {
+      tiersEl.style.display = "none";
+      calEl.style.display = "block";
+      if (calBtn) {
+        calBtn.classList.add("active");
+        calBtn.innerHTML = "🏛 Вернуться к тирам";
+      }
+      if (typeof CalendarView !== "undefined") {
+        CalendarView.renderCalendar(appData.tiers, (uid, tierId) => {
+          const tier = appData.tiers.find(t => t.id === tierId);
+          const item = tier?.items.find(i => i.uid === uid);
+          if (item && tier) Modals.showAnimeDetails(item, tier);
+        });
+      }
+    } else {
+      calEl.style.display = "none";
+      tiersEl.style.display = "flex";
+      if (calBtn) {
+        calBtn.classList.remove("active");
+        calBtn.innerHTML = "📅 Календарь";
+      }
+    }
+  }
+
+  function bindGlobalUI() {
+    if (typeof Modals !== "undefined" && typeof Modals.setDeleteHandler === "function") {
+      Modals.setDeleteHandler((uid, tierId) => {
+        if (!GitHubSync.isOwner()) return;
+        const tier = appData.tiers.find(t => t.id === tierId);
+        if (!tier) return;
+        const item = tier.items.find(i => i.uid === uid);
+        tier.items = tier.items.filter(i => i.uid !== uid);
+        render();
+        saveAndAutoSync(`Delete ${item?.title || uid}`, true);
+      });
+    }
+
+    document.getElementById("btnCloseFxPanel")?.addEventListener("click", () => {
+      document.getElementById("fxPanel")?.classList.remove("show");
+    });
+
+    document.getElementById("btnToggleCalendar")?.addEventListener("click", () => toggleCalendarView());
+    document.getElementById("brandHomeBtn")?.addEventListener("click", () => toggleCalendarView("tiers"));
+    document.getElementById("btnAddTitleTop")?.addEventListener("click", () => {
+      if (!GitHubSync.isOwner()) {
+        showToast("Для добавления войдите как владелец", "#ff3c8c");
+        Modals.openModal("authModal");
+        return;
+      }
+      Modals.openEditorModal("S", null);
+    });
+
+    document.getElementById("btnSyncNowOwner")?.addEventListener("click", async () => {
+      if (!GitHubSync.isOwner()) return;
+      await saveAndAutoSync("Manual owner full sync", true);
+    });
+
+    document.addEventListener("click", e => {
+      const gMenu = document.getElementById("genreDropdownMenu");
+      const stMenu = document.getElementById("studioDropdownMenu");
+
+      if (e.target.closest("#genreDropdownBtn")) {
+        e.preventDefault();
+        stMenu?.classList.remove("open");
+        gMenu?.classList.toggle("open");
+        if (gMenu?.classList.contains("open")) {
+          setTimeout(() => document.getElementById("genreSearchInput")?.focus(), 20);
+        }
+        return;
+      }
+
+      const gOpt = e.target.closest("[data-g-val]");
+      if (gOpt) {
+        selectedGenre = gOpt.dataset.gVal;
+        const lbl = document.getElementById("genreDropdownLabel");
+        if (lbl) lbl.textContent = selectedGenre === "ALL" ? "Все жанры" : selectedGenre;
+        gMenu?.classList.remove("open");
+        render();
+        return;
+      }
+
+      if (e.target.closest("#studioDropdownBtn")) {
+        e.preventDefault();
+        gMenu?.classList.remove("open");
+        stMenu?.classList.toggle("open");
+        if (stMenu?.classList.contains("open")) {
+          setTimeout(() => document.getElementById("studioSearchInput")?.focus(), 20);
+        }
+        return;
+      }
+
+      const stOpt = e.target.closest("[data-st-val]");
+      if (stOpt) {
+        selectedStudio = stOpt.dataset.stVal;
+        const lbl = document.getElementById("studioDropdownLabel");
+        if (lbl) lbl.textContent = selectedStudio === "ALL" ? "Все студии" : selectedStudio;
+        stMenu?.classList.remove("open");
+        render();
+        return;
+      }
+
+      if (!e.target.closest("#genreDropdown")) gMenu?.classList.remove("open");
+      if (!e.target.closest("#studioDropdown")) stMenu?.classList.remove("open");
+    });
+
+    document.getElementById("genreSearchInput")?.addEventListener("input", e => {
+      genreFilterSearch = e.target.value;
+      populateGenreDropdowns();
+    });
+
+    document.getElementById("studioSearchInput")?.addEventListener("input", e => {
+      studioFilterSearch = e.target.value;
+      populateStudioDropdown();
+    });
+
+    document.getElementById("btnClearGenreFilter")?.addEventListener("click", e => {
+      e.stopPropagation();
+      selectedGenre = "ALL";
+      const lbl = document.getElementById("genreDropdownLabel");
+      if (lbl) lbl.textContent = "Все жанры";
+      render();
+    });
+
+    document.getElementById("btnClearStudioFilter")?.addEventListener("click", e => {
+      e.stopPropagation();
+      selectedStudio = "ALL";
+      const lbl = document.getElementById("studioDropdownLabel");
+      if (lbl) lbl.textContent = "Все студии";
+      render();
+    });
+
+    document.getElementById("btnClearEditorStudio")?.addEventListener("click", () => {
+      const stInp = document.getElementById("fStudio");
+      if (stInp) { stInp.value = ""; stInp.focus(); }
+    });
+
+    document.getElementById("btnClearEditorPoster")?.addEventListener("click", () => {
+      const pInp = document.getElementById("fPoster");
+      if (pInp) { pInp.value = ""; pInp.dataset.existingBlobSha = ""; }
+    });
+
+    document.getElementById("btnClearAllEditorGenres")?.addEventListener("click", () => {
+      const gInp = document.getElementById("fGenres");
+      if (gInp) gInp.value = "";
+      if (typeof Modals.syncEditorGenreChips === "function") Modals.syncEditorGenreChips();
+    });
+
+    document.getElementById("fGenres")?.addEventListener("input", () => {
+      if (typeof Modals.syncEditorGenreChips === "function") Modals.syncEditorGenreChips();
+    });
+
+    const editorGSearch = document.getElementById("editorGenreSearch");
+    editorGSearch?.addEventListener("input", () => {
+      populateGenreDropdowns(editorGSearch.value);
+    });
+
+    const picker = document.getElementById("genreQuickPicker");
+    picker?.addEventListener("change", () => {
+      const val = picker.value;
+      if (!val) return;
+      const inp = document.getElementById("fGenres");
+      const currentList = inp.value.split(",").map(s => s.trim()).filter(Boolean);
+      if (!currentList.includes(val)) {
+        currentList.push(val);
+        inp.value = currentList.join(", ");
+      }
+      picker.value = "";
+      if (typeof Modals.syncEditorGenreChips === "function") Modals.syncEditorGenreChips();
+    });
+
+    const posterFileInp = document.getElementById("fPosterFile");
+    let pendingPosterBlobSha = "";
+    let pendingPosterInline = "";
+    posterFileInp?.addEventListener("change", async () => {
+      const file = posterFileInp.files?.[0];
+      if (!file) return;
+      try {
+        showToast("Загрузка обложки в GitHub...", "#00f5ff");
+        const uploaded = await GitHubSync.uploadAssetFile(file, "posters");
+        const posterInputEl = document.getElementById("fPoster");
+        posterInputEl.value = uploaded.path;
+        posterInputEl.dataset.existingBlobSha = uploaded.blobSha;
+        pendingPosterBlobSha = uploaded.blobSha;
+        pendingPosterInline = uploaded.inlineDataUrl || "";
+        showToast("✔ Обложка загружена!", "#38ef7d");
+      } catch (err) {
+        showToast("Ошибка загрузки обложки: " + err.message, "#ff3c8c");
+      }
+    });
+
+    const ownerBgFile = document.getElementById("ownerBgFileInput");
+    ownerBgFile?.addEventListener("change", async () => {
+      const file = ownerBgFile.files?.[0];
+      if (!file) return;
+      try {
+        const localBlobUrl = URL.createObjectURL(file);
+        appData.meta = appData.meta || {};
+        if (typeof FXController !== "undefined") {
+          await FXController.applyGlobalBackground(appData.meta, localBlobUrl);
+        }
+        showToast("⚡ Отправка фона в GitHub...", "#00f5ff");
+
+        const uploaded = await GitHubSync.uploadAssetFile(file, "backgrounds");
+        appData.meta.bgImage = uploaded.path;
+        appData.meta.bgBlobSha = uploaded.blobSha;
+        appData.meta.bgMime = uploaded.mime;
+        appData.meta.bgInline = uploaded.inlineDataUrl || "";
+
+        await saveAndAutoSync("Update global background image", true);
+      } catch (err) {
+        showToast("Ошибка публикации фона: " + err.message, "#ff3c8c");
+      }
+    });
+
+    document.getElementById("rngOwnerBgDim")?.addEventListener("input", e => {
+      const v = parseInt(e.target.value, 10);
+      document.getElementById("lblOwnerBgDim").textContent = v + "%";
+      if (appData?.meta) {
+        appData.meta.bgDim = v;
+        FXController.applyGlobalBackground(appData.meta);
+      }
+    });
+
+    document.getElementById("rngOwnerBgBlur")?.addEventListener("input", e => {
+      const v = parseInt(e.target.value, 10);
+      document.getElementById("lblOwnerBgBlur").textContent = v + "px";
+      if (appData?.meta) {
+        appData.meta.bgBlur = v;
+        FXController.applyGlobalBackground(appData.meta);
+      }
+    });
+
+    document.getElementById("btnClearOwnerBg")?.addEventListener("click", () => {
+      if (!GitHubSync.isOwner()) return;
+      appData.meta = appData.meta || {};
+      appData.meta.bgImage = "";
+      appData.meta.bgBlobSha = "";
+      appData.meta.bgInline = "";
+      FXController.applyGlobalBackground(appData.meta);
+      saveAndAutoSync("Clear global background", true);
+    });
+
+    document.getElementById("searchInput")?.addEventListener("input", e => {
+      searchQuery = e.target.value;
+      render();
+    });
+
+    document.querySelectorAll("[data-close-modal]").forEach(btn => {
+      btn.addEventListener("click", () => Modals.closeModal(btn.dataset.closeModal));
+    });
+
+    document.querySelectorAll("[data-add-part]").forEach(btn => {
+      btn.addEventListener("click", () => Modals.addSeasonRow(btn.dataset.addPart));
+    });
+
+    const shikiInput = document.getElementById("shikiSearchInput");
+    const shikiBox = document.getElementById("shikiResults");
+    let debounceTimer = 0;
+    shikiInput?.addEventListener("input", () => {
+      clearTimeout(debounceTimer);
+      const q = shikiInput.value.trim();
+      if (q.length < 2) {
+        shikiBox.classList.remove("show");
+        return;
+      }
+      debounceTimer = setTimeout(async () => {
+        const results = await AnimeSearchAPI.searchAnime(q);
+        if (!results.length) {
+          shikiBox.classList.remove("show");
+          return;
+        }
+        shikiBox.innerHTML = results.map((r, i) => `
+          <div class="shiki-item" data-idx="${i}">
+            <img src="${esc(r.poster)}" alt="">
+            <div>
+              <div style="font-size:12.5px;font-weight:700;color:#fff;">${esc(r.title)}</div>
+              <div style="font-size:11px;color:var(--ink-soft);">${esc(r.kind)} · ${esc(r.year)} · ${r.episodes} эп. · ★ ${esc(r.score)}</div>
+            </div>
+          </div>
+        `).join("");
+        shikiBox.classList.add("show");
+
+        shikiBox.querySelectorAll(".shiki-item").forEach(el => {
+          el.addEventListener("click", () => {
+            const picked = results[+el.dataset.idx];
+            document.getElementById("fTitle").value = picked.title;
+            document.getElementById("fOrigTitle").value = picked.origTitle;
+            document.getElementById("fKind").value = picked.kind;
+            document.getElementById("fYear").value = picked.year;
+            document.getElementById("fScore").value = picked.score;
+            const posterInp = document.getElementById("fPoster");
+            posterInp.value = picked.poster;
+            posterInp.dataset.existingBlobSha = "";
+            pendingPosterBlobSha = "";
+            pendingPosterInline = "";
+            document.getElementById("fStudio").value = picked.studio;
+            document.getElementById("fGenres").value = (picked.genres || []).join(", ");
+            if (typeof Modals.syncEditorGenreChips === "function") Modals.syncEditorGenreChips();
+
+            const firstRow = document.querySelector("#seasonsEditorList .season-row");
+            if (firstRow) {
+              firstRow.querySelector(".s-type").value = picked.kind;
+              firstRow.querySelector(".s-eps").value = picked.episodes;
+              firstRow.querySelector(".s-mins").value = picked.epMinutes;
+              Modals.recalculateSeasonsPreview();
+            }
+            shikiBox.classList.remove("show");
+            showToast("Метаданные заполнены!", "#38ef7d");
+          });
+        });
+      }, 320);
+    });
+
+    document.getElementById("animeEditorForm")?.addEventListener("submit", e => {
+      e.preventDefault();
+      if (!GitHubSync.isOwner()) {
+        showToast("Ошибка: сохранять может только владелец!", "#ff3c8c");
+        return;
+      }
+
+      const ruTitle = document.getElementById("fTitle").value.trim();
+      if (!ruTitle) {
+        showToast("Пожалуйста, укажите Название (RU)!", "#ff3c8c");
+        document.getElementById("fTitle")?.focus();
+        return;
+      }
+
+      const uid = document.getElementById("fUid").value || ("anime-" + Date.now());
+      const targetTierId = document.getElementById("fTier").value;
+      const seasons = Modals.readSeasonsFromEditor();
+      const posterInp = document.getElementById("fPoster");
+      const rawPosterVal = posterInp.value.trim() || "https://placehold.co/400x600/16122b/ffd76a?text=myTierAnime";
+      const finalBlobSha = pendingPosterBlobSha || posterInp.dataset.existingBlobSha || undefined;
+
+      let existingInline = "";
+      let existingBgmUrl = "";
+      let existingBgmSha = "";
+      appData.tiers.forEach(t => {
+        const found = (t.items || []).find(i => i.uid === uid);
+        if (found && found.poster === posterInp.value.trim()) {
+          existingInline = found.posterInline || "";
+        }
+        if (found) {
+          existingBgmUrl = found.bgmUrl || "";
+          existingBgmSha = found.bgmBlobSha || "";
+        }
+      });
+
+      const bgmUrlInp = document.getElementById("fBgmUrl");
+      const finalBgmUrl = pendingBgmUrl || bgmUrlInp?.value.trim() || existingBgmUrl || undefined;
+      const finalBgmSha = pendingBgmBlobSha || bgmUrlInp?.dataset.existingBlobSha || existingBgmSha || undefined;
+
+      const parsedScore = parseFloat(document.getElementById("fScore").value);
+      const parsedYear = parseInt(document.getElementById("fYear").value, 10);
+
+      const newItem = {
+        uid,
+        kind: document.getElementById("fKind").value,
+        title: ruTitle,
+        origTitle: document.getElementById("fOrigTitle").value.trim(),
+        year: isNaN(parsedYear) ? "" : parsedYear,
+        studio: document.getElementById("fStudio").value.trim(),
+        score: isNaN(parsedScore) ? 0 : parsedScore,
+        poster: rawPosterVal,
+        posterBlobSha: finalBlobSha,
+        posterInline: pendingPosterInline || existingInline || undefined,
+        bgmUrl: finalBgmUrl,
+        bgmBlobSha: finalBgmSha,
+        genres: document.getElementById("fGenres").value.split(",").map(s => s.trim()).filter(Boolean),
+        comment: document.getElementById("fComment").value.trim(),
+        seasons,
+        watched: seasons.map(s => ({ date: s.date, note: s.title }))
+      };
+      pendingPosterBlobSha = "";
+      pendingPosterInline = "";
+      pendingBgmBlobSha = "";
+      pendingBgmUrl = "";
+
+      let wasExisting = false;
+      appData.tiers.forEach(t => {
+        const idx = (t.items || []).findIndex(i => i.uid === uid);
+        if (idx !== -1 && t.id === targetTierId) {
+          t.items[idx] = newItem;
+          wasExisting = true;
+        } else if (idx !== -1) {
+          t.items.splice(idx, 1);
+        }
+      });
+
+      if (!wasExisting) {
+        const destTier = appData.tiers.find(t => t.id === targetTierId) || appData.tiers[0];
+        destTier.items.unshift(newItem);
+      }
+
+      render();
+      saveAndAutoSync(`Save ${newItem.title} in tier ${targetTierId}`, true);
+      Modals.closeModal("editorModal");
+    });
+
+    document.getElementById("btnOwnerAuth")?.addEventListener("click", () => {
+      document.getElementById("ghTokenInput").value = GitHubSync.getToken();
+      document.getElementById("ghRepoInput").value = GitHubSync.getRepo();
+      Modals.openModal("authModal");
+    });
+
+    document.getElementById("btnLogoutOwner")?.addEventListener("click", () => {
+      GitHubSync.logout();
+      updateOwnerBadge(null);
+      Modals.closeModal("authModal");
+      showToast("Вы вышли из режима владельца");
+    });
+
+    document.getElementById("authForm")?.addEventListener("submit", async e => {
+      e.preventDefault();
+      const tk = document.getElementById("ghTokenInput").value.trim();
+      const dep = typeof GitHubSync.detectRepoFromLocation === "function"
+        ? GitHubSync.detectRepoFromLocation()
+        : "noxyholmes/myTierAnime";
+      const rp = document.getElementById("ghRepoInput").value.trim() || dep;
+
+      if (!tk) {
+        GitHubSync.logout();
+        updateOwnerBadge(null);
+        Modals.closeModal("authModal");
+        showToast("Вы вышли из режима владельца");
+        return;
+      }
+
+      const user = await GitHubSync.verifyToken(tk);
+      if (user) {
+        GitHubSync.saveCredentials(tk, rp);
+        document.body.classList.add("is-owner");
+        updateOwnerBadge(user);
+        Modals.closeModal("authModal");
+        await saveAndAutoSync("Owner login initial sync", true);
+      } else {
+        GitHubSync.logout();
+        updateOwnerBadge(null);
+        showToast("Неверный токен GitHub!", "#ff3c8c");
+      }
+    });
+
+    document.getElementById("btnExportJson")?.addEventListener("click", () => {
+      const blob = new Blob([JSON.stringify(appData, null, 2)], { type: "application/json" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = `myTierAnime-backup.json`;
+      a.click();
+      showToast("JSON-база экспортирована");
+    });
+  }
+
+  function updateOwnerBadge(user) {
+    const btn = document.getElementById("btnOwnerAuth");
+    if (!btn) return;
+    if (user) {
+      btn.classList.add("btn-owner-active");
+      btn.innerHTML = `🔓 ${esc(user.login)}`;
+    } else {
+      btn.classList.remove("btn-owner-active");
+      btn.innerHTML = `🔑 Вход`;
+    }
+  }
+
+  async function bootstrapApp() {
+    try {
+      if (typeof FXController !== "undefined" && typeof FXController.init === "function") {
+        FXController.init(rebuildAll3DLetters);
+      }
+    } catch {}
+
+    try {
+      bindGlobalUI();
+    } catch {}
+
+    if (typeof GitHubSync !== "undefined" && GitHubSync.getToken()) {
+      document.body.classList.add("is-owner");
+      GitHubSync.verifyToken().then(u => {
+        if (u) updateOwnerBadge(u);
+        else GitHubSync.logout();
+      });
+    }
+
+    await loadInitialState();
+    startLiveViewerPolling();
+  }
+
+  if (document.readyState === "loading") {
+    window.addEventListener("DOMContentLoaded", bootstrapApp);
+  } else {
+    bootstrapApp();
+  }
+})();
