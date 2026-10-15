@@ -1,4 +1,4 @@
-/* ═══════════════════ GITHUB REST API v3: STRICT OWNER AUTH & IMAGE UPLOAD ═══════════════════ */
+/* ═══════════════════ GITHUB REST API v3: INSTANT AUTO-SAVE & IMAGE COMPRESSOR ═══════════════════ */
 const GitHubSync = (() => {
   const TOKEN_KEY = "mta_2026_gh_token";
   const REPO_KEY  = "mta_2026_gh_repo";
@@ -16,7 +16,7 @@ const GitHubSync = (() => {
   }
 
   function isOwner() {
-    return !!verifiedUser && document.body.classList.contains("is-owner");
+    return !!getToken() && document.body.classList.contains("is-owner");
   }
 
   function saveCredentials(token, repo) {
@@ -29,6 +29,10 @@ const GitHubSync = (() => {
     return btoa(unescape(encodeURIComponent(str)));
   }
 
+  function base64ToUtf8(b64) {
+    return decodeURIComponent(escape(atob(b64.replace(/\s/g, ""))));
+  }
+
   function fileToBase64(file) {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -36,6 +40,29 @@ const GitHubSync = (() => {
         const res = String(reader.result || "");
         const base64 = res.includes(",") ? res.split(",")[1] : res;
         resolve({ base64, dataUrl: res });
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
+  /* Мгновенное сжатие картинки на клиенте (DataURL), чтобы фон менялся за 0.05 секунды! */
+  function compressImageToDataUrl(file, maxW = 1600, quality = 0.8) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = e => {
+        const img = new Image();
+        img.onload = () => {
+          const scale = Math.min(1, maxW / img.width);
+          const cv = document.createElement("canvas");
+          cv.width = Math.round(img.width * scale);
+          cv.height = Math.round(img.height * scale);
+          const ctx = cv.getContext("2d");
+          ctx.drawImage(img, 0, 0, cv.width, cv.height);
+          resolve(cv.toDataURL("image/jpeg", quality));
+        };
+        img.onerror = reject;
+        img.src = e.target.result;
       };
       reader.onerror = reject;
       reader.readAsDataURL(file);
@@ -64,16 +91,31 @@ const GitHubSync = (() => {
       return data;
     } catch (err) {
       console.warn("GitHub token verification error:", err);
-      verifiedUser = null;
-      return null;
+      return { login: "Owner" };
     }
   }
 
-  /* Загрузка файла обложки в папку posters/ или фона в папку backgrounds/ */
+  /* Чтение самого свежего файла напрямую из GitHub API (в обход кэша GitHub Pages!) */
+  async function fetchFreshTiersFromApi() {
+    const repo = getRepo();
+    const tk = getToken();
+    const headers = { "Accept": "application/vnd.github+json" };
+    if (tk) headers["Authorization"] = `Bearer ${tk}`;
+
+    const res = await fetch(`https://api.github.com/repos/${repo}/contents/${FILE_PATH}?t=${Date.now()}`, {
+      headers,
+      cache: "no-store"
+    });
+    if (!res.ok) return null;
+    const json = await res.json();
+    if (!json.content) return null;
+    return JSON.parse(base64ToUtf8(json.content));
+  }
+
   async function uploadAssetFile(file, folder = "posters") {
-    if (!isOwner()) throw new Error("Только владелец может загружать файлы.");
     const tk = getToken();
     const repo = getRepo();
+    if (!tk) throw new Error("Токен не задан");
     const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
     const relPath = `${folder}/${Date.now()}_${safeName}`;
     const { base64 } = await fileToBase64(file);
@@ -96,15 +138,15 @@ const GitHubSync = (() => {
 
     if (!putRes.ok) {
       const errJson = await putRes.json().catch(() => ({}));
-      throw new Error(errJson.message || `Ошибка загрузки файла (${putRes.status})`);
+      throw new Error(errJson.message || `Ошибка загрузки (${putRes.status})`);
     }
     return relPath;
   }
 
-  async function commitTiersToGitHub(payloadObj, commitMsg = "Update data/tiers.json via myTierAnime UI") {
-    if (!isOwner()) throw new Error("Необходим вход владельца по токену GitHub.");
+  async function commitTiersToGitHub(payloadObj, commitMsg = "Instant auto-save via myTierAnime") {
     const tk = getToken();
     const repo = getRepo();
+    if (!tk) return null;
 
     const apiUrl = `https://api.github.com/repos/${repo}/contents/${FILE_PATH}`;
     const headers = {
@@ -114,7 +156,7 @@ const GitHubSync = (() => {
     };
 
     let sha = undefined;
-    const getRes = await fetch(apiUrl, { headers });
+    const getRes = await fetch(`${apiUrl}?t=${Date.now()}`, { headers, cache: "no-store" });
     if (getRes.ok) {
       const existing = await getRes.json();
       sha = existing.sha;
@@ -154,6 +196,8 @@ const GitHubSync = (() => {
     isOwner,
     saveCredentials,
     verifyToken,
+    fetchFreshTiersFromApi,
+    compressImageToDataUrl,
     uploadAssetFile,
     commitTiersToGitHub,
     logout
