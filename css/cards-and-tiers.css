@@ -1,4 +1,4 @@
-/* ═══════════════════ CROSS-BROWSER TIERS & NON-OVERLAPPING UNDER-CARD META ═══════════════════ */
+/* ═══════════════════ STABLE CARDS AND TIERS LAYOUT ═══════════════════ */
 .tiers-container {
   max-width: var(--container-width, 1780px);
   margin: 0 auto;
@@ -14,7 +14,6 @@
   grid-template-columns: var(--badge-col-width, 185px) 1fr;
   background: rgba(16, 13, 30, 0.9);
   border: 1px solid rgba(255, 255, 255, 0.14);
-  border-color: color-mix(in srgb, var(--t) 28%, rgba(255,255,255,0.08));
   border-radius: var(--tier-radius, 22px);
   box-shadow: 0 20px 50px -12px rgba(0, 0, 0, 0.85), 0 0 40px -18px var(--tg);
   overflow: hidden;
@@ -151,10 +150,7 @@
 
 .card .scrim {
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  top: 0; left: 0; right: 0; bottom: 0;
   background: linear-gradient(
     to top,
     rgba(6, 5, 14, 0.95) 0%,
@@ -167,11 +163,9 @@
 
 .card .rank {
   position: absolute;
-  top: 6px;
-  left: 6px;
+  top: 6px; left: 6px;
   z-index: 4;
-  width: 19px;
-  height: 19px;
+  width: 19px; height: 19px;
   border-radius: 5px;
   display: flex;
   align-items: center;
@@ -185,8 +179,7 @@
 
 .card-score-badge {
   position: absolute;
-  top: 6px;
-  right: 6px;
+  top: 6px; right: 6px;
   z-index: 4;
   padding: 1.5px 5px;
   border-radius: 5px;
@@ -197,37 +190,16 @@
   border: 1px solid rgba(255, 215, 106, 0.45);
 }
 
-.card-reaction {
-  position: absolute;
-  bottom: 48px;
-  left: 6px;
-  z-index: 4;
-  padding: 1.5px 6px;
-  border-radius: 999px;
-  font-size: 8.5px;
-  font-weight: 700;
-  color: #fff;
-  background: rgba(14, 11, 28, 0.88);
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  max-width: calc(100% - 12px);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
 body.hide-card-rank .card .rank { display: none !important; }
 body.hide-card-score .card-score-badge { display: none !important; }
 body.hide-card-year .card-year-3d { display: none !important; }
-body.hide-card-reaction .card-reaction { display: none !important; }
 body.hide-card-crown .card-coronet,
 body.hide-card-crown .floral-frame { display: none !important; }
 body.hide-under-meta .card-under-meta { display: none !important; }
 
 .card-info {
   position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
+  bottom: 0; left: 0; right: 0;
   padding: 7px 7px 6px;
   z-index: 4;
   transform: translateZ(16px);
@@ -255,29 +227,23 @@ body.hide-under-meta .card-under-meta { display: none !important; }
 
 .card-coronet {
   position: absolute;
-  top: -2px;
-  left: 50%;
+  top: -2px; left: 50%;
   transform: translateX(-50%);
   z-index: 5;
-  width: 24px;
-  height: 14px;
+  width: 24px; height: 14px;
   pointer-events: none;
   filter: drop-shadow(0 0 6px rgba(255, 215, 106, 0.85));
 }
 
 .floral-frame {
   position: absolute;
-  top: 2px;
-  left: 2px;
-  right: 2px;
-  bottom: 2px;
+  top: 2px; left: 2px; right: 2px; bottom: 2px;
   border: 1px solid rgba(255, 215, 106, 0.38);
   border-radius: 8px;
   z-index: 3;
   pointer-events: none;
 }
 
-/* ──────── ИСПРАВЛЕННАЯ 3-СТРОЧНАЯ НИЖНЯЯ ПЛАШКА ПОД КАРТОЧКОЙ (БЕЗ НАЛОЖЕНИЯ ЧАСОВ!) ──────── */
 .card-under-meta {
   background: rgba(14, 12, 28, 0.92);
   border: 1px solid rgba(255, 255, 255, 0.11);
@@ -317,7 +283,6 @@ body.hide-under-meta .card-under-meta { display: none !important; }
   white-space: nowrap;
 }
 
-/* Вторая строка: Серии и Фильмы (на всю ширину) */
 .cum-episodes-line {
   font-size: 10px;
   font-weight: 700;
@@ -329,7 +294,6 @@ body.hide-under-meta .card-under-meta { display: none !important; }
   text-overflow: ellipsis;
 }
 
-/* Третья строка: Отдельная неоновая капсула для часов */
 .cum-hours-bar {
   display: flex;
   align-items: center;
