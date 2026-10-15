@@ -37,13 +37,11 @@
         </div>
 
         <div class="toolbar-controls">
-          <!-- Поиск по названию -->
           <div class="search-input-wrap">
             <span class="search-icon">🔍</span>
             <input type="search" id="searchInput" class="search-input" placeholder="Поиск тайтла...">
           </div>
 
-          <!-- Выпадающий фильтр по ЖАНРАМ с поиском -->
           <div class="genre-dropdown" id="genreDropdown">
             <button type="button" class="genre-dropdown-btn" id="genreDropdownBtn">
               <span>🎭</span>
@@ -58,7 +56,6 @@
             </div>
           </div>
 
-          <!-- НОВОЕ: Выпадающий фильтр и поиск по КОНКРЕТНОЙ СТУДИИ -->
           <div class="genre-dropdown" id="studioDropdown">
             <button type="button" class="genre-dropdown-btn" id="studioDropdownBtn" style="border-color:rgba(0,245,255,0.5);box-shadow:0 0 16px -4px rgba(0,245,255,0.35);">
               <span>🎬</span>
@@ -81,7 +78,6 @@
             ➕ Добавить тайтл
           </button>
 
-          <!-- ВЫДЕЛЕННАЯ КНОПКА СИНХРОНИЗАЦИИ ДЛЯ ВЛАДЕЛЬЦА -->
           <button type="button" id="btnSyncNowOwner" class="btn btn-primary owner-only" title="Принудительно опубликовать все изменения и фон для всех пользователей по ссылке">
             🔄 Синхронизировать со всеми
           </button>
@@ -324,7 +320,11 @@
       </p>
       <div class="form-group">
         <label>Загрузить картинку фона с компьютера:</label>
-        <input type="file" id="ownerBgFileInput" accept="image/*" class="form-control">
+        <label class="neon-file-upload" for="ownerBgFileInput">
+          <input type="file" id="ownerBgFileInput" accept="image/*">
+          <span class="nfu-btn">📁 Выбрать файл</span>
+          <span class="nfu-name" id="ownerBgFileName">Файл не выбран</span>
+        </label>
       </div>
       <div class="fx-sliders">
         <label class="fx-slider-row">
@@ -357,7 +357,7 @@
     </div>
   </div>
 
-  <!-- Модальное окно 2: Добавление / Редактирование тайтла -->
+  <!-- Модальное окно 2: Добавление / Редактирование тайтла (БЕЗ Shikimori, обязательным является ТОЛЬКО Название!) -->
   <div id="editorModal" class="modal-backdrop">
     <div class="modal-box modal-box-wide">
       <div class="modal-header">
@@ -365,13 +365,7 @@
         <button type="button" class="btn" data-close-modal="editorModal">✕</button>
       </div>
 
-      <div class="form-group full" style="position:relative;">
-        <label>⚡ Автозаполнение из базы Shikimori / MyAnimeList:</label>
-        <input type="search" id="shikiSearchInput" class="form-control" placeholder="Например: Песнь ночных сов, Фрирен, Oshi no Ko...">
-        <div id="shikiResults" class="shiki-results"></div>
-      </div>
-
-      <form id="animeEditorForm">
+      <form id="animeEditorForm" novalidate>
         <input type="hidden" id="fUid">
         <div class="form-grid">
           <div class="form-group">
@@ -398,51 +392,54 @@
           </div>
 
           <div class="form-group">
-            <label>Название (RU):</label>
-            <input type="text" id="fTitle" class="form-control" required>
+            <label>Название тайтла (единственное обязательное поле) *:</label>
+            <input type="text" id="fTitle" class="form-control" placeholder="Введите название тайтла..." required>
           </div>
           <div class="form-group">
-            <label>Оригинальное название (EN / Romaji):</label>
-            <input type="text" id="fOrigTitle" class="form-control">
+            <label>Оригинальное название (необязательно):</label>
+            <input type="text" id="fOrigTitle" class="form-control" placeholder="Romaji / English...">
           </div>
 
           <div class="form-group">
-            <label>Год релиза:</label>
+            <label>Год релиза (необязательно):</label>
             <input type="number" id="fYear" class="form-control" value="2026">
           </div>
           <div class="form-group">
-            <label>Личная оценка (1–10):</label>
-            <input type="number" step="0.1" min="1" max="10" id="fScore" class="form-control" value="9.0" required>
+            <label>Личная оценка 1–10 (необязательно):</label>
+            <input type="number" step="0.1" min="1" max="10" id="fScore" class="form-control" value="9.0">
           </div>
 
-          <!-- Поле Студии с быстрым выбором известных студий -->
           <div class="form-group">
-            <label>🎬 Студия (введите или выберите из списка):</label>
+            <label>🎬 Студия (необязательно):</label>
             <input type="text" id="fStudio" list="studioPresetList" class="form-control" placeholder="Madhouse, MAPPA, Liden Films...">
             <datalist id="studioPresetList"></datalist>
           </div>
 
           <div class="form-group">
-            <label>Бейдж реакции:</label>
+            <label>Бейдж реакции (необязательно):</label>
             <input type="text" id="fReaction" class="form-control" placeholder="👑 Шедевр">
           </div>
 
           <div class="form-group full poster-upload-box">
-            <label>🖼 Обложка (выберите файл с ПК или укажите путь в папке <code>posters/</code>):</label>
+            <label>🖼 Обложка тайтла (необязательно — выберите файл с ПК или укажите ссылку/путь):</label>
             <div class="poster-upload-grid">
               <div>
-                <div style="font-size:11px;color:var(--ink-soft);margin-bottom:4px;">1. Загрузить файл с ПК:</div>
-                <input type="file" id="fPosterFile" accept="image/*" class="form-control">
+                <div style="font-size:11px;color:var(--ink-soft);margin-bottom:5px;">1. Загрузить картинку с компьютера:</div>
+                <label class="neon-file-upload" for="fPosterFile">
+                  <input type="file" id="fPosterFile" accept="image/*">
+                  <span class="nfu-btn">🖼 Выбрать обложку</span>
+                  <span class="nfu-name" id="fPosterFileName">Файл не выбран</span>
+                </label>
               </div>
               <div>
-                <div style="font-size:11px;color:var(--ink-soft);margin-bottom:4px;">2. Путь в posters/ или ссылка:</div>
-                <input type="text" id="fPoster" class="form-control" placeholder="posters/my-anime.jpg" required>
+                <div style="font-size:11px;color:var(--ink-soft);margin-bottom:5px;">2. Или путь в <code>posters/</code> / прямая ссылка:</div>
+                <input type="text" id="fPoster" class="form-control" placeholder="Оставьте пустым для авто-обложки или укажите путь...">
               </div>
             </div>
           </div>
 
           <div class="form-group full">
-            <label>🎭 Жанры (поиск и быстрый выбор):</label>
+            <label>🎭 Жанры (необязательно — поиск и быстрый выбор):</label>
             <div class="editor-genre-bar">
               <input type="search" id="editorGenreSearch" class="form-control" placeholder="🔎 Поиск по жанрам...">
               <select id="genreQuickPicker" class="form-control">
@@ -456,7 +453,7 @@
         <div class="seasons-builder-box">
           <div class="seasons-builder-head">
             <div>
-              <strong>🎬 Сезоны, Фильмы, OVA, ONA и Спешлы</strong>
+              <strong>🎬 Сезоны, Фильмы, OVA, ONA и Спешлы (необязательно)</strong>
               <div style="font-size:11px;color:var(--ink-soft);">
                 Укажите кол-во серий и минут на 1 серию — время конвертируется автоматически.
               </div>
@@ -475,8 +472,8 @@
         </div>
 
         <div class="form-group full" style="margin-top:12px;">
-          <label>Личная рецензия / комментарий:</label>
-          <textarea id="fComment" rows="3" class="form-control"></textarea>
+          <label>Личная рецензия / комментарий (необязательно):</label>
+          <textarea id="fComment" rows="3" class="form-control" placeholder="Ваши впечатления от просмотра..."></textarea>
         </div>
 
         <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:14px;">
@@ -520,7 +517,6 @@
   <script src="js/realism-core.js"></script>
   <script src="js/realism-engine.js"></script>
   <script src="js/github-sync.js"></script>
-  <script src="js/shikimori-api.js"></script>
   <script src="js/fx-controller.js"></script>
   <script src="js/stats-engine.js"></script>
   <script src="js/calendar-view.js"></script>
