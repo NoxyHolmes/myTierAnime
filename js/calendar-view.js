@@ -1,4 +1,4 @@
-/* ═══════════════════ CHRONO CALENDAR (SUPPORTS FULL DATE, MONTH+YEAR & YEAR-ONLY) ═══════════════════ */
+/* ═══════════════════ CHRONO CALENDAR (DIRECT MONTH/YEAR SELECTORS & CLEAN LABELS) ═══════════════════ */
 const CalendarView = (() => {
   let subMode = "grid";
   let curYear = 2026;
@@ -23,11 +23,11 @@ const CalendarView = (() => {
           const displayPoster = item.posterInline || item.poster || "https://placehold.co/400x600/16122b/ffd76a?text=myTierAnime";
 
           events.push({
-            precision: parsed.precision, // "day", "month" или "year"
+            precision: parsed.precision,
             ms: parsed.ms,
             year: parsed.year,
-            month: parsed.month, // 0..11 или null (если указан только год)
-            day: parsed.day,     // 1..31 или null (если указан только месяц или только год)
+            month: parsed.month,
+            day: parsed.day,
             dateStr: parsed.raw,
             partTitle: s.title,
             partType: s.type,
@@ -43,6 +43,20 @@ const CalendarView = (() => {
     return events.sort((a, b) => b.ms - a.ms);
   }
 
+  function getAvailableYears(events) {
+    const yearsSet = new Set([2024, 2025, 2026, 2027, curYear]);
+    events.forEach(e => {
+      if (e.year) yearsSet.add(e.year);
+    });
+    const minYr = Math.min(...yearsSet, 2018);
+    const maxYr = Math.max(...yearsSet, 2028);
+    const list = [];
+    for (let y = maxYr; y >= minYr; y--) {
+      list.push(y);
+    }
+    return list;
+  }
+
   function renderCalendar(tiers, onSelectItem) {
     const host = document.getElementById("calendarRoot");
     if (!host) return;
@@ -55,12 +69,14 @@ const CalendarView = (() => {
       host.dataset.initialized = "1";
     }
 
+    const availableYears = getAvailableYears(events);
+
     const toolbarHtml = `
       <div class="cal-toolbar">
         <div>
           <h2 style="margin:0;font-family:var(--serif);font-size:19px;">📅 Календарь просмотров</h2>
           <div style="font-size:11.5px;color:var(--ink-soft);">
-            Всего записей (включая точные даты, месяцы и годы): <b>${events.length}</b>
+            Всего записей в хронологии: <b>${events.length}</b>
           </div>
         </div>
         <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
@@ -83,8 +99,9 @@ const CalendarView = (() => {
         const key = isYearOnly
           ? `${ev.year}-00-YEARONLY`
           : `${ev.year}-${String(ev.month + 1).padStart(2, "0")}`;
+        // Чистая подпись без скобок: просто "2024 год"
         const label = isYearOnly
-          ? `🗓 ${ev.year} год (указан только год без месяца)`
+          ? `🗓 ${ev.year} год`
           : `${MONTH_NAMES[ev.month]} ${ev.year}`;
 
         if (!grouped.has(key)) {
@@ -134,10 +151,7 @@ const CalendarView = (() => {
       const startOffset = (firstDay.getDay() + 6) % 7;
       const daysInMonth = new Date(curYear, curMonth + 1, 0).getDate();
 
-      // 1. События, у которых указан ТОЛЬКО МЕСЯЦ И ГОД (без числа дня)
       const monthOnlyEvents = events.filter(e => e.year === curYear && e.month === curMonth && e.precision === "month");
-
-      // 2. События, у которых указан ТОЛЬКО ГОД (без месяца) за выбранный curYear
       const yearOnlyEvents = events.filter(e => e.year === curYear && e.precision === "year");
 
       const cells = [];
@@ -162,8 +176,8 @@ const CalendarView = (() => {
 
       const monthOnlyBanner = monthOnlyEvents.length ? `
         <div class="month-block" style="margin-bottom:14px;padding:12px 16px;border-color:rgba(0,245,255,0.4);">
-          <div style="font-size:12px;font-weight:800;color:#00f5ff;margin-bottom:8px;">
-            📌 В месяце «${MONTH_NAMES[curMonth]} ${curYear}» (указан месяц и год без точного числа — ${monthOnlyEvents.length}):
+          <div style="font-size:13px;font-weight:800;color:#00f5ff;margin-bottom:8px;">
+            📌 ${MONTH_NAMES[curMonth]} ${curYear}:
           </div>
           <div class="month-entries-grid">
             ${monthOnlyEvents.map(ev => `
@@ -182,15 +196,15 @@ const CalendarView = (() => {
 
       const yearOnlyBanner = yearOnlyEvents.length ? `
         <div class="month-block" style="margin-top:16px;padding:14px 18px;border-color:rgba(255,215,106,0.45);">
-          <div style="font-size:12.5px;font-weight:800;color:#ffd76a;margin-bottom:10px;">
-            🗓 В ${curYear} году (указан только год без месяца — ${yearOnlyEvents.length}):
+          <div style="font-size:14px;font-weight:800;color:#ffd76a;margin-bottom:10px;font-family:var(--serif);">
+            🗓 ${curYear} год
           </div>
           <div class="month-entries-grid">
             ${yearOnlyEvents.map(ev => `
               <div class="month-entry-card" data-ev-uid="${esc(ev.item.uid)}" data-ev-tier="${esc(ev.tier.id)}">
                 <img src="${esc(ev.poster)}" alt="">
                 <div style="flex:1;min-width:0;">
-                  <div style="font-size:10px;color:#ffd76a;font-weight:700;">Год: ${esc(ev.dateStr)} · Тир ${esc(ev.tier.id)} · ${esc(ev.partType)}</div>
+                  <div style="font-size:10px;color:#ffd76a;font-weight:700;">${esc(ev.dateStr)} год · Тир ${esc(ev.tier.id)} · ${esc(ev.partType)}</div>
                   <div style="font-size:13px;font-weight:700;color:#fff;">${esc(ev.item.title)}</div>
                   <div style="font-size:11px;color:var(--ink-soft);">${esc(ev.partTitle)} (${ev.episodes === 0 ? "⏳ Анонс" : `${ev.episodes} эп. · ${formatHours(ev.hours)} ч.`})</div>
                 </div>
@@ -200,17 +214,22 @@ const CalendarView = (() => {
         </div>
       ` : "";
 
+      /* Прямой выбор конкретного месяца и года из раскрывающихся списков + быстрые стрелки */
       bodyHtml = `
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;gap:8px;flex-wrap:wrap;">
-          <div style="display:flex;gap:6px;">
-            <button type="button" class="btn btn-sm" id="calPrevYearBtn">« ${curYear - 1}</button>
-            <button type="button" class="btn btn-sm" id="calPrevBtn">◀ Пред. месяц</button>
+        <div class="cal-nav-bar">
+          <button type="button" class="btn btn-sm" id="calPrevBtn">◀ Пред. месяц</button>
+
+          <div class="cal-direct-selectors">
+            <select id="calMonthSelect" class="form-control cal-select-pill" title="Выберите месяц">
+              ${MONTH_NAMES.map((mName, mIdx) => `<option value="${mIdx}" ${mIdx === curMonth ? "selected" : ""}>${mName}</option>`).join("")}
+            </select>
+
+            <select id="calYearSelect" class="form-control cal-select-pill" title="Выберите год">
+              ${availableYears.map(y => `<option value="${y}" ${y === curYear ? "selected" : ""}>${y} год</option>`).join("")}
+            </select>
           </div>
-          <strong style="font-family:var(--serif);font-size:19px;color:#ffd76a;">${MONTH_NAMES[curMonth]} ${curYear}</strong>
-          <div style="display:flex;gap:6px;">
-            <button type="button" class="btn btn-sm" id="calNextBtn">След. месяц ▶</button>
-            <button type="button" class="btn btn-sm" id="calNextYearBtn">${curYear + 1} »</button>
-          </div>
+
+          <button type="button" class="btn btn-sm" id="calNextBtn">След. месяц ▶</button>
         </div>
         ${monthOnlyBanner}
         <div class="cal-grid">
@@ -230,6 +249,17 @@ const CalendarView = (() => {
       });
     });
 
+    // Обработчики прямого выбора месяца и года
+    host.querySelector("#calMonthSelect")?.addEventListener("change", e => {
+      curMonth = parseInt(e.target.value, 10);
+      renderCalendar(tiers, onSelectItem);
+    });
+
+    host.querySelector("#calYearSelect")?.addEventListener("change", e => {
+      curYear = parseInt(e.target.value, 10);
+      renderCalendar(tiers, onSelectItem);
+    });
+
     host.querySelector("#calPrevBtn")?.addEventListener("click", () => {
       curMonth--;
       if (curMonth < 0) { curMonth = 11; curYear--; }
@@ -238,14 +268,6 @@ const CalendarView = (() => {
     host.querySelector("#calNextBtn")?.addEventListener("click", () => {
       curMonth++;
       if (curMonth > 11) { curMonth = 0; curYear++; }
-      renderCalendar(tiers, onSelectItem);
-    });
-    host.querySelector("#calPrevYearBtn")?.addEventListener("click", () => {
-      curYear--;
-      renderCalendar(tiers, onSelectItem);
-    });
-    host.querySelector("#calNextYearBtn")?.addEventListener("click", () => {
-      curYear++;
       renderCalendar(tiers, onSelectItem);
     });
 
