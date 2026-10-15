@@ -1,4 +1,4 @@
-/* ═══════════════════ CORE UTILITIES, SEASON RELEASE YEAR & 0-EPISODE UPCOMING SEASONS ═══════════════════ */
+/* ═══════════════════ CORE UTILITIES & FLEXIBLE DATE PARSER (DAY / MONTH+YEAR / YEAR-ONLY) ═══════════════════ */
 window.reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 window.tiltPower = 14;
 
@@ -52,6 +52,11 @@ window.ALL_ANIME_STUDIOS = [
   "Yostar Pictures", "Zero-G", "Zexcs"
 ];
 
+const RU_MONTH_MAP = {
+  "янв": 0, "фев": 1, "мар": 2, "апр": 3, "май": 4, "мая": 4, "июн": 5,
+  "июл": 6, "авг": 7, "сен": 8, "окт": 9, "ноя": 10, "дек": 11
+};
+
 function pluralRu(number, one, few, many) {
   const n = Math.abs(number) % 100;
   const n1 = n % 10;
@@ -82,16 +87,76 @@ function esc(str) {
     .replace(/"/g, "&quot;");
 }
 
-function parseRuDate(str) {
-  if (!str || typeof str !== "string") return 0;
-  const s = str.trim();
-  const ruMatch = s.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})$/);
-  if (ruMatch) {
-    const [, d, m, y] = ruMatch;
-    return new Date(+y, +m - 1, +d).getTime();
+/* УМНЫЙ ПАРСЕР ГИБКИХ ДАТ:
+   Поддерживает:
+   1) Полную дату: "03.04.2026" или "2026-04-03" -> { precision: "day", year: 2026, month: 3, day: 3, ms }
+   2) Только месяц и год: "04.2026", "4/2026", "Апрель 2026", "2026-04" -> { precision: "month", year: 2026, month: 3, day: null, ms }
+   3) Только год: "2026", "2025 г." -> { precision: "year", year: 2026, month: null, day: null, ms } */
+function parseFlexibleRuDate(str) {
+  if (!str && str !== 0) return null;
+  const s = String(str).trim();
+  if (!s) return null;
+
+  // 1. ДД.ММ.ГГГГ или ДД/ММ/ГГГГ
+  const fullRu = s.match(/^(\d{1,2})[./-](\d{1,2})[./-](\d{4})$/);
+  if (fullRu) {
+    const d = +fullRu[1], m = +fullRu[2] - 1, y = +fullRu[3];
+    if (m >= 0 && m <= 11 && d >= 1 && d <= 31) {
+      return { precision: "day", year: y, month: m, day: d, ms: new Date(y, m, d).getTime(), raw: s };
+    }
   }
-  const iso = Date.parse(s);
-  return isNaN(iso) ? 0 : iso;
+
+  // 2. ГГГГ-ММ-ДД (ISO)
+  const fullIso = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+  if (fullIso) {
+    const y = +fullIso[1], m = +fullIso[2] - 1, d = +fullIso[3];
+    if (m >= 0 && m <= 11 && d >= 1 && d <= 31) {
+      return { precision: "day", year: y, month: m, day: d, ms: new Date(y, m, d).getTime(), raw: s };
+    }
+  }
+
+  // 3. ММ.ГГГГ или ММ/ГГГГ или ММ-ГГГГ (Только месяц и год)
+  const monthYr = s.match(/^(\d{1,2})[./-](\d{4})$/);
+  if (monthYr) {
+    const m = +monthYr[1] - 1, y = +monthYr[2];
+    if (m >= 0 && m <= 11) {
+      return { precision: "month", year: y, month: m, day: null, ms: new Date(y, m, 1).getTime(), raw: s };
+    }
+  }
+
+  // 4. ГГГГ-ММ или ГГГГ.ММ
+  const yrMonth = s.match(/^(\d{4})[./-](\d{1,2})$/);
+  if (yrMonth) {
+    const y = +yrMonth[1], m = +yrMonth[2] - 1;
+    if (m >= 0 && m <= 11) {
+      return { precision: "month", year: y, month: m, day: null, ms: new Date(y, m, 1).getTime(), raw: s };
+    }
+  }
+
+  // 5. Текстовый месяц и год ("Апрель 2026", "май 2025")
+  const textMonthMatch = s.toLowerCase().match(/([а-яё]{3,})\s*(\d{4})/);
+  if (textMonthMatch) {
+    const prefix = textMonthMatch[1].slice(0, 3);
+    const y = +textMonthMatch[2];
+    if (prefix in RU_MONTH_MAP) {
+      const m = RU_MONTH_MAP[prefix];
+      return { precision: "month", year: y, month: m, day: null, ms: new Date(y, m, 1).getTime(), raw: s };
+    }
+  }
+
+  // 6. Только год ("2026", "2025 г.")
+  const yearOnly = s.match(/(?:^|\D)(19\d{2}|20\d{2})(?:\D|$)/);
+  if (yearOnly) {
+    const y = +yearOnly[1];
+    return { precision: "year", year: y, month: null, day: null, ms: new Date(y, 0, 1).getTime(), raw: String(y) };
+  }
+
+  return null;
+}
+
+function parseRuDate(str) {
+  const parsed = parseFlexibleRuDate(str);
+  return parsed ? parsed.ms : 0;
 }
 
 function normWatched(w) {
@@ -101,7 +166,6 @@ function normWatched(w) {
   return [];
 }
 
-/* Нормализация сезонов с поддержкой Года выпуска (releaseYear) и 0 серий для анонсов */
 function normSeasons(item) {
   if (!item) return [];
   const baseYear = item.year || 2026;
@@ -117,7 +181,7 @@ function normSeasons(item) {
         releaseYear: s.releaseYear || baseYear,
         episodes: eps,
         epMinutes: epMin,
-        date: s.date || "2026",
+        date: s.date !== undefined && s.date !== null ? String(s.date).trim() : "",
         note: s.note || ""
       };
     });
@@ -134,8 +198,8 @@ function normSeasons(item) {
       releaseYear: baseYear,
       episodes: kind === "Фильм" ? 1 : parsedEps,
       epMinutes: parseFloat(item.epMinutes) || defaultMin,
-      date: w[0]?.date || "14.10.2026",
-      note: w[0]?.note || "Просмотр"
+      date: w[0]?.date || String(baseYear),
+      note: w[0]?.note || ""
     }
   ];
 }
@@ -146,6 +210,7 @@ function calcItemMetrics(item) {
   let totalMovies = 0;
   let totalMinutes = 0;
   let latestMs = 0;
+  let latestYear = item.year || 2026;
 
   seasons.forEach(s => {
     const rawEp = parseInt(s.episodes, 10);
@@ -164,9 +229,10 @@ function calcItemMetrics(item) {
       }
     }
 
-    const ms = parseRuDate(s.date);
-    if (ms >= latestMs) {
-      latestMs = ms;
+    const parsedDate = parseFlexibleRuDate(s.date);
+    if (parsedDate && parsedDate.ms >= latestMs) {
+      latestMs = parsedDate.ms;
+      latestYear = parsedDate.year;
     }
   });
 
@@ -182,7 +248,7 @@ function calcItemMetrics(item) {
     totalHours,
     totalDays,
     latestMs,
-    latestYear: latestMs ? new Date(latestMs).getFullYear() : (item.year || 2026)
+    latestYear
   };
 }
 
