@@ -4,12 +4,12 @@
     "owner": "geraltschwarzenegger-svg",
     "repo": "noxyholmes/myTierAnime",
     "branch": "main",
-    "updatedAt": "2026-10-15T09:54:01.476Z",
+    "updatedAt": "2026-10-15T09:57:56.904Z",
     "activeMode": "emblems-realism",
     "bgImage": "",
     "bgDim": 65,
     "bgBlur": 4,
-    "revision": 8
+    "revision": 9
   },
   "tiers": [
     {
@@ -64,13 +64,13 @@
           "studio": "Madhouse",
           "score": 9.9,
           "reaction": "💎 Эталон",
+          "poster": "https://shikimori.one/system/animes/original/52991.jpg",
           "genres": [
             "Фэнтези",
             "Приключения",
             "Драма",
             "Философия"
           ],
-          "poster": "https://shikimori.one/system/animes/original/52991.jpg",
           "comment": "Глубокая, меланхоличная и невероятно красивая история о течении времени и памяти о товарищах.",
           "seasons": [
             {
@@ -88,6 +88,28 @@
               "epMinutes": 2,
               "date": "28.04.2026",
               "note": "Короткие спешлы"
+            },
+            {
+              "title": "Фильм 3",
+              "type": "Фильм",
+              "episodes": 1,
+              "epMinutes": 110,
+              "date": "15.10.2026",
+              "note": ""
+            }
+          ],
+          "watched": [
+            {
+              "date": "24.04.2026",
+              "note": "Сезон 1"
+            },
+            {
+              "date": "28.04.2026",
+              "note": "Мини-аниме Магия"
+            },
+            {
+              "date": "15.10.2026",
+              "note": "Фильм 3"
             }
           ]
         }
