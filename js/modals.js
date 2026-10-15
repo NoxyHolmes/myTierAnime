@@ -1,4 +1,4 @@
-/* ═══════════════════ MODALS: SEASON RELEASE YEAR COLUMN AFTER TYPE & POSTER BLOB RESOLVER ═══════════════════ */
+/* ═══════════════════ MODALS: FULL-VIEW SEASONS GRID (NO SCROLLING NEEDED) ═══════════════════ */
 const Modals = (() => {
   let deleteHandler = null;
 
@@ -28,7 +28,7 @@ const Modals = (() => {
       `;
     }
 
-    function renderSeasonsRows(filterType = "ALL") {
+    function renderSeasonsCards(filterType = "ALL") {
       const filtered = m.seasons.filter(s => {
         if (filterType === "ALL") return true;
         if (filterType === "TV") return s.type === "TV Сериал";
@@ -41,23 +41,50 @@ const Modals = (() => {
         const partHours = isUpcoming ? "0" : formatHours((s.episodes * s.epMinutes) / 60);
         const relYr = s.releaseYear || item.year || "2026";
         const volumeText = isUpcoming
-          ? `<span style="color:#ffd76a;font-weight:700;">⏳ Анонс (0 ${s.type === "Фильм" ? "ф." : "эп."})</span>`
-          : (s.type === "Фильм" ? formatMoviesCount(s.episodes) : formatEpisodesCount(s.episodes));
+          ? `<span class="s-chip-upcoming">⏳ Анонс (0 ${s.type === "Фильм" ? "ф." : "эп."})</span>`
+          : `<span class="s-chip-vol">${s.type === "Фильм" ? formatMoviesCount(s.episodes) : formatEpisodesCount(s.episodes)}</span>`;
+
+        const noteText = s.note || (isUpcoming ? "Ожидается" : "");
 
         return `
-          <tr>
-            <td><b>#${idx + 1}</b> ${esc(s.title)}</td>
-            <td><span class="cum-kind">${esc(s.type)}</span></td>
-            <td style="color:#ffd76a;font-weight:700;">${esc(relYr)} г.</td>
-            <td>${volumeText}</td>
-            <td>${isUpcoming ? "—" : `${s.epMinutes} мин.`}</td>
-            <td style="color:#00f5ff;font-weight:700;">${partHours} ч.</td>
-            <td><b>${esc(s.date)}</b></td>
-            <td style="color:var(--ink-soft);">${esc(s.note || (isUpcoming ? "Ожидается" : "—"))}</td>
-          </tr>
+          <div class="dossier-season-card ${isUpcoming ? "is-upcoming" : ""}">
+            <div class="dsc-top">
+              <div class="dsc-title-group">
+                <span class="dsc-num">#${idx + 1}</span>
+                <strong class="dsc-name">${esc(s.title)}</strong>
+              </div>
+              <div class="dsc-badges">
+                <span class="cum-kind">${esc(s.type)}</span>
+                <span class="dsc-year">${esc(relYr)} г.</span>
+              </div>
+            </div>
+
+            <div class="dsc-metrics">
+              <div class="dsc-cell">
+                <span class="dsc-lbl">Объём:</span>
+                ${volumeText}
+              </div>
+              <div class="dsc-cell">
+                <span class="dsc-lbl">1 серия:</span>
+                <b>${isUpcoming ? "—" : `${s.epMinutes} мин.`}</b>
+              </div>
+              <div class="dsc-cell">
+                <span class="dsc-lbl">Время:</span>
+                <b style="color:#00f5ff;">${partHours} ч.</b>
+              </div>
+              <div class="dsc-cell">
+                <span class="dsc-lbl">Просмотр:</span>
+                <b>${esc(s.date)}</b>
+              </div>
+            </div>
+
+            ${noteText ? `<div class="dsc-note">💬 ${esc(noteText)}</div>` : ""}
+          </div>
         `;
       }).join("");
     }
+
+    const hasComment = item.comment && item.comment.trim().length > 0;
 
     body.innerHTML = `
       <div class="dossier-hero-banner">
@@ -72,11 +99,15 @@ const Modals = (() => {
           </div>
 
           <div style="min-width:0;">
-            <h2 class="dossier-title-main">${esc(item.title)}</h2>
-            <div class="dossier-title-orig">
-              ${esc(item.origTitle || "")}
-              ${item.year ? ` · <b>${esc(item.year)} г.</b>` : ""}
-              ${item.studio ? ` · Студия: <b style="color:#ffd76a;">${esc(item.studio)}</b>` : ""}
+            <div class="dossier-head-row">
+              <div>
+                <h2 class="dossier-title-main">${esc(item.title)}</h2>
+                <div class="dossier-title-orig">
+                  ${esc(item.origTitle || "")}
+                  ${item.year ? ` · <b>${esc(item.year)} г.</b>` : ""}
+                  ${item.studio ? ` · Студия: <b style="color:#ffd76a;">${esc(item.studio)}</b>` : ""}
+                </div>
+              </div>
             </div>
 
             <div class="dossier-metrics-row">
@@ -96,9 +127,7 @@ const Modals = (() => {
               </div>
             </div>
 
-            <div class="dossier-comment-card">
-              ${esc(item.comment || "Личный комментарий к этому тайтлу ещё не добавлен.")}
-            </div>
+            ${hasComment ? `<div class="dossier-comment-card">${esc(item.comment)}</div>` : ""}
 
             <div class="dossier-genres-wrap">
               ${(item.genres || []).map(g => `<span class="dossier-genre-tag">${esc(g)}</span>`).join("")}
@@ -110,7 +139,7 @@ const Modals = (() => {
       <div class="dossier-body-section">
         <div class="dossier-seasons-header">
           <strong style="font-size:12px;text-transform:uppercase;color:#d6d0f5;letter-spacing:0.06em;">
-            🎬 Хронология просмотренных сезонов и частей (${m.seasons.length}):
+            🎬 Все сезоны, фильмы и части перед глазами (${m.seasons.length}):
           </strong>
           <div class="dossier-filter-pills">
             <button type="button" class="dossier-pill-btn active" data-s-filter="ALL">Все (${m.seasons.length})</button>
@@ -120,22 +149,9 @@ const Modals = (() => {
           </div>
         </div>
 
-        <div class="seasons-scroll-box">
-          <table class="seasons-table">
-            <thead>
-              <tr>
-                <th>Сезон / Часть</th>
-                <th>Тип</th>
-                <th>Год выпуска</th>
-                <th>Объём</th>
-                <th>1 серия</th>
-                <th>Всего времени</th>
-                <th>Дата просмотра</th>
-                <th>Заметка</th>
-              </tr>
-            </thead>
-            <tbody id="dossierSeasonsTbody">${renderSeasonsRows("ALL")}</tbody>
-          </table>
+        <!-- Сетка всех сезонов без внутреннего скроллбара — всё сразу на экране! -->
+        <div id="dossierSeasonsGrid" class="dossier-seasons-grid">
+          ${renderSeasonsCards("ALL")}
         </div>
       </div>
     `;
@@ -153,8 +169,8 @@ const Modals = (() => {
     body.querySelectorAll("[data-s-filter]").forEach(btn => {
       btn.addEventListener("click", () => {
         body.querySelectorAll("[data-s-filter]").forEach(b => b.classList.toggle("active", b === btn));
-        const tbody = document.getElementById("dossierSeasonsTbody");
-        if (tbody) tbody.innerHTML = renderSeasonsRows(btn.dataset.sFilter);
+        const gridEl = document.getElementById("dossierSeasonsGrid");
+        if (gridEl) gridEl.innerHTML = renderSeasonsCards(btn.dataset.sFilter);
       });
     });
 
@@ -190,7 +206,6 @@ const Modals = (() => {
     openModal("detailsModal");
   }
 
-  /* Строка сезона в редакторе: Сезон -> Тип -> Год выпуска -> Объём (серии) -> 1 серия (мин) -> Дата -> Заметка */
   function createSeasonRowElement(part = {}) {
     const row = document.createElement("div");
     row.className = "season-row";
