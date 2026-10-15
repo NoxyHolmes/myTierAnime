@@ -1,4 +1,4 @@
-/* ═══════════════════ CORE UTILITIES, 0-EPISODE UPCOMING SEASONS & CATALOGS ═══════════════════ */
+/* ═══════════════════ CORE UTILITIES, SEASON RELEASE YEAR & 0-EPISODE UPCOMING SEASONS ═══════════════════ */
 window.reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 window.tiltPower = 14;
 
@@ -101,9 +101,10 @@ function normWatched(w) {
   return [];
 }
 
-/* РАЗРЕШЕНО 0 СЕРИЙ И 0 ФИЛЬМОВ (ДЛЯ ОЖИДАЕМЫХ / АНОНСИРОВАННЫХ СЕЗОНОВ И ФИЛЬМОВ) */
+/* Нормализация сезонов с поддержкой Года выпуска (releaseYear) и 0 серий для анонсов */
 function normSeasons(item) {
   if (!item) return [];
+  const baseYear = item.year || 2026;
   if (Array.isArray(item.seasons) && item.seasons.length > 0) {
     return item.seasons.map((s, idx) => {
       const parsedEp = parseInt(s.episodes, 10);
@@ -113,6 +114,7 @@ function normSeasons(item) {
       return {
         title: s.title || `Сезон ${idx + 1}`,
         type: s.type || item.kind || "TV Сериал",
+        releaseYear: s.releaseYear || baseYear,
         episodes: eps,
         epMinutes: epMin,
         date: s.date || "2026",
@@ -129,6 +131,7 @@ function normSeasons(item) {
     {
       title: kind === "Фильм" ? "Полнометражный фильм" : "Сезон 1",
       type: kind,
+      releaseYear: baseYear,
       episodes: kind === "Фильм" ? 1 : parsedEps,
       epMinutes: parseFloat(item.epMinutes) || defaultMin,
       date: w[0]?.date || "14.10.2026",
@@ -137,7 +140,6 @@ function normSeasons(item) {
   ];
 }
 
-/* ЕСЛИ У СЕЗОНА ИЛИ ФИЛЬМА УКАЗАНО 0 СЕРИЙ/ФИЛЬМОВ — ОН НЕ ПРИБАВЛЯЕТСЯ В ПОДСЧЕТ СЕРИЙ, ФИЛЬМОВ И ЧАСОВ */
 function calcItemMetrics(item) {
   const seasons = normSeasons(item);
   let totalEpisodes = 0;
@@ -212,7 +214,6 @@ function royalCrown(uid) {
   </svg>`;
 }
 
-/* Бейдж реакции полностью отключён по запросу пользователя */
 function reactionHtml() {
   return "";
 }
