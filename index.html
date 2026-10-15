@@ -11,10 +11,10 @@
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;900&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&family=Montserrat:wght@500;700;800&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
   <link rel="manifest" href="manifest.json">
 
-  <link rel="stylesheet" href="css/tokens.css">
-  <link rel="stylesheet" href="css/realism-3d.css">
-  <link rel="stylesheet" href="css/cards-and-tiers.css">
-  <link rel="stylesheet" href="css/modals-and-panels.css">
+  <link rel="stylesheet" href="css/tokens.css?v=7.0">
+  <link rel="stylesheet" href="css/realism-3d.css?v=7.0">
+  <link rel="stylesheet" href="css/cards-and-tiers.css?v=7.0">
+  <link rel="stylesheet" href="css/modals-and-panels.css?v=7.0">
 </head>
 <body class="emblems-realism letter-style-gold motion-precession fx-tier-motion fx-tilt">
   <div id="globalOwnerBg" class="global-owner-bg" aria-hidden="true">
@@ -78,7 +78,7 @@
             ➕ Добавить тайтл
           </button>
 
-          <button type="button" id="btnSyncNowOwner" class="btn btn-primary owner-only" title="Опубликовать все изменения и настройки фона для всех пользователей по ссылке">
+          <button type="button" id="btnSyncNowOwner" class="btn btn-primary owner-only" title="Опубликовать все изменения и фон для всех по ссылке">
             🔄 Синхронизировать со всеми
           </button>
 
@@ -109,7 +109,7 @@
       <strong>⚙️ Студия Кастомизации</strong>
       <div style="display:flex;gap:6px;">
         <button type="button" id="btnResetSettings" class="btn btn-sm">↺ Сброс</button>
-        <button type="button" id="btnCloseFxPanel" class="btn btn-sm" onclick="document.getElementById('fxPanel').classList.remove('show')">✕</button>
+        <button type="button" class="btn btn-sm" id="btnCloseFxPanel">✕</button>
       </div>
     </div>
 
@@ -243,12 +243,12 @@
           <input type="range" data-setting="gridCols" min="4" max="14" step="1" value="10">
         </label>
         <label class="fx-slider-row">
-          <span>Отступ между карточками: <b data-val="gridGap">12px</b></span>
-          <input type="range" data-setting="gridGap" min="4" max="26" step="1" value="12">
+          <span>Отступ между карточками: <b data-val="gridGap">10px</b></span>
+          <input type="range" data-setting="gridGap" min="4" max="26" step="1" value="10">
         </label>
         <label class="fx-slider-row">
-          <span>Скругление карточек: <b data-val="cardRadius">12px</b></span>
-          <input type="range" data-setting="cardRadius" min="0" max="26" step="1" value="12">
+          <span>Скругление карточек: <b data-val="cardRadius">10px</b></span>
+          <input type="range" data-setting="cardRadius" min="0" max="26" step="1" value="10">
         </label>
         <label class="fx-slider-row">
           <span>Угол 3D-наклона: <b id="lblTiltPower">14°</b></span>
@@ -284,8 +284,8 @@
           <input type="range" data-setting="glassBlur" min="0" max="36" step="2" value="16">
         </label>
         <label class="fx-slider-row">
-          <span>Ширина контейнера: <b data-val="containerWidth">1920px</b></span>
-          <input type="range" data-setting="containerWidth" min="1200" max="2400" step="40" value="1920">
+          <span>Ширина контейнера: <b data-val="containerWidth">1780px</b></span>
+          <input type="range" data-setting="containerWidth" min="1200" max="2400" step="40" value="1780">
         </label>
       </div>
     </div>
@@ -313,27 +313,22 @@
       </div>
     </div>
 
-    <!-- ВКЛАДКА 6: Глобальный фон сайта (Синхронизирует картинку, затемнение и размытие со всеми зрителями!) -->
     <div class="fx-tab-pane" id="tabOwnerBg">
-      <div class="fx-section-title">🖼 Глобальный фон сайта (Для всех по ссылке):</div>
+      <div class="fx-section-title">🖼 Глобальный фон сайта:</div>
       <p style="font-size:11px;color:var(--ink-soft);line-height:1.45;margin:0 0 10px;">
-        Картинка фона, уровень <b>затемнения</b> и <b>размытия</b> автоматически синхронизируются с GitHub и меняются у всех пользователей по вашей ссылке!
+        Выберите картинку с компьютера — после загрузки нажмите <b>«🔄 Синхронизировать со всеми»</b> в шапке, чтобы этот фон появился у всех по ссылке!
       </p>
       <div class="form-group">
-        <label>Картинка фона:</label>
-        <label class="custom-file-upload" for="ownerBgFileInput">
-          <span class="cfu-btn">🌌 Выбрать картинку фона</span>
-          <span class="cfu-name" id="ownerBgFileName">Файл не выбран</span>
-        </label>
-        <input type="file" id="ownerBgFileInput" accept="image/*" class="hidden-file-input">
+        <label>Загрузить картинку фона с компьютера:</label>
+        <input type="file" id="ownerBgFileInput" accept="image/*" class="form-control">
       </div>
       <div class="fx-sliders">
         <label class="fx-slider-row">
-          <span>Затемнение поверх фона (у всех): <b id="lblOwnerBgDim">55%</b></span>
+          <span>Затемнение поверх фона: <b id="lblOwnerBgDim">55%</b></span>
           <input type="range" id="rngOwnerBgDim" min="0" max="90" step="5" value="55">
         </label>
         <label class="fx-slider-row">
-          <span>Размытие фона Blur (у всех): <b id="lblOwnerBgBlur">0px</b></span>
+          <span>Размытие фона (Blur): <b id="lblOwnerBgBlur">0px</b></span>
           <input type="range" id="rngOwnerBgBlur" min="0" max="20" step="1" value="0">
         </label>
       </div>
@@ -427,17 +422,12 @@
             <input type="text" id="fReaction" class="form-control" placeholder="👑 Шедевр">
           </div>
 
-          <!-- Кастомная стильная кнопка выбора файла обложки (без белой системной плашки) -->
           <div class="form-group full poster-upload-box">
             <label>🖼 Обложка (выберите файл с ПК или укажите путь в папке <code>posters/</code>):</label>
             <div class="poster-upload-grid">
               <div>
-                <div style="font-size:11px;color:var(--ink-soft);margin-bottom:4px;">1. Загрузить обложку с ПК:</div>
-                <label class="custom-file-upload" for="fPosterFile">
-                  <span class="cfu-btn">📂 Выбрать файл обложки</span>
-                  <span class="cfu-name" id="fPosterFileName">Файл не выбран</span>
-                </label>
-                <input type="file" id="fPosterFile" accept="image/*" class="hidden-file-input">
+                <div style="font-size:11px;color:var(--ink-soft);margin-bottom:4px;">1. Загрузить файл с ПК:</div>
+                <input type="file" id="fPosterFile" accept="image/*" class="form-control">
               </div>
               <div>
                 <div style="font-size:11px;color:var(--ink-soft);margin-bottom:4px;">2. Путь в posters/ или ссылка:</div>
@@ -512,7 +502,7 @@
           <input type="password" id="ghTokenInput" class="form-control" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx">
         </div>
         <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:14px;">
-          <button type="button" class="btn" onclick="document.getElementById('ghTokenInput').value='';document.getElementById('authForm').requestSubmit();">Выйти</button>
+          <button type="button" class="btn" id="btnLogoutOwner">Выйти</button>
           <button type="submit" class="btn btn-primary">Войти</button>
         </div>
       </form>
@@ -521,16 +511,16 @@
 
   <div id="toastContainer"></div>
 
-  <script src="js/utils.js"></script>
-  <script src="js/realism-core.js"></script>
-  <script src="js/realism-engine.js"></script>
-  <script src="js/github-sync.js"></script>
-  <script src="js/shikimori-api.js"></script>
-  <script src="js/fx-controller.js"></script>
-  <script src="js/stats-engine.js"></script>
-  <script src="js/calendar-view.js"></script>
-  <script src="js/drag-drop.js"></script>
-  <script src="js/modals.js"></script>
-  <script src="js/app.js"></script>
+  <script src="js/utils.js?v=7.0"></script>
+  <script src="js/realism-core.js?v=7.0"></script>
+  <script src="js/realism-engine.js?v=7.0"></script>
+  <script src="js/github-sync.js?v=7.0"></script>
+  <script src="js/shikimori-api.js?v=7.0"></script>
+  <script src="js/fx-controller.js?v=7.0"></script>
+  <script src="js/stats-engine.js?v=7.0"></script>
+  <script src="js/calendar-view.js?v=7.0"></script>
+  <script src="js/drag-drop.js?v=7.0"></script>
+  <script src="js/modals.js?v=7.0"></script>
+  <script src="js/app.js?v=7.0"></script>
 </body>
 </html>
