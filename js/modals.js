@@ -1,4 +1,4 @@
-/* ═══════════════════ MODALS: STRICT COLUMN-ALIGNED SEASONS LIST ═══════════════════ */
+/* ═══════════════════ MODALS: SYNCHRONIZED COLUMNS WITH INLINE LABELS (AS ON SCREENSHOT) ═══════════════════ */
 const Modals = (() => {
   let deleteHandler = null;
 
@@ -57,7 +57,8 @@ const Modals = (() => {
       `;
     }
 
-    /* СТРОГО ВЫРОВНЕННЫЙ ПО КОЛОНКАМ ВЕРТИКАЛЬНЫЙ СПИСОК СЕЗОНОВ */
+    /* Оформление один в один как на скриншоте, но все ячейки связаны общей сеткой:
+       если сдвигается "Объём:" или название в одной строке — оно синхронно сдвигается во всех строках! */
     function renderSeasonsVerticalStack(filterType = "ALL") {
       const filtered = m.seasons.filter(s => {
         if (filterType === "ALL") return true;
@@ -66,66 +67,50 @@ const Modals = (() => {
         return s.type !== "TV Сериал" && s.type !== "Фильм";
       });
 
-      const headerRow = `
-        <div class="ds-grid-head">
-          <div>#</div>
-          <div>Сезон / Часть</div>
-          <div>Тип и Год</div>
-          <div>Объём</div>
-          <div>1 серия</div>
-          <div>Время</div>
-          <div>Дата</div>
-        </div>
-      `;
-
-      const rowsHtml = filtered.map((s, idx) => {
+      return filtered.map((s, idx) => {
         const isUpcoming = Number(s.episodes) === 0;
         const partHours = isUpcoming ? "0" : formatHours((s.episodes * s.epMinutes) / 60);
         const relYr = s.releaseYear || item.year || "2026";
         const volumeText = isUpcoming
-          ? `<span class="s-chip-upcoming">⏳ Анонс</span>`
-          : `<span class="s-chip-vol">${s.type === "Фильм" ? formatMoviesCount(s.episodes) : formatEpisodesCount(s.episodes)}</span>`;
+          ? `<span class="s-chip-upcoming">⏳ Анонс (0 ${s.type === "Фильм" ? "ф." : "эп."})</span>`
+          : `<b class="s-chip-vol">${s.type === "Фильм" ? formatMoviesCount(s.episodes) : formatEpisodesCount(s.episodes)}</b>`;
 
         const noteText = s.note ? String(s.note).trim() : "";
 
         return `
           <div class="dossier-season-bar ${isUpcoming ? "is-upcoming" : ""}">
-            <div class="ds-grid-row">
-              <div class="ds-col-num">
-                <span class="dsc-num">#${idx + 1}</span>
-              </div>
-
-              <div class="ds-col-title" title="${esc(s.title)}">
+            <div class="dsb-col-left">
+              <span class="dsc-num">#${idx + 1}</span>
+              <div class="dsc-title-wrap">
                 <strong class="dsc-name">${esc(s.title)}</strong>
-                ${noteText ? `<div class="dsb-note-sub">💬 ${esc(noteText)}</div>` : ""}
+                ${noteText ? `<span class="dsb-note-inline">💬 ${esc(noteText)}</span>` : ""}
               </div>
+              <span class="cum-kind">${esc(s.type)}</span>
+              <span class="dsc-year">${esc(relYr)} г.</span>
+            </div>
 
-              <div class="ds-col-type">
-                <span class="cum-kind">${esc(s.type)}</span>
-                <span class="dsc-year">${esc(relYr)} г.</span>
-              </div>
+            <div class="dsb-col-stat">
+              <span class="dsc-lbl">Объём:</span>
+              ${volumeText}
+            </div>
 
-              <div class="ds-col-vol">
-                ${volumeText}
-              </div>
+            <div class="dsb-col-stat">
+              <span class="dsc-lbl">1 серия:</span>
+              <b>${isUpcoming ? "—" : `${s.epMinutes} мин.`}</b>
+            </div>
 
-              <div class="ds-col-ep">
-                <b>${isUpcoming ? "—" : `${s.epMinutes} мин.`}</b>
-              </div>
+            <div class="dsb-col-stat">
+              <span class="dsc-lbl">Время:</span>
+              <b style="color:#00f5ff;">${partHours} ч.</b>
+            </div>
 
-              <div class="ds-col-time">
-                <b style="color:#00f5ff;">${partHours} ч.</b>
-              </div>
-
-              <div class="ds-col-date">
-                <b>${esc(s.date || (isUpcoming ? "Анонс" : "—"))}</b>
-              </div>
+            <div class="dsb-col-stat">
+              <span class="dsc-lbl">Дата:</span>
+              <b>${esc(s.date || (isUpcoming ? "Анонс" : "—"))}</b>
             </div>
           </div>
         `;
       }).join("");
-
-      return headerRow + rowsHtml;
     }
 
     const hasComment = item.comment && item.comment.trim().length > 0;
