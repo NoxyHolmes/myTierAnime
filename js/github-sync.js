@@ -1,4 +1,4 @@
-/* ═══════════════════ GITHUB SYNC ENGINE v10.0 (DIRECT FILE COMMIT + INLINE YANDEX FALLBACK) ═══════════════════ */
+/* ═══════════════════ GITHUB SYNC ENGINE v12.1 (FULL AUDIO MP3/WAV & IMAGE SUPPORT) ═══════════════════ */
 const GitHubSync = (() => {
   const TOKEN_KEY = "mta_2026_gh_token";
   const REPO_KEY  = "mta_2026_gh_repo";
@@ -11,7 +11,7 @@ const GitHubSync = (() => {
 
   function detectRepoFromLocation() {
     try {
-      const host = window.location.hostname; // напр. noxyholmes.github.io
+      const host = window.location.hostname;
       const pathParts = window.location.pathname.split("/").filter(Boolean);
       if (host.endsWith(".github.io")) {
         const owner = host.replace(".github.io", "");
@@ -84,16 +84,18 @@ const GitHubSync = (() => {
         }
         const base64 = btoa(binary);
         const blobUrl = URL.createObjectURL(file);
-        resolve({ base64, blobUrl, mime: file.type || "image/png", size: file.size });
+        resolve({ base64, blobUrl, mime: file.type || "application/octet-stream", size: file.size });
       };
       reader.onerror = reject;
       reader.readAsArrayBuffer(file);
     });
   }
 
-  /* Создаёт встроенную WebP/JPEG копию картинки, которая сохраняется прямо внутри tiers.json,
-     чтобы Яндекс Браузер показывал фон и обложки МГНОВЕННО без обращения к внешним серверам! */
+  /* Сжимает только изображения (для аудиофайлов сразу возвращает пустую строку без зависаний!) */
   function createInlineDataUrl(file, maxW = 1280, quality = 0.8) {
+    if (!file || !file.type || !file.type.startsWith("image/")) {
+      return Promise.resolve("");
+    }
     return new Promise(resolve => {
       const reader = new FileReader();
       reader.onload = e => {
@@ -175,7 +177,6 @@ const GitHubSync = (() => {
 
     const candidates = [];
 
-    // 1. Локальный домен GitHub Pages (никогда не блокируется Яндекс Браузером!)
     try {
       const localRes = await fetch(`data/tiers.json?_ya_nocache=${Date.now()}_${Math.random()}`, {
         cache: "no-store"
@@ -185,7 +186,6 @@ const GitHubSync = (() => {
       }
     } catch {}
 
-    // 2. Прямой запрос к GitHub API / raw по SHA последнего коммита (для мгновенного обновления за 1 сек)
     try {
       const branchInfo = await getLatestBranchCommitSha();
       if (branchInfo && branchInfo.commitSha) {
@@ -231,20 +231,22 @@ const GitHubSync = (() => {
     return candidates[0];
   }
 
-  /* ЗАГРУЗКА ОБЛОЖКИ ИЛИ ФОНА:
-     1) Физически сохраняет оригинальный файл без сжатия в папку posters/ или backgrounds/ вашего репозитория.
-     2) Возвращает встроенную DataURL-копию (inlineDataUrl), чтобы Яндекс Браузер показывал картинку даже без внешних запросов! */
+  /* Загрузка обложек, фонов и MP3/WAV аудиофайлов любого размера */
   async function uploadAssetFile(file, folder = "posters") {
     const tk = getToken();
     const repo = getRepo();
-    if (!tk) throw new Error("Токен владельца не задан");
+    if (!tk) throw new Error("Токен владельца не задан (нажмите «🔑 Вход»)");
 
     const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
     const relPath = `${folder}/${Date.now()}_${safeName}`;
     const { base64, blobUrl, mime } = await fileToRawBase64(file);
-    const maxW = folder === "backgrounds" ? 1600 : 600;
-    const qual = folder === "backgrounds" ? 0.78 : 0.84;
-    const inlineDataUrl = await createInlineDataUrl(file, maxW, qual);
+
+    let inlineDataUrl = "";
+    if (folder !== "audio" && file.type && file.type.startsWith("image/")) {
+      const maxW = folder === "backgrounds" ? 1600 : 600;
+      const qual = folder === "backgrounds" ? 0.78 : 0.84;
+      inlineDataUrl = await createInlineDataUrl(file, maxW, qual);
+    }
 
     const headers = {
       "Authorization": `Bearer ${tk}`,
@@ -252,9 +254,22 @@ const GitHubSync = (() => {
       "Content-Type": "application/json"
     };
 
-    // Физически записываем файл в репозиторий через PUT /contents/posters/...
     let blobSha = "";
+    // 1. Сначала создаём Git Blob (поддерживает тяжёлые MP3 и 4K картинки до 100 МБ)
     try {
+      const blobRes = await fetch(`https://api.github.com/repos/${repo}/git/blobs`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify({ content: base64, encoding: "base64" })
+      });
+      if (blobRes.ok) {
+        const createdBlob = await blobRes.json();
+        blobSha = createdBlob.sha || "";
+      }
+    } catch {}
+
+    // 2. Если файл небольшой (< 25 МБ), также пробуем записать через PUT /contents/
+    if (!blobSha) {
       const putRes = await fetch(`https://api.github.com/repos/${repo}/contents/${relPath}`, {
         method: "PUT",
         headers,
@@ -263,24 +278,13 @@ const GitHubSync = (() => {
           content: base64
         })
       });
-      if (putRes.ok) {
-        const putData = await putRes.json();
-        blobSha = putData?.content?.sha || "";
-        if (putData?.commit?.sha) lastKnownCommitSha = putData.commit.sha;
+      if (!putRes.ok) {
+        const err = await putRes.json().catch(() => ({}));
+        throw new Error(err.message || `Ошибка загрузки (${putRes.status})`);
       }
-    } catch {}
-
-    // Если файл очень большой — создаём Git Blob напрямую
-    if (!blobSha) {
-      const blobRes = await fetch(`https://api.github.com/repos/${repo}/git/blobs`, {
-        method: "POST",
-        headers,
-        body: JSON.stringify({ content: base64, encoding: "base64" })
-      });
-      if (blobRes.ok) {
-        const createdBlob = await blobRes.json();
-        blobSha = createdBlob.sha;
-      }
+      const putData = await putRes.json();
+      blobSha = putData?.content?.sha || "";
+      if (putData?.commit?.sha) lastKnownCommitSha = putData.commit.sha;
     }
 
     if (blobSha) blobUrlCache.set(blobSha, blobUrl);
@@ -294,9 +298,7 @@ const GitHubSync = (() => {
     };
   }
 
-  /* РАЗРЕШЕНИЕ КАРТИНКИ ДЛЯ ВСЕХ БРАУЗЕРОВ (ВКЛЮЧАЯ ЯНДЕКС БРАУЗЕР) */
   async function resolveAssetUrl(pathOrUrl, blobSha, mime = "image/jpeg", inlineDataUrl = "") {
-    // 1. Если есть встроенная копия — Яндекс Браузер, Edge и Opera рисуют её за 0 миллисекунд!
     if (inlineDataUrl && inlineDataUrl.startsWith("data:")) {
       return inlineDataUrl;
     }
@@ -308,7 +310,6 @@ const GitHubSync = (() => {
       return blobUrlCache.get(blobSha);
     }
 
-    // 2. Пробуем загрузить с самого домена GitHub Pages (относительный путь posters/... или backgrounds/...)
     if (pathOrUrl) {
       const cleanPath = pathOrUrl.replace(/^\.?\//, "");
       try {
@@ -317,7 +318,6 @@ const GitHubSync = (() => {
       } catch {}
     }
 
-    // 3. Если GitHub Pages ещё пересобирается — грузим через Git Blob API
     const repo = getRepo();
     if (blobSha) {
       try {
@@ -350,6 +350,7 @@ const GitHubSync = (() => {
     return pathOrUrl;
   }
 
+  /* При коммите привязываем в дерево репозитория tiers.json, фон, постеры И все загруженные MP3 аудиофайлы! */
   async function commitTiersToGitHub(payloadObj, commitMsg = "Sync via myTierAnime") {
     const tk = getToken();
     const repo = getRepo();
@@ -400,6 +401,15 @@ const GitHubSync = (() => {
                 mode: "100644",
                 type: "blob",
                 sha: it.posterBlobSha
+              });
+            }
+            // Привязываем загруженную музыку тайтла в папку audio/ дерева репозитория!
+            if (it.bgmUrl && it.bgmBlobSha && !it.bgmUrl.startsWith("http") && !it.bgmUrl.startsWith("data:") && !it.bgmUrl.startsWith("blob:")) {
+              treeEntries.push({
+                path: it.bgmUrl.replace(/^\.?\//, ""),
+                mode: "100644",
+                type: "blob",
+                sha: it.bgmBlobSha
               });
             }
           });
