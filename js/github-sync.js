@@ -1,27 +1,27 @@
-/* ═══════════════════ GITHUB GIT DATA & BLOB API (NO SIZE LIMITS, 1-SECOND REALTIME SYNC) ═══════════════════ */
+/* ═══════════════════ GITHUB SYNC ENGINE v6.0 (RATE-LIMIT SAFE & INSTANT COMMIT SHA) ═══════════════════ */
 const GitHubSync = (() => {
   const TOKEN_KEY = "mta_2026_gh_token";
   const REPO_KEY  = "mta_2026_gh_repo";
-  const DEFAULT_REPO = "geraltschwarzenegger-svg/myTierAnime";
   const FILE_PATH = "data/tiers.json";
 
   let verifiedUser = null;
   let detectedBranch = "main";
   let lastKnownCommitSha = "";
+  let lastEtag = "";
   const blobUrlCache = new Map();
 
-  /* Автоматическое определение owner/repo прямо из адресной строки GitHub Pages */
+  /* 100% точное определение owner/repo прямо из ссылки GitHub Pages */
   function detectRepoFromLocation() {
     try {
-      const host = window.location.hostname;
+      const host = window.location.hostname; // например: username.github.io
       const pathParts = window.location.pathname.split("/").filter(Boolean);
       if (host.endsWith(".github.io")) {
         const owner = host.replace(".github.io", "");
-        const repo = pathParts[0] || `${owner}.github.io`;
-        if (owner && repo) return `${owner}/${repo}`;
+        const firstSeg = pathParts[0] && !pathParts[0].endsWith(".html") ? pathParts[0] : `${owner}.github.io`;
+        return `${owner}/${firstSeg}`;
       }
     } catch {}
-    return DEFAULT_REPO;
+    return "geraltschwarzenegger-svg/myTierAnime";
   }
 
   function getToken() {
@@ -29,7 +29,13 @@ const GitHubSync = (() => {
   }
 
   function getRepo() {
-    return localStorage.getItem(REPO_KEY) || detectRepoFromLocation();
+    const saved = localStorage.getItem(REPO_KEY);
+    const detected = detectRepoFromLocation();
+    // Если мы находимся на реальном домене *.github.io, доверяем реальному адресу страницы!
+    if (window.location.hostname.endsWith(".github.io") && (!saved || saved === "geraltschwarzenegger-svg/myTierAnime")) {
+      return detected;
+    }
+    return saved || detected;
   }
 
   function isOwner() {
@@ -68,7 +74,6 @@ const GitHubSync = (() => {
     return new TextDecoder("utf-8").decode(bytes);
   }
 
-  /* Чтение любого файла с ПК БЕЗ СЖАТИЯ И БЕЗ ОГРАНИЧЕНИЙ РАЗМЕРА (100% оригинал) */
   function fileToRawBase64(file) {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -116,20 +121,27 @@ const GitHubSync = (() => {
     }
   }
 
-  /* Получение самого свежего SHA коммита ветки (не кэшируется CDN!) */
-  async function getLatestBranchCommitSha() {
+  /* Экономичное получение последнего коммита с поддержкой If-None-Match (ETag),
+     благодаря чему GitHub НЕ списывает лимит запросов у зрителей! */
+  async function getLatestBranchCommitSha(useEtag = false) {
     const repo = getRepo();
     const tk = getToken();
     const headers = { "Accept": "application/vnd.github+json" };
     if (tk) headers["Authorization"] = `Bearer ${tk}`;
+    if (useEtag && lastEtag) headers["If-None-Match"] = lastEtag;
 
     for (const br of [detectedBranch, "main", "master"]) {
       try {
-        const res = await fetch(`https://api.github.com/repos/${repo}/commits/${br}?_=${Date.now()}`, {
+        const res = await fetch(`https://api.github.com/repos/${repo}/commits/${br}`, {
           headers,
           cache: "no-store"
         });
+        if (res.status === 304) {
+          return { notModified: true, commitSha: lastKnownCommitSha };
+        }
         if (res.ok) {
+          const etag = res.headers.get("etag");
+          if (etag) lastEtag = etag;
           const data = await res.json();
           if (data && data.sha) {
             detectedBranch = br;
@@ -141,24 +153,27 @@ const GitHubSync = (() => {
     return null;
   }
 
-  /* МГНОВЕННОЕ ЧТЕНИЕ БАЗЫ data/tiers.json ЧЕРЕЗ GIT BLOB SHA (ОБХОД ЛЮБОГО КЭША И ЛИМИТА 1 МБ) */
-  async function fetchFreshTiersFromApi(forceIfSameCommit = false) {
+  /* НАДЁЖНОЕ ЧТЕНИЕ АКТУАЛЬНОЙ БАЗЫ У ЗРИТЕЛЕЙ ПО ССЫЛКЕ */
+  async function fetchFreshTiersFromApi(force = false) {
     const repo = getRepo();
     const tk = getToken();
     const headers = { "Accept": "application/vnd.github+json" };
     if (tk) headers["Authorization"] = `Bearer ${tk}`;
 
     try {
-      const branchInfo = await getLatestBranchCommitSha();
+      const branchInfo = await getLatestBranchCommitSha(!force);
+      if (branchInfo?.notModified && !force) {
+        return null;
+      }
+
       if (branchInfo && branchInfo.commitSha) {
-        if (!forceIfSameCommit && branchInfo.commitSha === lastKnownCommitSha) {
-          return null; // Коммит не менялся
+        if (!force && branchInfo.commitSha === lastKnownCommitSha) {
+          return null;
         }
 
-        // 1. Пробуем мгновенно скачать через raw.githubusercontent.com/<owner>/<repo>/<COMMIT_SHA>/data/tiers.json
-        // Поскольку в ссылке зашит уникальный SHA коммита, CDN никогда не отдаёт старый кэш!
+        // Способ 1: Прямое скачивание по уникальному SHA коммита (не имеет кэша и не тратит лимиты API!)
         try {
-          const rawRes = await fetch(`https://raw.githubusercontent.com/${repo}/${branchInfo.commitSha}/${FILE_PATH}?_=${Date.now()}`, {
+          const rawRes = await fetch(`https://raw.githubusercontent.com/${repo}/${branchInfo.commitSha}/${FILE_PATH}`, {
             cache: "no-store"
           });
           if (rawRes.ok) {
@@ -168,9 +183,9 @@ const GitHubSync = (() => {
           }
         } catch {}
 
-        // 2. Если файл огромный или приватный — читаем напрямую через Git Tree -> Git Blob API (до 100 МБ)
+        // Способ 2: Чтение через Git Tree -> Blob API
         if (branchInfo.treeSha) {
-          const treeRes = await fetch(`https://api.github.com/repos/${repo}/git/trees/${branchInfo.treeSha}?recursive=1&_=${Date.now()}`, {
+          const treeRes = await fetch(`https://api.github.com/repos/${repo}/git/trees/${branchInfo.treeSha}?recursive=1`, {
             headers,
             cache: "no-store"
           });
@@ -194,19 +209,29 @@ const GitHubSync = (() => {
         }
       }
     } catch (e) {
-      console.warn("Git Data API fetch fallback:", e);
+      console.warn("Primary Git fetch warning:", e);
     }
 
-    // 3. Резервный запрос
+    // Способ 3: Если лимит API исчерпан — читаем через raw.githubusercontent.com по имени ветки со случайным параметром
+    for (const br of [detectedBranch, "main", "master"]) {
+      try {
+        const rRes = await fetch(`https://raw.githubusercontent.com/${repo}/${br}/${FILE_PATH}?nocache=${Date.now()}`, {
+          cache: "no-store"
+        });
+        if (rRes.ok) return await rRes.json();
+      } catch {}
+    }
+
+    // Способ 4: Локальный относительный файл на GitHub Pages
     try {
-      const res3 = await fetch(`data/tiers.json?nocache=${Date.now()}`, { cache: "no-store" });
-      if (res3.ok) return await res3.json();
+      const resLocal = await fetch(`data/tiers.json?nocache=${Date.now()}`, { cache: "no-store" });
+      if (resLocal.ok) return await resLocal.json();
     } catch {}
 
     return null;
   }
 
-  /* Загрузка ЛЮБОГО файла (фона или постера) БЕЗ ОГРАНИЧЕНИЙ РАЗМЕРА через Git Data API */
+  /* Загрузка любого файла (фона или обложки) без ограничений размера */
   async function uploadAssetFile(file, folder = "posters") {
     const tk = getToken();
     const repo = getRepo();
@@ -222,7 +247,6 @@ const GitHubSync = (() => {
       "Content-Type": "application/json"
     };
 
-    // Создаём Git Blob напрямую (поддерживает файлы до 100 МБ без сжатия!)
     const blobRes = await fetch(`https://api.github.com/repos/${repo}/git/blobs`, {
       method: "POST",
       headers,
@@ -234,56 +258,11 @@ const GitHubSync = (() => {
 
     if (!blobRes.ok) {
       const err = await blobRes.json().catch(() => ({}));
-      throw new Error(err.message || `Ошибка создания Git Blob (${blobRes.status})`);
+      throw new Error(err.message || `Ошибка загрузки файла (${blobRes.status})`);
     }
     const createdBlob = await blobRes.json();
     const blobSha = createdBlob.sha;
-
-    // Кэшируем мгновенный локальный Blob URL для этого SHA
     blobUrlCache.set(blobSha, blobUrl);
-
-    // Также привязываем файл в дерево репозитория, чтобы он лежал в папке posters/ или backgrounds/
-    try {
-      const branchInfo = await getLatestBranchCommitSha();
-      if (branchInfo && branchInfo.commitSha && branchInfo.treeSha) {
-        const newTreeRes = await fetch(`https://api.github.com/repos/${repo}/git/trees`, {
-          method: "POST",
-          headers,
-          body: JSON.stringify({
-            base_tree: branchInfo.treeSha,
-            tree: [{
-              path: relPath,
-              mode: "100644",
-              type: "blob",
-              sha: blobSha
-            }]
-          })
-        });
-        if (newTreeRes.ok) {
-          const newTree = await newTreeRes.json();
-          const newCommitRes = await fetch(`https://api.github.com/repos/${repo}/git/commits`, {
-            method: "POST",
-            headers,
-            body: JSON.stringify({
-              message: `Upload ${relPath} (uncompressed)`,
-              tree: newTree.sha,
-              parents: [branchInfo.commitSha]
-            })
-          });
-          if (newCommitRes.ok) {
-            const newCommit = await newCommitRes.json();
-            await fetch(`https://api.github.com/repos/${repo}/git/refs/heads/${detectedBranch}`, {
-              method: "PATCH",
-              headers,
-              body: JSON.stringify({ sha: newCommit.sha, force: true })
-            });
-            lastKnownCommitSha = newCommit.sha;
-          }
-        }
-      }
-    } catch (e) {
-      console.warn("Tree attach warning:", e);
-    }
 
     return {
       path: relPath,
@@ -293,7 +272,7 @@ const GitHubSync = (() => {
     };
   }
 
-  /* Мгновенная загрузка картинки фона или обложки у зрителей по её Git Blob SHA (работает за 0.2 сек, не ждёт GitHub Pages!) */
+  /* Разрешение URL картинки фона или обложки для всех зрителей по ссылке */
   async function resolveAssetUrl(pathOrUrl, blobSha, mime = "image/jpeg") {
     if (!pathOrUrl && !blobSha) return "";
     if (blobSha && blobUrlCache.has(blobSha)) {
@@ -304,17 +283,16 @@ const GitHubSync = (() => {
     }
 
     const repo = getRepo();
-    // 1. Если известен commitSha и относительный путь — грузим напрямую с raw.githubusercontent.com по SHA коммита
-    if (pathOrUrl && lastKnownCommitSha) {
+    if (pathOrUrl) {
       const cleanPath = pathOrUrl.replace(/^\.?\//, "");
-      const rawCommitUrl = `https://raw.githubusercontent.com/${repo}/${lastKnownCommitSha}/${cleanPath}`;
+      const ref = lastKnownCommitSha || detectedBranch || "main";
+      const rawCommitUrl = `https://raw.githubusercontent.com/${repo}/${ref}/${cleanPath}`;
       try {
         const check = await fetch(rawCommitUrl, { method: "HEAD", cache: "no-store" });
         if (check.ok) return rawCommitUrl;
       } catch {}
     }
 
-    // 2. Если есть blobSha — скачиваем бинарник напрямую из Git Blob API (без лимита размера и без кэша)
     if (blobSha) {
       try {
         const tk = getToken();
@@ -334,16 +312,14 @@ const GitHubSync = (() => {
             return objUrl;
           }
         }
-      } catch (e) {
-        console.warn("Blob resolve error:", e);
-      }
+      } catch {}
     }
 
     return pathOrUrl;
   }
 
-  /* Атомарное сохранение базы data/tiers.json через Git Data API (без ограничений размера и с мгновенным обновлением ветки) */
-  async function commitTiersToGitHub(payloadObj, commitMsg = "Instant sync via myTierAnime") {
+  /* АТОМАРНЫЙ КОММИТ ВСЕХ ИЗМЕНЕНИЙ И ФОНА В РЕПОЗИТОРИЙ ВЛАДЕЛЬЦА */
+  async function commitTiersToGitHub(payloadObj, commitMsg = "Sync via myTierAnime") {
     const tk = getToken();
     const repo = getRepo();
     if (!tk) throw new Error("Токен владельца не задан");
@@ -359,10 +335,8 @@ const GitHubSync = (() => {
     payloadObj.meta.updatedAt = new Date().toISOString();
     const jsonStr = JSON.stringify(payloadObj, null, 2);
 
-    // 1. Получаем последний коммит ветки
-    const branchInfo = await getLatestBranchCommitSha();
+    const branchInfo = await getLatestBranchCommitSha(false);
     if (branchInfo && branchInfo.commitSha && branchInfo.treeSha) {
-      // Создаём Blob для data/tiers.json (поддерживает любой размер)
       const blobRes = await fetch(`https://api.github.com/repos/${repo}/git/blobs`, {
         method: "POST",
         headers,
@@ -374,17 +348,29 @@ const GitHubSync = (() => {
 
       if (blobRes.ok) {
         const newBlob = await blobRes.json();
+        const treeEntries = [{
+          path: FILE_PATH,
+          mode: "100644",
+          type: "blob",
+          sha: newBlob.sha
+        }];
+
+        // Если есть загруженный фон с blobSha, привязываем и его в дерево репозитория
+        if (payloadObj.meta.bgImage && payloadObj.meta.bgBlobSha && !payloadObj.meta.bgImage.startsWith("http")) {
+          treeEntries.push({
+            path: payloadObj.meta.bgImage.replace(/^\.?\//, ""),
+            mode: "100644",
+            type: "blob",
+            sha: payloadObj.meta.bgBlobSha
+          });
+        }
+
         const treeRes = await fetch(`https://api.github.com/repos/${repo}/git/trees`, {
           method: "POST",
           headers,
           body: JSON.stringify({
             base_tree: branchInfo.treeSha,
-            tree: [{
-              path: FILE_PATH,
-              mode: "100644",
-              type: "blob",
-              sha: newBlob.sha
-            }]
+            tree: treeEntries
           })
         });
 
@@ -419,7 +405,7 @@ const GitHubSync = (() => {
       }
     }
 
-    // 2. Fallback через стандартный PUT /contents/
+    // Резервный PUT /contents/data/tiers.json
     const apiUrl = `https://api.github.com/repos/${repo}/contents/${FILE_PATH}`;
     let sha = undefined;
     const getRes = await fetch(`${apiUrl}?_=${Date.now()}`, { headers, cache: "no-store" });
@@ -432,7 +418,7 @@ const GitHubSync = (() => {
     const putRes = await fetch(apiUrl, { method: "PUT", headers, body: JSON.stringify(body) });
     if (!putRes.ok) {
       const errJson = await putRes.json().catch(() => ({}));
-      throw new Error(errJson.message || `Ошибка GitHub API (${putRes.status})`);
+      throw new Error(errJson.message || `Ошибка GitHub API (${putRes.status}) для репозитория ${repo}`);
     }
     const putData = await putRes.json();
     if (putData?.commit?.sha) lastKnownCommitSha = putData.commit.sha;
@@ -448,6 +434,7 @@ const GitHubSync = (() => {
   return {
     getToken,
     getRepo,
+    detectRepoFromLocation,
     isOwner,
     saveCredentials,
     verifyToken,
