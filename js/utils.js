@@ -1,8 +1,7 @@
-/* ═══════════════════ CORE UTILITIES, FULL ANIME GENRES ENCYCLOPEDIA & METRICS ═══════════════════ */
+/* ═══════════════════ CORE UTILITIES & SMART RUSSIAN PLURALS ═══════════════════ */
 window.reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 window.tiltPower = 14;
 
-/* Полный каталог всех существующих жанров, тем и демографий аниме (Shikimori / MAL / AniList) */
 window.ALL_ANIME_GENRES = [
   "Авангард", "Автомобили", "Азартные игры", "Айдолы (Жен.)", "Айдолы (Муж.)", "Актрисы",
   "Альтернативная история", "Антропоморфизм", "Антигерой", "Антиутопия", "Апокалипсис",
@@ -26,6 +25,27 @@ window.ALL_ANIME_GENRES = [
   "Фэнтези", "Хоррор", "Хулиганы (Янки)", "Цундэрэ", "Чёрный юмор", "Школа", "Шоу-бизнес",
   "Шпионаж", "Экшен", "Эротика", "Этти", "Юри", "Яой", "Японский фольклор"
 ];
+
+function pluralRu(number, one, few, many) {
+  const n = Math.abs(number) % 100;
+  const n1 = n % 10;
+  if (n > 10 && n < 20) return many;
+  if (n1 > 1 && n1 < 5) return few;
+  if (n1 === 1) return one;
+  return many;
+}
+
+function formatTitlesCount(n) {
+  return `${n} ${pluralRu(n, "тайтл", "тайтла", "тайтлов")}`;
+}
+
+function formatEpisodesCount(n) {
+  return `${n} ${pluralRu(n, "серия", "серии", "серий")}`;
+}
+
+function formatMoviesCount(n) {
+  return `${n} ${pluralRu(n, "фильм", "фильма", "фильмов")}`;
+}
 
 function esc(str) {
   if (str === null || str === undefined) return "";
@@ -89,7 +109,6 @@ function calcItemMetrics(item) {
   let totalMovies = 0;
   let totalMinutes = 0;
   let latestMs = 0;
-  let latestDateStr = "";
 
   seasons.forEach(s => {
     const eps = Math.max(1, parseInt(s.episodes, 10) || 1);
@@ -106,7 +125,6 @@ function calcItemMetrics(item) {
     const ms = parseRuDate(s.date);
     if (ms >= latestMs) {
       latestMs = ms;
-      latestDateStr = s.date;
     }
   });
 
@@ -122,7 +140,6 @@ function calcItemMetrics(item) {
     totalHours,
     totalDays,
     latestMs,
-    latestDateStr,
     latestYear: latestMs ? new Date(latestMs).getFullYear() : (item.year || 2026)
   };
 }
