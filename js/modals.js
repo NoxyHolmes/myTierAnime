@@ -1,4 +1,4 @@
-/* ═══════════════════ MODALS: COMPACT MULTI-SEASON DOSSIER & STRICT OWNER GUARD ═══════════════════ */
+/* ═══════════════════ MODALS: PREMIUM GLASS DOSSIER & MULTI-SEASON BUILDER ═══════════════════ */
 const Modals = (() => {
   let deleteHandler = null;
 
@@ -34,7 +34,7 @@ const Modals = (() => {
           <tr>
             <td><b>#${idx + 1}</b> ${esc(s.title)}</td>
             <td><span class="cum-kind">${esc(s.type)}</span></td>
-            <td>${s.episodes} ${s.type === "Фильм" ? "фильм(а)" : "эп."}</td>
+            <td>${s.episodes} ${s.type === "Фильм" ? formatMoviesCount(s.episodes) : formatEpisodesCount(s.episodes)}</td>
             <td>${s.epMinutes} мин.</td>
             <td style="color:#00f5ff;font-weight:700;">${partHours} ч.</td>
             <td><b>${esc(s.date)}</b></td>
@@ -62,15 +62,15 @@ const Modals = (() => {
           <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px;background:rgba(255,255,255,0.03);padding:10px 14px;border-radius:10px;border:1px solid var(--border-subtle);">
             <div>
               <div style="font-size:10px;color:var(--ink-soft);text-transform:uppercase;">Серии / Фильмы</div>
-              <div style="font-size:16px;font-weight:800;color:#ffd76a;">${m.totalEpisodes} эп. ${m.totalMovies ? `+ <span style="color:#ff5e7e;">${m.totalMovies} ф.</span>` : ""}</div>
+              <div style="font-size:15px;font-weight:800;color:#ffd76a;">${formatEpisodesCount(m.totalEpisodes)} ${m.totalMovies ? `+ <span style="color:#ff5e7e;">${formatMoviesCount(m.totalMovies)}</span>` : ""}</div>
             </div>
             <div>
               <div style="font-size:10px;color:var(--ink-soft);text-transform:uppercase;">Общее время</div>
-              <div style="font-size:16px;font-weight:800;color:#00f5ff;">${formatHours(m.totalHours)} часов</div>
+              <div style="font-size:15px;font-weight:800;color:#00f5ff;">${formatHours(m.totalHours)} часов</div>
             </div>
             <div>
               <div style="font-size:10px;color:var(--ink-soft);text-transform:uppercase;">В пересчёте на дни</div>
-              <div style="font-size:16px;font-weight:800;color:#fff;">${m.totalDays.toFixed(2)} дн.</div>
+              <div style="font-size:15px;font-weight:800;color:#fff;">${m.totalDays.toFixed(2)} дн.</div>
             </div>
           </div>
 
@@ -82,7 +82,6 @@ const Modals = (() => {
             ${(item.genres || []).map(g => `<span class="tier-count-pill">${esc(g)}</span>`).join("")}
           </div>
 
-          <!-- Компактная шапка сезонов с быстрыми вкладками-фильтрами и фиксированным скроллом -->
           <div class="dossier-seasons-header">
             <strong style="font-size:11.5px;text-transform:uppercase;color:var(--ink-soft);">
               Хронология сезонов и частей (${m.seasons.length}):
@@ -127,7 +126,7 @@ const Modals = (() => {
     if (editBtn) {
       editBtn.onclick = () => {
         if (!GitHubSync.isOwner()) {
-          showToast("Редактирование доступно только владельцу после входа по токену", "#ff3c8c");
+          showToast("Редактирование доступно только владельцу", "#ff3c8c");
           return;
         }
         closeModal("detailsModal");
@@ -139,7 +138,7 @@ const Modals = (() => {
     if (delBtn) {
       delBtn.onclick = () => {
         if (!GitHubSync.isOwner()) {
-          showToast("Удаление доступно только владельцу после входа по токену", "#ff3c8c");
+          showToast("Удаление доступно только владельцу", "#ff3c8c");
           return;
         }
         if (confirm(`Удалить тайтл «${item.title}» из тира ${tier.id}?`)) {
@@ -224,7 +223,7 @@ const Modals = (() => {
     if (preview) {
       const hrs = sumMins / 60;
       preview.innerHTML = `
-        <span>Итого по тайтлу: <b>${sumEps} серий</b> ${sumMovies ? `+ <b>${sumMovies} фильм(ов)</b>` : ""}</span>
+        <span>Итого по тайтлу: <b>${formatEpisodesCount(sumEps)}</b> ${sumMovies ? `+ <b>${formatMoviesCount(sumMovies)}</b>` : ""}</span>
         <span>Суммарное время: <b style="color:#00f5ff;">${formatHours(hrs)} часов</b> (${(hrs / 24).toFixed(2)} дней)</span>
       `;
     }
@@ -244,7 +243,7 @@ const Modals = (() => {
 
   function openEditorModal(tierId = "S", existingItem = null) {
     if (!GitHubSync.isOwner()) {
-      showToast("Для добавления или редактирования войдите как владелец по токену!", "#ff3c8c");
+      showToast("Для добавления или редактирования войдите как владелец", "#ff3c8c");
       openModal("authModal");
       return;
     }
