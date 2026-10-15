@@ -14,10 +14,10 @@
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;900&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&family=Montserrat:wght@500;700;800&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
   <link rel="manifest" href="manifest.json">
 
-  <link rel="stylesheet" href="css/tokens.css?v=10.0">
-  <link rel="stylesheet" href="css/realism-3d.css?v=10.0">
-  <link rel="stylesheet" href="css/cards-and-tiers.css?v=10.0">
-  <link rel="stylesheet" href="css/modals-and-panels.css?v=10.0">
+  <link rel="stylesheet" href="css/tokens.css?v=11.0">
+  <link rel="stylesheet" href="css/realism-3d.css?v=11.0">
+  <link rel="stylesheet" href="css/cards-and-tiers.css?v=11.0">
+  <link rel="stylesheet" href="css/modals-and-panels.css?v=11.0">
 </head>
 <body class="emblems-realism letter-style-gold motion-precession fx-tier-motion fx-tilt">
   <div id="globalOwnerBg" class="global-owner-bg" aria-hidden="true">
@@ -45,28 +45,32 @@
             <input type="search" id="searchInput" class="search-input" placeholder="Поиск тайтла...">
           </div>
 
+          <!-- Фильтр Жанров с кнопкой-крестиком быстрого сброса -->
           <div class="genre-dropdown" id="genreDropdown">
             <button type="button" class="genre-dropdown-btn" id="genreDropdownBtn">
               <span>🎭</span>
               <span id="genreDropdownLabel">Все жанры</span>
               <span style="font-size:10px;opacity:0.7;">▼</span>
             </button>
+            <button type="button" id="btnClearGenreFilter" class="filter-clear-x" style="display:none;" title="Сбросить фильтр жанра">✕</button>
             <div class="genre-dropdown-menu" id="genreDropdownMenu">
-              <div class="genre-search-box">
+              <div class="genre-search-box" style="position:relative;">
                 <input type="search" id="genreSearchInput" class="form-control" placeholder="🔎 Поиск жанра...">
               </div>
               <div class="genre-options-list" id="genreOptionsList"></div>
             </div>
           </div>
 
+          <!-- Фильтр Студий с кнопкой-крестиком быстрого сброса -->
           <div class="genre-dropdown" id="studioDropdown">
             <button type="button" class="genre-dropdown-btn" id="studioDropdownBtn" style="border-color:rgba(0,245,255,0.5);box-shadow:0 0 16px -4px rgba(0,245,255,0.35);">
               <span>🎬</span>
               <span id="studioDropdownLabel">Все студии</span>
               <span style="font-size:10px;opacity:0.7;">▼</span>
             </button>
+            <button type="button" id="btnClearStudioFilter" class="filter-clear-x cyan" style="display:none;" title="Сбросить фильтр студии">✕</button>
             <div class="genre-dropdown-menu" id="studioDropdownMenu" style="border-color:rgba(0,245,255,0.45);">
-              <div class="genre-search-box">
+              <div class="genre-search-box" style="position:relative;">
                 <input type="search" id="studioSearchInput" class="form-control" placeholder="🔎 Поиск студии (Madhouse, MAPPA...)">
               </div>
               <div class="genre-options-list" id="studioOptionsList"></div>
@@ -318,7 +322,7 @@
     <div class="fx-tab-pane" id="tabOwnerBg">
       <div class="fx-section-title">🖼 Глобальный фон сайта:</div>
       <p style="font-size:11px;color:var(--ink-soft);line-height:1.45;margin:0 0 10px;">
-        Выберите картинку с компьютера — она автоматически встроится в базу и появится во всех браузерах (включая Яндекс Браузер, Edge и Opera)!
+        Выберите картинку с компьютера — она автоматически встроится в базу и появится во всех браузерах!
       </p>
       <div class="form-group">
         <label>Загрузить картинку фона с компьютера:</label>
@@ -340,7 +344,7 @@
     </div>
   </aside>
 
-  <!-- Модальное окно 1: Карточка тайтла -->
+  <!-- Модальное окно 1: Личная карточка тайтла -->
   <div id="detailsModal" class="modal-backdrop">
     <div class="modal-box modal-box-wide dossier-cinema-box">
       <div class="dossier-sticky-topbar">
@@ -355,7 +359,7 @@
     </div>
   </div>
 
-  <!-- Модальное окно 2: Добавление / Редактирование тайтла -->
+  <!-- Модальное окно 2: Добавление / Редактирование тайтла (Обязательное поле ТОЛЬКО Название на русском!) -->
   <div id="editorModal" class="modal-backdrop">
     <div class="modal-box modal-box-wide">
       <div class="modal-header">
@@ -364,12 +368,12 @@
       </div>
 
       <div class="form-group full" style="position:relative;">
-        <label>⚡ Автозаполнение из базы Shikimori / MyAnimeList:</label>
+        <label>⚡ Автозаполнение из базы Shikimori / MyAnimeList (по желанию):</label>
         <input type="search" id="shikiSearchInput" class="form-control" placeholder="Например: Песнь ночных сов, Фрирен, Oshi no Ko...">
         <div id="shikiResults" class="shiki-results"></div>
       </div>
 
-      <form id="animeEditorForm">
+      <form id="animeEditorForm" novalidate>
         <input type="hidden" id="fUid">
         <div class="form-grid">
           <div class="form-group">
@@ -395,32 +399,39 @@
             </select>
           </div>
 
+          <!-- ЕДИНСТВЕННОЕ ОБЯЗАТЕЛЬНОЕ ПОЛЕ -->
           <div class="form-group">
-            <label>Название (RU):</label>
-            <input type="text" id="fTitle" class="form-control" required>
-          </div>
-          <div class="form-group">
-            <label>Оригинальное название (EN / Romaji):</label>
-            <input type="text" id="fOrigTitle" class="form-control">
+            <label style="color:#ffd76a;">Название (RU) * (обязательно):</label>
+            <input type="text" id="fTitle" class="form-control" placeholder="Введите русское название..." required>
           </div>
 
           <div class="form-group">
-            <label>Год релиза:</label>
-            <input type="number" id="fYear" class="form-control" value="2026">
-          </div>
-          <div class="form-group">
-            <label>Личная оценка (1–10):</label>
-            <input type="number" step="0.1" min="1" max="10" id="fScore" class="form-control" value="9.0" required>
+            <label>Оригинальное название (необязательно):</label>
+            <input type="text" id="fOrigTitle" class="form-control" placeholder="Romaji / English">
           </div>
 
+          <div class="form-group">
+            <label>Год релиза (необязательно):</label>
+            <input type="number" id="fYear" class="form-control" placeholder="2026">
+          </div>
+
+          <div class="form-group">
+            <label>Личная оценка 1–10 (необязательно):</label>
+            <input type="number" step="0.1" min="0" max="10" id="fScore" class="form-control" placeholder="9.0">
+          </div>
+
+          <!-- Поле Студии с кнопкой-крестиком ✕ для быстрой очистки -->
           <div class="form-group full">
-            <label>🎬 Студия (введите или выберите из списка):</label>
-            <input type="text" id="fStudio" list="studioPresetList" class="form-control" placeholder="Madhouse, MAPPA, Liden Films...">
+            <label>🎬 Студия (необязательно — выберите из списка или введите):</label>
+            <div class="input-with-clear">
+              <input type="text" id="fStudio" list="studioPresetList" class="form-control" placeholder="Madhouse, MAPPA, Liden Films...">
+              <button type="button" id="btnClearEditorStudio" class="input-clear-btn" title="Очистить студию">✕</button>
+            </div>
             <datalist id="studioPresetList"></datalist>
           </div>
 
           <div class="form-group full poster-upload-box">
-            <label>🖼 Обложка (выберите файл с ПК — он автоматически появится во всех браузерах):</label>
+            <label>🖼 Обложка (необязательно — загрузите с ПК или укажите путь в <code>posters/</code>):</label>
             <div class="poster-upload-grid">
               <div>
                 <div style="font-size:11px;color:var(--ink-soft);margin-bottom:4px;">1. Загрузить файл с ПК:</div>
@@ -428,20 +439,29 @@
               </div>
               <div>
                 <div style="font-size:11px;color:var(--ink-soft);margin-bottom:4px;">2. Путь в posters/ или ссылка:</div>
-                <input type="text" id="fPoster" class="form-control" placeholder="posters/my-anime.jpg" required>
+                <div class="input-with-clear">
+                  <input type="text" id="fPoster" class="form-control" placeholder="posters/my-anime.jpg (необязательно)">
+                  <button type="button" id="btnClearEditorPoster" class="input-clear-btn" title="Очистить ссылку">✕</button>
+                </div>
               </div>
             </div>
           </div>
 
+          <!-- Жанры с интерактивными чипами и крестиком ✕ на каждом жанре -->
           <div class="form-group full">
-            <label>🎭 Жанры (поиск и быстрый выбор):</label>
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <label>🎭 Жанры (необязательно — удаляйте лишние нажатием на ✕):</label>
+              <button type="button" id="btnClearAllEditorGenres" class="btn btn-sm" style="padding:2px 8px;font-size:10.5px;">✕ Очистить все жанры</button>
+            </div>
             <div class="editor-genre-bar">
-              <input type="search" id="editorGenreSearch" class="form-control" placeholder="🔎 Поиск по жанрам...">
+              <input type="search" id="editorGenreSearch" class="form-control" placeholder="🔎 Быстрый фильтр списка жанров...">
               <select id="genreQuickPicker" class="form-control">
-                <option value="">+ Выбрать из списка...</option>
+                <option value="">+ Нажмите, чтобы добавить жанр...</option>
               </select>
             </div>
-            <input type="text" id="fGenres" class="form-control" placeholder="Сверхъестественное, Романтика..." style="margin-top:6px;">
+            <!-- Визуальные плашки выбранных жанров с крестиком ✕ -->
+            <div id="editorGenreChips" class="editor-chips-wrap"></div>
+            <input type="text" id="fGenres" class="form-control" placeholder="Или введите через запятую..." style="margin-top:4px;">
           </div>
         </div>
 
@@ -450,7 +470,7 @@
             <div>
               <strong>🎬 Сезоны, Фильмы, OVA, ONA и Спешлы</strong>
               <div style="font-size:11px;color:var(--ink-soft);">
-                Если сезон или фильм только ожидается (анонс), укажите <b>0</b> серий/фильмов — он не будет прибавляться к просмотренным сериям, фильмам и часам.
+                Дату просмотра можно указать полностью (<b>03.04.2026</b>), только месяц и год (<b>04.2026</b> или <b>Апрель 2026</b>) или просто год (<b>2026</b>). Для анонса укажите <b>0</b> серий.
               </div>
             </div>
             <div style="display:flex;gap:6px;flex-wrap:wrap;">
@@ -467,7 +487,7 @@
         </div>
 
         <div class="form-group full" style="margin-top:12px;">
-          <label>Личная рецензия / комментарий:</label>
+          <label>Личная рецензия / комментарий (необязательно):</label>
           <textarea id="fComment" rows="3" class="form-control"></textarea>
         </div>
 
@@ -508,16 +528,16 @@
 
   <div id="toastContainer"></div>
 
-  <script src="js/utils.js?v=10.0"></script>
-  <script src="js/realism-core.js?v=10.0"></script>
-  <script src="js/realism-engine.js?v=10.0"></script>
-  <script src="js/github-sync.js?v=10.0"></script>
-  <script src="js/shikimori-api.js?v=10.0"></script>
-  <script src="js/fx-controller.js?v=10.0"></script>
-  <script src="js/stats-engine.js?v=10.0"></script>
-  <script src="js/calendar-view.js?v=10.0"></script>
-  <script src="js/drag-drop.js?v=10.0"></script>
-  <script src="js/modals.js?v=10.0"></script>
-  <script src="js/app.js?v=10.0"></script>
+  <script src="js/utils.js?v=11.0"></script>
+  <script src="js/realism-core.js?v=11.0"></script>
+  <script src="js/realism-engine.js?v=11.0"></script>
+  <script src="js/github-sync.js?v=11.0"></script>
+  <script src="js/shikimori-api.js?v=11.0"></script>
+  <script src="js/fx-controller.js?v=11.0"></script>
+  <script src="js/stats-engine.js?v=11.0"></script>
+  <script src="js/calendar-view.js?v=11.0"></script>
+  <script src="js/drag-drop.js?v=11.0"></script>
+  <script src="js/modals.js?v=11.0"></script>
+  <script src="js/app.js?v=11.0"></script>
 </body>
 </html>
