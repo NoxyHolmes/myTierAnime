@@ -4,12 +4,12 @@
     "owner": "geraltschwarzenegger-svg",
     "repo": "noxyholmes/myTierAnime",
     "branch": "main",
-    "updatedAt": "2026-10-15T21:26:53.601Z",
+    "updatedAt": "2026-10-15T21:35:06.877Z",
     "activeMode": "emblems-realism",
     "bgImage": "backgrounds/1792058756499____________________________________.png",
     "bgDim": 65,
     "bgBlur": 5,
-    "revision": 64,
+    "revision": 65,
     "bgBlobSha": "1de942c76368b8d317071e794ae55fed35d163ad",
     "bgMime": "image/png",
     "bgmVolume": 20
@@ -303,6 +303,8 @@
           "score": 8,
           "poster": "posters/1792068330380_w1500_52740958.png",
           "posterBlobSha": "1736f657f23b7e3888ad3387e701d5c5f20f2c16",
+          "bgmUrl": "audio/1792100101795_opening_1_-_Tetrad_smerti_60143255.mp3",
+          "bgmBlobSha": "db2ce2f008f8f6d67f3b4a92b4d4411c8aae1948",
           "genres": [
             "Сёнэн",
             "Детектив",
