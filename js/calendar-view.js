@@ -1,6 +1,6 @@
-/* ═══════════════════ CHRONO CALENDAR & MONTHLY LIST VIEW ENGINE ═══════════════════ */
+/* ═══════════════════ CHRONO CALENDAR (OPENS IN GRID MODE FIRST) ═══════════════════ */
 const CalendarView = (() => {
-  let subMode = "months";
+  let subMode = "grid"; // СНАЧАЛА ОТКРЫВАЕТСЯ КАЛЕНДАРНАЯ СЕТКА
   let curYear = 2026;
   let curMonth = 5;
 
@@ -52,15 +52,15 @@ const CalendarView = (() => {
     const toolbarHtml = `
       <div class="cal-toolbar">
         <div>
-          <h2 style="margin:0;font-family:var(--serif);font-size:19px;">📅 Хронология просмотров · Канон ${curYear}</h2>
-          <div style="font-size:11.5px;color:var(--ink-soft);">Всего зафиксировано сессий/сезонов: <b>${events.length}</b></div>
+          <h2 style="margin:0;font-family:var(--serif);font-size:19px;">📅 Календарь просмотров</h2>
+          <div style="font-size:11.5px;color:var(--ink-soft);">Всего записей в хронологии: <b>${events.length}</b></div>
         </div>
         <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-          <button type="button" class="btn ${subMode === "months" ? "btn-primary" : ""}" data-cal-mode="months">
-            📋 Список по месяцам (Весь архив)
-          </button>
           <button type="button" class="btn ${subMode === "grid" ? "btn-primary" : ""}" data-cal-mode="grid">
             🗓 Календарная сетка
+          </button>
+          <button type="button" class="btn ${subMode === "months" ? "btn-primary" : ""}" data-cal-mode="months">
+            📋 Список по месяцам
           </button>
         </div>
       </div>
@@ -100,7 +100,7 @@ const CalendarView = (() => {
                   <img src="${esc(ev.item.poster)}" alt="">
                   <div style="flex:1;">
                     <div style="font-size:10px;color:#ffd76a;font-weight:700;">
-                      ${esc(ev.dateStr)} · Тир ${esc(ev.tier.id)} ·${esc(ev.partType)}
+                      ${esc(ev.dateStr)} · Тир ${esc(ev.tier.id)} · ${esc(ev.partType)}
                     </div>
                     <div style="font-size:13px;font-weight:700;color:#fff;">${esc(ev.item.title)}</div>
                     <div style="font-size:11px;color:var(--ink-soft);">
