@@ -1,4 +1,4 @@
-/* ═══════════════════ CROSS-BROWSER TIERS & 10-COLUMN POSTER GRID ═══════════════════ */
+/* ═══════════════════ CROSS-BROWSER TIERS & NON-OVERLAPPING UNDER-CARD META ═══════════════════ */
 .tiers-container {
   max-width: var(--container-width, 1780px);
   margin: 0 auto;
@@ -106,7 +106,7 @@
 .tier-grid {
   display: grid;
   grid-template-columns: repeat(var(--grid-cols, 10), minmax(0, 1fr));
-  gap: var(--grid-gap, 10px);
+  gap: var(--grid-gap, 11px);
   min-height: 190px;
   align-items: start;
 }
@@ -114,7 +114,7 @@
 .card-unit {
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 6px;
   min-width: 0;
 }
 
@@ -277,22 +277,23 @@ body.hide-under-meta .card-under-meta { display: none !important; }
   pointer-events: none;
 }
 
+/* ──────── ИСПРАВЛЕННАЯ 3-СТРОЧНАЯ НИЖНЯЯ ПЛАШКА ПОД КАРТОЧКОЙ (БЕЗ НАЛОЖЕНИЯ ЧАСОВ!) ──────── */
 .card-under-meta {
-  background: rgba(14, 12, 28, 0.9);
-  border: 1px solid rgba(255, 255, 255, 0.09);
-  border-radius: 8px;
-  padding: 5px 7px;
+  background: rgba(14, 12, 28, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  border-radius: 10px;
+  padding: 6px 8px;
   display: flex;
   flex-direction: column;
-  gap: 3px;
-  font-size: 9.5px;
+  gap: 5px;
+  font-size: 10px;
 }
 
 .cum-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 3px;
+  gap: 4px;
 }
 
 .cum-kind {
@@ -300,7 +301,7 @@ body.hide-under-meta .card-under-meta { display: none !important; }
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  padding: 1.5px 5px;
+  padding: 2px 6px;
   border-radius: 4px;
   background: rgba(255, 255, 255, 0.08);
   color: var(--t);
@@ -311,25 +312,39 @@ body.hide-under-meta .card-under-meta { display: none !important; }
 }
 
 .cum-seasons-badge {
-  font-size: 8.5px;
+  font-size: 9px;
   color: #a6a0c4;
   white-space: nowrap;
 }
 
-.cum-stats {
+/* Вторая строка: Серии и Фильмы (на всю ширину) */
+.cum-episodes-line {
+  font-size: 10px;
+  font-weight: 700;
+  color: #f5f3ff;
+  padding-top: 4px;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Третья строка: Отдельная неоновая капсула для часов */
+.cum-hours-bar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  color: #f5f3ff;
-  font-weight: 600;
+  background: rgba(0, 245, 255, 0.08);
+  border: 1px solid rgba(0, 245, 255, 0.28);
+  border-radius: 6px;
+  padding: 3px 7px;
   font-size: 9.5px;
-  padding-top: 2px;
-  border-top: 1px solid rgba(255,255,255,0.06);
-  white-space: nowrap;
+  color: #b8fbff;
 }
-.cum-hours {
+.cum-hours-bar b {
   color: #00f5ff;
-  font-weight: 700;
+  font-weight: 800;
+  font-size: 10px;
 }
 
 .card-unit.dragging {
