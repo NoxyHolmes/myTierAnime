@@ -1,6 +1,6 @@
-/* ═══════════════════ MAIN APPLICATION ORCHESTRATOR (myTierAnime v4.0 INSTANT PERSISTENCE) ═══════════════════ */
+/* ═══════════════════ MAIN APPLICATION ORCHESTRATOR (myTierAnime v4.1 BULLETPROOF PERSISTENCE) ═══════════════════ */
 (() => {
-  const LOCAL_STORAGE_KEY = "mta_2026_state_v7";
+  const LOCAL_STORAGE_KEY = "mta_2026_state_v8";
   let appData = null;
   let searchQuery = "";
   let selectedGenre = "ALL";
@@ -27,9 +27,10 @@
 
   function ensureSixTiers(data) {
     if (!data || !Array.isArray(data.tiers)) {
-      return { meta: { title: "myTierAnime", bgImage: "", bgDim: 60, bgBlur: 2, updatedAt: new Date(0).toISOString() }, tiers: DEFAULT_TIERS_TEMPLATE };
+      return { meta: { title: "myTierAnime", bgImage: "", bgDim: 55, bgBlur: 0, revision: 1 }, tiers: DEFAULT_TIERS_TEMPLATE };
     }
     data.meta = data.meta || {};
+    data.meta.revision = Number(data.meta.revision || 1);
     DEFAULT_TIERS_TEMPLATE.forEach(def => {
       if (!data.tiers.find(t => t.id === def.id)) {
         data.tiers.push(JSON.parse(JSON.stringify(def)));
@@ -44,7 +45,7 @@
     return data;
   }
 
-  /* Умная загрузка: никогда не затирает более свежие локальные правки старым кешем GitHub Pages! */
+  /* ЗАЩИТА ОТ ОТКАТА ПРИ F5: локальная ревизия владельца НИКОГДА не затирается старым tiers.json! */
   async function loadInitialState() {
     let localObj = null;
     const cached = localStorage.getItem(LOCAL_STORAGE_KEY);
@@ -54,13 +55,11 @@
       } catch {}
     }
 
-    // Если есть локальный стейт — сразу рисуем его за 0мс
     if (localObj) {
       appData = localObj;
       FXController.applyGlobalBackground(appData.meta || {});
     }
 
-    // Пытаемся получить свежие данные из GitHub API (или статического файла для гостей)
     try {
       let remoteObj = await GitHubSync.fetchFreshTiersFromApi();
       if (!remoteObj) {
@@ -69,11 +68,11 @@
       }
       if (remoteObj) {
         remoteObj = ensureSixTiers(remoteObj);
-        const localTime = Date.parse(localObj?.meta?.updatedAt || "") || 0;
-        const remoteTime = Date.parse(remoteObj?.meta?.updatedAt || "") || 0;
+        const localRev = Number(localObj?.meta?.revision || 0);
+        const remoteRev = Number(remoteObj?.meta?.revision || 0);
 
-        // Заменяем локальный стейт только если на сервере версия новее (или локальной ещё нет)
-        if (!localObj || remoteTime > localTime) {
+        // Обновляем стейт с сервера ТОЛЬКО если локального стейта ещё нет, или ревизия на сервере строго выше локальной
+        if (!localObj || remoteRev > localRev) {
           appData = remoteObj;
           localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(appData));
         }
@@ -86,24 +85,51 @@
     FXController.applyGlobalBackground(appData.meta || {});
   }
 
-  /* МОМЕНТАЛЬНОЕ АВТОСОХРАНЕНИЕ (за 0.01с локально + фоновый коммит в GitHub без кнопок!) */
-  let syncTimer = 0;
-  function saveAndAutoSync(reason = "Auto-update via myTierAnime") {
+  function setSyncIndicator(text, col = "#38ef7d") {
+    const badge = document.getElementById("syncStatusBadge");
+    if (!badge) return;
+    badge.textContent = text;
+    badge.style.color = col;
+    badge.style.borderColor = col;
+  }
+
+  /* МОМЕНТАЛЬНОЕ СОХРАНЕНИЕ (за 0.001с в браузере + мгновенный коммит в GitHub) */
+  let isSyncing = false;
+  let pendingSync = false;
+
+  async function saveAndAutoSync(reason = "Auto-save via myTierAnime") {
     if (!appData) return;
     appData.meta = appData.meta || {};
+    appData.meta.revision = Number(appData.meta.revision || 1) + 1;
     appData.meta.updatedAt = new Date().toISOString();
-    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(appData));
+
+    try {
+      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(appData));
+    } catch (e) {
+      console.warn("LocalStorage quota warning:", e);
+    }
     StatsEngine.updateStats(appData.tiers);
 
-    if (GitHubSync.isOwner()) {
-      clearTimeout(syncTimer);
-      syncTimer = setTimeout(async () => {
-        try {
-          await GitHubSync.commitTiersToGitHub(appData, reason);
-        } catch (err) {
-          console.warn("Background GitHub sync warning:", err);
-        }
-      }, 250);
+    if (!GitHubSync.isOwner()) return;
+
+    if (isSyncing) {
+      pendingSync = true;
+      return;
+    }
+
+    isSyncing = true;
+    setSyncIndicator("⏳ Сохранение в GitHub...", "#00f5ff");
+    try {
+      await GitHubSync.commitTiersToGitHub(appData, reason);
+      setSyncIndicator("☁ Все изменения сохранены", "#38ef7d");
+    } catch (err) {
+      setSyncIndicator("⚠ Сохранено локально (проверьте токен)", "#ffd76a");
+    } finally {
+      isSyncing = false;
+      if (pendingSync) {
+        pendingSync = false;
+        saveAndAutoSync("Queued auto-save");
+      }
     }
   }
 
@@ -119,7 +145,7 @@
     return `
       <div class="card-unit" draggable="true" data-uid="${esc(item.uid)}" data-tier-id="${esc(tierId)}">
         <article class="card" data-uid="${esc(item.uid)}" data-tier-id="${esc(tierId)}">
-          <img class="card-poster" src="${esc(item.poster)}" alt="${esc(item.title)}" loading="lazy"
+          <img class="card-poster" draggable="false" src="${esc(item.poster)}" alt="${esc(item.title)}" loading="lazy"
                onerror="this.src='https://placehold.co/400x600/16122b/ffd76a?text=myTierAnime'">
           <div class="scrim"></div>
           <span class="holo-foil" aria-hidden="true"></span>
@@ -315,9 +341,9 @@
       } else {
         toTier.items.push(moved);
       }
-      saveAndAutoSync(`Move ${moved.title} to ${toTierId}`);
       render();
-      showToast(`«${moved.title}» перемещён в тир ${toTierId} (сохранено)`, "#00f5ff");
+      saveAndAutoSync(`Move ${moved.title} to ${toTierId}`);
+      showToast(`«${moved.title}» перемещён в тир ${toTierId}`, "#00f5ff");
     });
   }
 
@@ -356,9 +382,9 @@
       if (!tier) return;
       const item = tier.items.find(i => i.uid === uid);
       tier.items = tier.items.filter(i => i.uid !== uid);
-      saveAndAutoSync(`Delete ${item?.title || uid}`);
       render();
-      showToast(`Тайтл «${item?.title || ""}» удалён и сохранён`);
+      saveAndAutoSync(`Delete ${item?.title || uid}`);
+      showToast(`Тайтл «${item?.title || ""}» удалён`);
     });
 
     document.getElementById("btnToggleCalendar")?.addEventListener("click", () => toggleCalendarView());
@@ -406,15 +432,14 @@
       picker.value = "";
     });
 
-    // Загрузка обложки тайтла: моментальное превью + загрузка в posters/
     const posterFileInp = document.getElementById("fPosterFile");
     posterFileInp?.addEventListener("change", async () => {
       const file = posterFileInp.files?.[0];
       if (!file) return;
       try {
-        const dataUrl = await GitHubSync.compressImageToDataUrl(file, 700, 0.85);
+        const dataUrl = await GitHubSync.compressImageToDataUrl(file, 650, 0.85);
         document.getElementById("fPoster").value = dataUrl;
-        showToast("Обложка мгновенно подготовлена!", "#38ef7d");
+        showToast("Обложка подготовлена!", "#38ef7d");
         GitHubSync.uploadAssetFile(file, "posters").then(path => {
           document.getElementById("fPoster").value = path;
         }).catch(() => {});
@@ -423,32 +448,29 @@
       }
     });
 
-    // МГНОВЕННАЯ УСТАНОВКА ФОНА С КОМПЬЮТЕРА (БЕЗ ЗАДЕРЖКИ!)
+    /* МГНОВЕННАЯ УСТАНОВКА ФОНА С КОМПЬЮТЕРА (ЧЕРЕЗ <img id="globalOwnerBgImg">) */
     const ownerBgFile = document.getElementById("ownerBgFileInput");
     ownerBgFile?.addEventListener("change", async () => {
       const file = ownerBgFile.files?.[0];
       if (!file) return;
       try {
-        const compressedDataUrl = await GitHubSync.compressImageToDataUrl(file, 1600, 0.8);
+        const compressedDataUrl = await GitHubSync.compressImageToDataUrl(file, 1400, 0.78);
+        localStorage.setItem("mta_owner_bg_v8", compressedDataUrl);
         appData.meta = appData.meta || {};
         appData.meta.bgImage = compressedDataUrl;
         FXController.applyGlobalBackground(appData.meta);
-        saveAndAutoSync("Update global background image");
-        showToast("Фон мгновенно установлен и сохранён!", "#38ef7d");
-      } catch (err) {
-        showToast("Не удалось прочитать картинку фона", "#ff3c8c");
-      }
-    });
+        showToast("Фон мгновенно установлен!", "#38ef7d");
 
-    // Мгновенная установка фона по URL
-    const ownerBgUrlInp = document.getElementById("ownerBgUrlInput");
-    ownerBgUrlInp?.addEventListener("change", () => {
-      if (!GitHubSync.isOwner()) return;
-      appData.meta = appData.meta || {};
-      appData.meta.bgImage = ownerBgUrlInp.value.trim();
-      FXController.applyGlobalBackground(appData.meta);
-      saveAndAutoSync("Update global background URL");
-      showToast("Фон обновлён и сохранён!", "#38ef7d");
+        // Параллельно загружаем файл в папку backgrounds/ репозитория, чтобы в JSON был лёгкий путь
+        GitHubSync.uploadAssetFile(file, "backgrounds").then(uploadedPath => {
+          appData.meta.bgImage = uploadedPath;
+          saveAndAutoSync("Upload global background image");
+        }).catch(() => {
+          saveAndAutoSync("Save global background");
+        });
+      } catch (err) {
+        showToast("Не удалось прочитать файл картинки", "#ff3c8c");
+      }
     });
 
     document.getElementById("rngOwnerBgDim")?.addEventListener("input", e => {
@@ -473,13 +495,12 @@
 
     document.getElementById("btnClearOwnerBg")?.addEventListener("click", () => {
       if (!GitHubSync.isOwner()) return;
+      localStorage.removeItem("mta_owner_bg_v8");
       appData.meta = appData.meta || {};
       appData.meta.bgImage = "";
-      const urlInp = document.getElementById("ownerBgUrlInput");
-      if (urlInp) urlInp.value = "";
       FXController.applyGlobalBackground(appData.meta);
       saveAndAutoSync("Clear global background");
-      showToast("Картинка фона убрана");
+      showToast("Стандартный фон восстановлен");
     });
 
     document.getElementById("searchInput")?.addEventListener("input", e => {
@@ -548,7 +569,6 @@
       }, 320);
     });
 
-    // Моментальное сохранение при редактировании/добавлении тайтла
     document.getElementById("animeEditorForm")?.addEventListener("submit", e => {
       e.preventDefault();
       if (!GitHubSync.isOwner()) {
@@ -592,10 +612,10 @@
         destTier.items.unshift(newItem);
       }
 
-      saveAndAutoSync(`Save ${newItem.title} in tier ${targetTierId}`);
       render();
+      saveAndAutoSync(`Save ${newItem.title} in tier ${targetTierId}`);
       Modals.closeModal("editorModal");
-      showToast(`✔ «${newItem.title}» моментально сохранён!`, "#38ef7d");
+      showToast(`✔ «${newItem.title}» сохранён!`, "#38ef7d");
     });
 
     document.getElementById("btnOwnerAuth")?.addEventListener("click", () => {
@@ -623,7 +643,7 @@
         document.body.classList.add("is-owner");
         updateOwnerBadge(user);
         Modals.closeModal("authModal");
-        showToast(`Вход выполнен: ${user.login}! Все изменения сохраняются автоматически.`, "#38ef7d");
+        showToast(`Вход выполнен: ${user.login}!`, "#38ef7d");
       } else {
         GitHubSync.logout();
         updateOwnerBadge(null);
