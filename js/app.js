@@ -1,4 +1,4 @@
-/* ═══════════════════ MAIN APPLICATION ORCHESTRATOR (myTierAnime v9.0) ═══════════════════ */
+/* ═══════════════════ MAIN APPLICATION ORCHESTRATOR (myTierAnime v10.0 YANDEX & OPERA GX SYNC) ═══════════════════ */
 (() => {
   if (typeof window.pluralRu !== "function") {
     window.pluralRu = function (number, one, few, many) {
@@ -19,19 +19,9 @@
   if (typeof window.formatMoviesCount !== "function") {
     window.formatMoviesCount = n => `${n} ${window.pluralRu(n, "фильм", "фильма", "фильмов")}`;
   }
-  if (!Array.isArray(window.ALL_ANIME_STUDIOS)) {
-    window.ALL_ANIME_STUDIOS = [
-      "A-1 Pictures", "Bones", "CloverWorks", "CoMix Wave Films", "David Production",
-      "Doga Kobo", "J.C.Staff", "Kyoto Animation", "Lerche", "Liber", "Liden Films",
-      "Madhouse", "MAPPA", "OLM", "OLM / TOHO animation", "P.A. Works", "Pierrot",
-      "Production I.G", "Science SARU", "Shaft", "Silver Link.", "Studio Bind",
-      "Studio Deen", "Studio Ghibli", "Sunrise", "TMS Entertainment", "Toei Animation",
-      "Trigger", "Ufotable", "White Fox", "Wit Studio"
-    ];
-  }
 
-  const SNAPSHOT_STORAGE_KEY = "mta_2026_instant_snapshot_v16";
-  const LEGACY_KEYS = ["mta_2026_owner_draft_v15", "mta_2026_owner_draft_v14", "mta_2026_owner_draft_v12"];
+  const SNAPSHOT_STORAGE_KEY = "mta_2026_instant_snapshot_v17";
+  const LEGACY_KEYS = ["mta_2026_instant_snapshot_v16", "mta_2026_owner_draft_v15"];
 
   let appData = null;
   let searchQuery = "";
@@ -63,7 +53,7 @@
   function ensureSixTiers(data) {
     if (!data || !Array.isArray(data.tiers) || data.tiers.length === 0) {
       return {
-        meta: { title: "myTierAnime", bgImage: "", bgBlobSha: "", bgDim: 55, bgBlur: 0, revision: 0 },
+        meta: { title: "myTierAnime", bgImage: "", bgBlobSha: "", bgInline: "", bgDim: 55, bgBlur: 0, revision: 0 },
         tiers: JSON.parse(JSON.stringify(EMPTY_TIERS_SKELETON))
       };
     }
@@ -239,7 +229,7 @@
       setSyncIndicator(`☁ Синхронизировано (${new Date().toLocaleTimeString("ru-RU")})`, "#38ef7d");
       if (syncBtn) syncBtn.textContent = "🔄 Синхронизировать со всеми";
       if (showSuccessToast) {
-        showToast("✔ Вся информация, обложки и фон успешно синхронизированы!", "#38ef7d");
+        showToast("✔ Вся информация, обложки и фон синхронизированы для всех браузеров!", "#38ef7d");
       }
     } catch (err) {
       setSyncIndicator("⚠ Ошибка синхронизации: проверьте токен/репозиторий", "#ff5e7e");
@@ -263,10 +253,13 @@
       ? window.formatMoviesCount(m.totalMovies)
       : `${window.formatEpisodesCount(m.totalEpisodes)}${m.totalMovies ? ` + ${window.formatMoviesCount(m.totalMovies)}` : ""}`;
 
+    // Если есть встроенная копия обложки (posterInline), используем её сразу — она мгновенно открывается в Яндекс Браузере!
+    const displayPosterSrc = item.posterInline || item.poster;
+
     return `
       <div class="card-unit" draggable="true" data-uid="${esc(item.uid)}" data-tier-id="${esc(tierId)}">
         <article class="card" data-uid="${esc(item.uid)}" data-tier-id="${esc(tierId)}">
-          <img class="card-poster" draggable="false" src="${esc(item.poster)}" data-blob-sha="${esc(item.posterBlobSha || "")}" alt="${esc(item.title)}" loading="lazy"
+          <img class="card-poster" draggable="false" src="${esc(displayPosterSrc)}" data-raw-path="${esc(item.poster)}" data-blob-sha="${esc(item.posterBlobSha || "")}" alt="${esc(item.title)}" loading="lazy"
                onerror="this.src='https://placehold.co/400x600/16122b/ffd76a?text=myTierAnime'">
           <div class="scrim"></div>
           <span class="holo-foil" aria-hidden="true"></span>
@@ -380,10 +373,12 @@
 
     if (typeof GitHubSync !== "undefined" && typeof GitHubSync.resolveAssetUrl === "function") {
       host.querySelectorAll("img.card-poster").forEach(async img => {
+        const curSrc = img.getAttribute("src") || "";
+        if (curSrc.startsWith("data:")) return;
         const sha = img.dataset.blobSha;
-        const rawSrc = img.getAttribute("src") || "";
-        if (sha || (rawSrc && !rawSrc.startsWith("http") && !rawSrc.startsWith("data:") && !rawSrc.startsWith("blob:"))) {
-          const resolved = await GitHubSync.resolveAssetUrl(rawSrc, sha);
+        const rawPath = img.dataset.rawPath || curSrc;
+        if (sha || (rawPath && !rawPath.startsWith("http") && !rawPath.startsWith("blob:"))) {
+          const resolved = await GitHubSync.resolveAssetUrl(rawPath, sha);
           if (resolved) img.src = resolved;
         }
       });
@@ -652,24 +647,28 @@
       picker.value = "";
     });
 
+    /* Загрузка обложки с сохранением встроенной копии (posterInline) для Яндекс Браузера */
     const posterFileInp = document.getElementById("fPosterFile");
     let pendingPosterBlobSha = "";
+    let pendingPosterInline = "";
     posterFileInp?.addEventListener("change", async () => {
       const file = posterFileInp.files?.[0];
       if (!file) return;
       try {
-        showToast("Загрузка оригинальной обложки в GitHub...", "#00f5ff");
+        showToast("Загрузка обложки в GitHub...", "#00f5ff");
         const uploaded = await GitHubSync.uploadAssetFile(file, "posters");
         const posterInputEl = document.getElementById("fPoster");
         posterInputEl.value = uploaded.path;
         posterInputEl.dataset.existingBlobSha = uploaded.blobSha;
         pendingPosterBlobSha = uploaded.blobSha;
-        showToast("✔ Обложка загружена!", "#38ef7d");
+        pendingPosterInline = uploaded.inlineDataUrl || "";
+        showToast("✔ Обложка загружена и подготовлена для всех браузеров!", "#38ef7d");
       } catch (err) {
         showToast("Ошибка загрузки обложки: " + err.message, "#ff3c8c");
       }
     });
 
+    /* Загрузка фона с сохранением встроенной копии (bgInline) для Яндекс Браузера */
     const ownerBgFile = document.getElementById("ownerBgFileInput");
     ownerBgFile?.addEventListener("change", async () => {
       const file = ownerBgFile.files?.[0];
@@ -680,12 +679,13 @@
         if (typeof FXController !== "undefined") {
           await FXController.applyGlobalBackground(appData.meta, localBlobUrl);
         }
-        showToast("⚡ Отправка фона в GitHub для всех зрителей...", "#00f5ff");
+        showToast("⚡ Отправка фона в GitHub для всех браузеров...", "#00f5ff");
 
         const uploaded = await GitHubSync.uploadAssetFile(file, "backgrounds");
         appData.meta.bgImage = uploaded.path;
         appData.meta.bgBlobSha = uploaded.blobSha;
         appData.meta.bgMime = uploaded.mime;
+        appData.meta.bgInline = uploaded.inlineDataUrl || "";
 
         await saveAndAutoSync("Update global background image", true);
       } catch (err) {
@@ -716,6 +716,7 @@
       appData.meta = appData.meta || {};
       appData.meta.bgImage = "";
       appData.meta.bgBlobSha = "";
+      appData.meta.bgInline = "";
       FXController.applyGlobalBackground(appData.meta);
       saveAndAutoSync("Clear global background", true);
     });
@@ -772,6 +773,7 @@
             posterInp.value = picked.poster;
             posterInp.dataset.existingBlobSha = "";
             pendingPosterBlobSha = "";
+            pendingPosterInline = "";
             document.getElementById("fStudio").value = picked.studio;
             document.getElementById("fGenres").value = (picked.genres || []).join(", ");
 
@@ -802,6 +804,15 @@
       const posterInp = document.getElementById("fPoster");
       const finalBlobSha = pendingPosterBlobSha || posterInp.dataset.existingBlobSha || undefined;
 
+      // Сохраняем уже имеющуюся встроенную копию обложки, если картинку не меняли
+      let existingInline = "";
+      appData.tiers.forEach(t => {
+        const found = (t.items || []).find(i => i.uid === uid);
+        if (found && found.poster === posterInp.value.trim()) {
+          existingInline = found.posterInline || "";
+        }
+      });
+
       const newItem = {
         uid,
         kind: document.getElementById("fKind").value,
@@ -812,12 +823,14 @@
         score: parseFloat(document.getElementById("fScore").value) || 9.0,
         poster: posterInp.value.trim(),
         posterBlobSha: finalBlobSha,
+        posterInline: pendingPosterInline || existingInline || undefined,
         genres: document.getElementById("fGenres").value.split(",").map(s => s.trim()).filter(Boolean),
         comment: document.getElementById("fComment").value.trim(),
         seasons,
         watched: seasons.map(s => ({ date: s.date, note: s.title }))
       };
       pendingPosterBlobSha = "";
+      pendingPosterInline = "";
 
       let wasExisting = false;
       appData.tiers.forEach(t => {
@@ -858,7 +871,7 @@
       const tk = document.getElementById("ghTokenInput").value.trim();
       const dep = typeof GitHubSync.detectRepoFromLocation === "function"
         ? GitHubSync.detectRepoFromLocation()
-        : "geraltschwarzenegger-svg/myTierAnime";
+        : "noxyholmes/myTierAnime";
       const rp = document.getElementById("ghRepoInput").value.trim() || dep;
 
       if (!tk) {
