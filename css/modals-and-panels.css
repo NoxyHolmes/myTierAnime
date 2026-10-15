@@ -1,4 +1,4 @@
-/* ═══════════════════ FIXED DOSSIER MODAL, NEON FILE UPLOAD BUTTON & CONTROLS ═══════════════════ */
+/* ═══════════════════ CUSTOM NEON FILE UPLOAD BUTTONS & DOSSIER MODAL ═══════════════════ */
 *, *::before, *::after {
   box-sizing: border-box;
 }
@@ -69,6 +69,75 @@ body.fx-scanlines .screen-fx-overlay::after {
   );
 }
 
+/* КАСТОМНАЯ НЕОНОВАЯ КНОПКА ВЫБОРА ФАЙЛА (ВМЕСТО БЕЛОЙ СИСТЕМНОЙ КНОПКИ БРАУЗЕРА!) */
+.hidden-file-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.custom-file-upload {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  background: #15112b;
+  border: 1px solid rgba(0, 245, 255, 0.4);
+  border-radius: 10px;
+  padding: 5px 10px 5px 6px;
+  cursor: pointer;
+  transition: all 0.22s ease;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.08);
+}
+.custom-file-upload:hover {
+  border-color: #ffd76a;
+  box-shadow: 0 0 18px -4px rgba(255, 215, 106, 0.45);
+}
+.cfu-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 7px;
+  background: linear-gradient(135deg, rgba(255, 215, 106, 0.25), rgba(255, 94, 126, 0.25));
+  border: 1px solid rgba(255, 215, 106, 0.65);
+  color: #ffe8a3;
+  font-size: 11.5px;
+  font-weight: 800;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+}
+.custom-file-upload:hover .cfu-btn {
+  background: linear-gradient(135deg, #ffd76a, #ff9f43);
+  color: #090614;
+}
+.cfu-name {
+  font-size: 11.5px;
+  color: var(--ink-soft);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+}
+
+/* Дополнительно стилизуем любые стандартные input[type="file"], если они где-то появятся */
+input[type="file"]::file-selector-button,
+input[type="file"]::-webkit-file-upload-button {
+  background: linear-gradient(135deg, #261d4a, #181233);
+  color: #ffd76a;
+  border: 1px solid rgba(255, 215, 106, 0.55);
+  border-radius: 7px;
+  padding: 6px 12px;
+  margin-right: 10px;
+  font-family: var(--sans);
+  font-size: 11.5px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
 input[type="range"] {
   -webkit-appearance: none;
   appearance: none;
@@ -102,78 +171,6 @@ input[type="range"]::-webkit-slider-thumb {
 input[type="range"]::-webkit-slider-thumb:hover {
   transform: scale(1.15);
   box-shadow: 0 0 18px #00f5ff;
-}
-
-/* КАСТОМНАЯ НЕОНОВАЯ КНОПКА «ВЫБРАТЬ ФАЙЛ» ПОД ОФОРМЛЕНИЕ САЙТА */
-.neon-file-upload {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  width: 100%;
-  background: linear-gradient(135deg, rgba(28, 22, 56, 0.95), rgba(16, 12, 34, 0.98));
-  border: 1px solid rgba(0, 245, 255, 0.42);
-  border-radius: 10px;
-  padding: 5px 10px 5px 6px;
-  cursor: pointer;
-  box-shadow: 0 0 16px -4px rgba(0, 245, 255, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.12);
-  transition: all 0.22s ease;
-}
-.neon-file-upload:hover {
-  border-color: #ffd76a;
-  box-shadow: 0 0 22px -2px rgba(255, 215, 106, 0.45);
-  transform: translateY(-1px);
-}
-.neon-file-upload input[type="file"] {
-  display: none !important;
-}
-.neon-file-upload .nfu-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 13px;
-  border-radius: 7px;
-  background: linear-gradient(135deg, #ffd76a 0%, #ff5e7e 55%, #b57cff 100%);
-  color: #090614;
-  font-size: 11.5px;
-  font-weight: 800;
-  white-space: nowrap;
-  box-shadow: 0 2px 10px rgba(255, 215, 106, 0.4);
-  transition: filter 0.2s ease;
-}
-.neon-file-upload:hover .nfu-btn {
-  filter: brightness(1.1);
-}
-.neon-file-upload .nfu-name {
-  font-size: 11.5px;
-  color: var(--ink-soft);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  flex: 1;
-}
-.neon-file-upload.has-file .nfu-name {
-  color: #38ef7d;
-  font-weight: 700;
-}
-
-/* Дополнительно стилизуем любые нативные кнопки выбора файла на случай прямого использования */
-input[type="file"]::file-selector-button {
-  background: linear-gradient(135deg, #ffd76a, #ff5e7e);
-  color: #090614;
-  font-family: var(--sans);
-  font-weight: 800;
-  font-size: 11.5px;
-  border: none;
-  border-radius: 7px;
-  padding: 6px 12px;
-  margin-right: 10px;
-  cursor: pointer;
-  box-shadow: 0 0 12px rgba(255, 215, 106, 0.4);
-  transition: all 0.2s ease;
-}
-input[type="file"]::file-selector-button:hover {
-  filter: brightness(1.1);
-  box-shadow: 0 0 16px rgba(0, 245, 255, 0.65);
 }
 
 select,
@@ -210,7 +207,7 @@ select option {
   backdrop-filter: blur(20px);
   border-bottom: 1px solid rgba(255, 255, 255, 0.14);
   box-shadow: 0 10px 35px -10px rgba(0, 0, 0, 0.85), 0 0 28px -8px rgba(181, 124, 255, 0.35);
-  padding: 12px 22px;
+  padding: 12px 18px;
 }
 
 .topbar-glow-line {
@@ -232,7 +229,7 @@ body.hide-stats-ribbon .stats-ribbon { display: none !important; }
 }
 
 .topbar-inner {
-  max-width: var(--container-width, 1780px);
+  max-width: var(--container-width, 1920px);
   margin: 0 auto;
   display: flex;
   align-items: center;
@@ -286,7 +283,7 @@ body.hide-stats-ribbon .stats-ribbon { display: none !important; }
 .toolbar-controls {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 9px;
   flex-wrap: wrap;
 }
 
@@ -304,7 +301,7 @@ body.hide-stats-ribbon .stats-ribbon { display: none !important; }
   color: #fff;
   font-size: 13px;
   font-weight: 500;
-  width: 210px;
+  width: 195px;
   box-shadow: 0 0 16px -4px rgba(0, 245, 255, 0.25);
   transition: all 0.25s ease;
 }
@@ -312,7 +309,7 @@ body.hide-stats-ribbon .stats-ribbon { display: none !important; }
   outline: none;
   border-color: #00f5ff;
   box-shadow: 0 0 22px -2px rgba(0, 245, 255, 0.55);
-  width: 255px;
+  width: 235px;
 }
 .search-icon {
   position: absolute;
@@ -331,7 +328,7 @@ body.hide-stats-ribbon .stats-ribbon { display: none !important; }
   align-items: center;
   gap: 8px;
   border-radius: 999px;
-  padding: 9px 16px;
+  padding: 9px 15px;
   font-size: 12.5px;
   font-weight: 700;
   color: #fff;
@@ -474,9 +471,9 @@ body.is-owner .owner-only {
 }
 
 .stats-ribbon {
-  max-width: var(--container-width, 1780px);
+  max-width: var(--container-width, 1920px);
   margin: 18px auto 6px;
-  padding: 0 20px;
+  padding: 0 18px;
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
   gap: 14px;
@@ -655,9 +652,9 @@ body.is-owner .owner-only {
 }
 
 .calendar-container {
-  max-width: var(--container-width, 1780px);
+  max-width: var(--container-width, 1920px);
   margin: 16px auto 80px;
-  padding: 0 20px;
+  padding: 0 18px;
 }
 .cal-toolbar {
   display: flex;
@@ -1054,3 +1051,183 @@ body.is-owner .owner-only {
 }
 
 .editor-genre-bar {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.seasons-builder-box {
+  margin-top: 10px;
+  padding: 14px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-subtle);
+}
+.seasons-builder-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+.seasons-editor-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 260px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+.season-row {
+  display: grid;
+  grid-template-columns: minmax(120px, 1.3fr) minmax(105px, 0.95fr) 68px 74px 110px minmax(100px, 1fr) 72px 32px;
+  gap: 6px;
+  align-items: center;
+  background: rgba(18, 14, 36, 0.95);
+  padding: 8px;
+  border-radius: 9px;
+  border: 1px solid rgba(255,255,255,0.09);
+}
+.season-row .s-calc {
+  font-size: 11px;
+  font-weight: 700;
+  color: #00f5ff;
+  text-align: right;
+  white-space: nowrap;
+}
+.seasons-total-preview {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border-subtle);
+  font-size: 12.5px;
+  color: #ffd76a;
+  font-weight: 700;
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.dossier-seasons-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 0 0 10px;
+}
+.dossier-filter-pills {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.dossier-pill-btn {
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  border: 1px solid rgba(255,255,255,0.14);
+  background: rgba(255,255,255,0.05);
+  color: var(--ink-soft);
+  cursor: pointer;
+}
+.dossier-pill-btn.active {
+  background: linear-gradient(135deg, rgba(0, 245, 255, 0.25), rgba(181, 124, 255, 0.25));
+  border-color: #00f5ff;
+  color: #fff;
+}
+.seasons-scroll-box {
+  max-height: 220px;
+  overflow-y: auto;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 12px;
+  background: rgba(24, 19, 48, 0.75);
+}
+.seasons-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+.seasons-table thead th {
+  position: sticky;
+  top: 0;
+  background: #231b47;
+  color: #d6d0f5;
+  font-size: 10.5px;
+  text-transform: uppercase;
+  padding: 9px 12px;
+  text-align: left;
+  border-bottom: 1px solid rgba(255,255,255,0.14);
+  z-index: 2;
+}
+.seasons-table td {
+  padding: 8px 12px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+
+.shiki-results {
+  margin-top: 6px;
+  max-height: 180px;
+  overflow-y: auto;
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  background: #15112b;
+  display: none;
+}
+.shiki-results.show {
+  display: block;
+}
+.shiki-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  cursor: pointer;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+.shiki-item:hover {
+  background: rgba(0, 245, 255, 0.12);
+}
+.shiki-item img {
+  width: 34px;
+  height: 48px;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+#toastContainer {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.toast {
+  background: rgba(18, 15, 36, 0.95);
+  border: 1px solid var(--border-bright);
+  border-left: 4px solid #ffd76a;
+  color: #fff;
+  padding: 10px 16px;
+  border-radius: 10px;
+  font-size: 12.5px;
+  box-shadow: var(--shadow-lg);
+}
+
+@media (max-width: 860px) {
+  .dossier-hero-grid {
+    grid-template-columns: 1fr;
+  }
+  .dossier-poster-wrap {
+    max-width: 180px;
+    margin: 0 auto;
+  }
+  .season-row {
+    grid-template-columns: 1fr 1fr;
+  }
+  .poster-upload-grid, .editor-genre-bar {
+    grid-template-columns: 1fr;
+  }
+}
