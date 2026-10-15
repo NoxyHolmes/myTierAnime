@@ -1,4 +1,4 @@
-/* ═══════════════════ TIERS & CUSTOMIZABLE 10-COLUMN POSTER GRID ═══════════════════ */
+/* ═══════════════════ TIERS & 3 DISPLAY MODES (POSTERS, CHIPS, LIST) ═══════════════════ */
 .tiers-container {
   max-width: var(--container-width, 1780px);
   margin: 0 auto;
@@ -107,6 +107,7 @@
   color: var(--t);
 }
 
+/* СЕТКА ПОСТЕРИКОВ (10 в ряд) */
 .tier-grid {
   display: grid;
   grid-template-columns: repeat(var(--grid-cols, 10), minmax(0, 1fr));
@@ -217,7 +218,6 @@
   white-space: nowrap;
 }
 
-/* Переключатели видимости элементов карточек из Настроек */
 body.hide-card-rank .card .rank { display: none !important; }
 body.hide-card-score .card-score-badge { display: none !important; }
 body.hide-card-year .card-year-3d { display: none !important; }
@@ -330,6 +330,88 @@ body.hide-under-meta .card-under-meta { display: none !important; }
 .cum-hours {
   color: #00f5ff;
   font-weight: 700;
+}
+
+/* ──────── РЕЖИМ 2: ЧИПЫ (CHIPS) ──────── */
+body.view-mode-chips .tier-grid {
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)) !important;
+}
+body.view-mode-chips .card {
+  aspect-ratio: auto !important;
+  height: 64px;
+}
+body.view-mode-chips .card-poster {
+  position: absolute;
+  width: 44px;
+  height: 64px;
+  left: 0;
+  top: 0;
+}
+body.view-mode-chips .card-info {
+  position: static;
+  padding: 6px 8px 6px 52px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+body.view-mode-chips .card .scrim,
+body.view-mode-chips .card .rank,
+body.view-mode-chips .card-reaction,
+body.view-mode-chips .card-coronet,
+body.view-mode-chips .floral-frame,
+body.view-mode-chips .card-year-3d {
+  display: none !important;
+}
+body.view-mode-chips .card-score-badge {
+  top: 4px;
+  right: 4px;
+  font-size: 8px;
+  padding: 1px 4px;
+}
+
+/* ──────── РЕЖИМ 3: СПИСОК (LIST) ──────── */
+body.view-mode-list .tier-grid {
+  grid-template-columns: 1fr !important;
+  gap: 8px;
+}
+body.view-mode-list .card-unit {
+  flex-direction: row;
+  background: rgba(14, 11, 28, 0.85);
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  padding: 8px 12px;
+  align-items: center;
+  gap: 14px;
+}
+body.view-mode-list .card {
+  width: 46px;
+  height: 64px;
+  aspect-ratio: auto !important;
+  flex-shrink: 0;
+  box-shadow: none;
+}
+body.view-mode-list .card .scrim,
+body.view-mode-list .card .rank,
+body.view-mode-list .card-info,
+body.view-mode-list .card-reaction,
+body.view-mode-list .card-coronet,
+body.view-mode-list .floral-frame,
+body.view-mode-list .card-year-3d {
+  display: none !important;
+}
+body.view-mode-list .card-under-meta {
+  background: transparent;
+  border: none;
+  padding: 0;
+  flex: 1;
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+  align-items: center;
+  gap: 10px;
+}
+@media (max-width: 900px) {
+  body.view-mode-list .card-under-meta { grid-template-columns: 1fr 1fr; }
 }
 
 .card-unit.dragging {
