@@ -1,11 +1,12 @@
-/* ═══════════════════ MAIN APPLICATION ORCHESTRATOR (myTierAnime v4.1 BULLETPROOF PERSISTENCE) ═══════════════════ */
+/* ═══════════════════ MAIN APPLICATION ORCHESTRATOR (myTierAnime v4.2 LIVE REALTIME SYNC FOR VIEWERS) ═══════════════════ */
 (() => {
-  const LOCAL_STORAGE_KEY = "mta_2026_state_v8";
+  const LOCAL_STORAGE_KEY = "mta_2026_owner_draft_v9";
   let appData = null;
   let searchQuery = "";
   let selectedGenre = "ALL";
   let genreFilterSearch = "";
   let activeView = "tiers";
+  let lastRenderedSignature = "";
 
   const DEFAULT_TIERS_TEMPLATE = [
     { id: "S", rank: 1, name: "Шедевры", subtitle: "Лучшие и незабываемые тайтлы на все времена", hue: 45, items: [] },
@@ -45,44 +46,83 @@
     return data;
   }
 
-  /* ЗАЩИТА ОТ ОТКАТА ПРИ F5: локальная ревизия владельца НИКОГДА не затирается старым tiers.json! */
-  async function loadInitialState() {
-    let localObj = null;
-    const cached = localStorage.getItem(LOCAL_STORAGE_KEY);
-    if (cached) {
-      try {
-        localObj = ensureSixTiers(JSON.parse(cached));
-      } catch {}
-    }
+  function computeStateSignature(data) {
+    if (!data) return "";
+    return `${data.meta?.updatedAt || ""}_${data.meta?.revision || 0}_${JSON.stringify(data.tiers).length}_${data.meta?.bgImage?.length || 0}`;
+  }
 
-    if (localObj) {
-      appData = localObj;
-      FXController.applyGlobalBackground(appData.meta || {});
+  /* РАЗДЕЛЬНАЯ ЛОГИКА ДЛЯ ВЛАДЕЛЬЦА И ГОСТЕЙ ПО ССЫЛКЕ:
+     - Гости по ссылке ВСЕГДА получают свежие данные напрямую из GitHub API (игнорируя любой старый кэш браузера!).
+     - Владелец (с токеном) мгновенно видит свои локальные правки и отправляет их на сервер. */
+  async function loadInitialState() {
+    const hasOwnerToken = !!GitHubSync.getToken();
+    let localObj = null;
+
+    if (hasOwnerToken) {
+      const cached = localStorage.getItem(LOCAL_STORAGE_KEY);
+      if (cached) {
+        try {
+          localObj = ensureSixTiers(JSON.parse(cached));
+          appData = localObj;
+          FXController.applyGlobalBackground(appData.meta || {});
+        } catch {}
+      }
+    } else {
+      // У гостей полностью очищаем старые ключи localStorage, чтобы они никогда не видели устаревший кэш!
+      localStorage.removeItem("mta_2026_state_v1");
+      localStorage.removeItem("mta_2026_state_v2");
+      localStorage.removeItem("mta_2026_state_v3");
+      localStorage.removeItem("mta_2026_state_v4");
+      localStorage.removeItem("mta_2026_state_v5");
+      localStorage.removeItem("mta_2026_state_v6");
+      localStorage.removeItem("mta_2026_state_v7");
+      localStorage.removeItem("mta_2026_state_v8");
+      localStorage.removeItem(LOCAL_STORAGE_KEY);
     }
 
     try {
-      let remoteObj = await GitHubSync.fetchFreshTiersFromApi();
-      if (!remoteObj) {
-        const res = await fetch(`data/tiers.json?t=${Date.now()}`, { cache: "no-store" });
-        if (res.ok) remoteObj = await res.json();
-      }
-      if (remoteObj) {
-        remoteObj = ensureSixTiers(remoteObj);
-        const localRev = Number(localObj?.meta?.revision || 0);
-        const remoteRev = Number(remoteObj?.meta?.revision || 0);
-
-        // Обновляем стейт с сервера ТОЛЬКО если локального стейта ещё нет, или ревизия на сервере строго выше локальной
-        if (!localObj || remoteRev > localRev) {
+      const remoteRaw = await GitHubSync.fetchFreshTiersFromApi();
+      if (remoteRaw) {
+        const remoteObj = ensureSixTiers(remoteRaw);
+        if (!hasOwnerToken) {
+          // Гость: ВСЕГДА берём актуальные данные с сервера!
           appData = remoteObj;
-          localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(appData));
+        } else {
+          // Владелец: берём серверные данные, если локального черновика нет или на сервере ревизия выше
+          const localRev = Number(localObj?.meta?.revision || 0);
+          const remoteRev = Number(remoteObj?.meta?.revision || 0);
+          if (!localObj || remoteRev >= localRev) {
+            appData = remoteObj;
+            localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(appData));
+          }
         }
       }
     } catch (e) {
-      console.warn("Using local state:", e);
+      console.warn("Remote load fallback:", e);
     }
 
     if (!appData) appData = ensureSixTiers(null);
+    lastRenderedSignature = computeStateSignature(appData);
     FXController.applyGlobalBackground(appData.meta || {});
+  }
+
+  /* ЖИВАЯ СИНХРОНИЗАЦИЯ ДЛЯ ГОСТЕЙ: каждые 12 секунд проверяет обновления владельца в GitHub без перезагрузки страницы! */
+  function startLiveViewerPolling() {
+    setInterval(async () => {
+      if (document.hidden || GitHubSync.isOwner()) return;
+      try {
+        const remoteRaw = await GitHubSync.fetchFreshTiersFromApi();
+        if (!remoteRaw) return;
+        const remoteObj = ensureSixTiers(remoteRaw);
+        const newSig = computeStateSignature(remoteObj);
+        if (newSig && newSig !== lastRenderedSignature) {
+          appData = remoteObj;
+          lastRenderedSignature = newSig;
+          render();
+          showToast("✨ Список обновлён владельцем в реальном времени!", "#00f5ff");
+        }
+      } catch {}
+    }, 12000);
   }
 
   function setSyncIndicator(text, col = "#38ef7d") {
@@ -93,7 +133,6 @@
     badge.style.borderColor = col;
   }
 
-  /* МОМЕНТАЛЬНОЕ СОХРАНЕНИЕ (за 0.001с в браузере + мгновенный коммит в GitHub) */
   let isSyncing = false;
   let pendingSync = false;
 
@@ -102,6 +141,7 @@
     appData.meta = appData.meta || {};
     appData.meta.revision = Number(appData.meta.revision || 1) + 1;
     appData.meta.updatedAt = new Date().toISOString();
+    lastRenderedSignature = computeStateSignature(appData);
 
     try {
       localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(appData));
@@ -118,12 +158,13 @@
     }
 
     isSyncing = true;
-    setSyncIndicator("⏳ Сохранение в GitHub...", "#00f5ff");
+    setSyncIndicator("⏳ Публикация для всех...", "#00f5ff");
     try {
       await GitHubSync.commitTiersToGitHub(appData, reason);
-      setSyncIndicator("☁ Все изменения сохранены", "#38ef7d");
+      setSyncIndicator("☁ Опубликовано (видят все по ссылке)", "#38ef7d");
     } catch (err) {
-      setSyncIndicator("⚠ Сохранено локально (проверьте токен)", "#ffd76a");
+      setSyncIndicator("⚠ Ошибка публикации в GitHub (проверьте права токена)", "#ff5e7e");
+      showToast("Внимание: не удалось отправить в GitHub (" + err.message + "). Проверьте токен!", "#ff3c8c");
     } finally {
       isSyncing = false;
       if (pendingSync) {
@@ -448,7 +489,6 @@
       }
     });
 
-    /* МГНОВЕННАЯ УСТАНОВКА ФОНА С КОМПЬЮТЕРА (ЧЕРЕЗ <img id="globalOwnerBgImg">) */
     const ownerBgFile = document.getElementById("ownerBgFileInput");
     ownerBgFile?.addEventListener("change", async () => {
       const file = ownerBgFile.files?.[0];
@@ -459,9 +499,8 @@
         appData.meta = appData.meta || {};
         appData.meta.bgImage = compressedDataUrl;
         FXController.applyGlobalBackground(appData.meta);
-        showToast("Фон мгновенно установлен!", "#38ef7d");
+        showToast("Фон мгновенно установлен и публикуется для всех!", "#38ef7d");
 
-        // Параллельно загружаем файл в папку backgrounds/ репозитория, чтобы в JSON был лёгкий путь
         GitHubSync.uploadAssetFile(file, "backgrounds").then(uploadedPath => {
           appData.meta.bgImage = uploadedPath;
           saveAndAutoSync("Upload global background image");
@@ -615,7 +654,7 @@
       render();
       saveAndAutoSync(`Save ${newItem.title} in tier ${targetTierId}`);
       Modals.closeModal("editorModal");
-      showToast(`✔ «${newItem.title}» сохранён!`, "#38ef7d");
+      showToast(`✔ «${newItem.title}» сохранён и опубликован для всех!`, "#38ef7d");
     });
 
     document.getElementById("btnOwnerAuth")?.addEventListener("click", () => {
@@ -643,7 +682,9 @@
         document.body.classList.add("is-owner");
         updateOwnerBadge(user);
         Modals.closeModal("authModal");
-        showToast(`Вход выполнен: ${user.login}!`, "#38ef7d");
+        // Сразу публикуем текущее состояние в GitHub при входе
+        saveAndAutoSync("Sync state on owner login");
+        showToast(`Вход выполнен: ${user.login}! Синхронизация со всеми зрителями активна.`, "#38ef7d");
       } else {
         GitHubSync.logout();
         updateOwnerBadge(null);
@@ -687,5 +728,6 @@
 
     await loadInitialState();
     render();
+    startLiveViewerPolling();
   });
 })();
