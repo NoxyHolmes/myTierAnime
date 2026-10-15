@@ -17,7 +17,6 @@
   <link rel="stylesheet" href="css/modals-and-panels.css">
 </head>
 <body class="emblems-realism letter-style-gold motion-precession fx-tier-motion fx-tilt">
-  <!-- Глобальный фон сайта с прямым тегом img для 100% надёжного отображения -->
   <div id="globalOwnerBg" class="global-owner-bg" aria-hidden="true">
     <img id="globalOwnerBgImg" class="global-owner-bg-img" alt="">
     <div id="globalOwnerBgDimmer" class="global-owner-bg-dimmer"></div>
@@ -34,15 +33,17 @@
           <div class="brand-text">
             <h1>myTierAnime</h1>
           </div>
-          <span id="syncStatusBadge" class="sync-status-badge owner-only">☁ Автосохранение активно</span>
+          <span id="syncStatusBadge" class="sync-status-badge owner-only">☁ Готов к синхронизации</span>
         </div>
 
         <div class="toolbar-controls">
+          <!-- Поиск по названию -->
           <div class="search-input-wrap">
             <span class="search-icon">🔍</span>
-            <input type="search" id="searchInput" class="search-input" placeholder="Поиск тайтла, студии...">
+            <input type="search" id="searchInput" class="search-input" placeholder="Поиск тайтла...">
           </div>
 
+          <!-- Выпадающий фильтр по ЖАНРАМ с поиском -->
           <div class="genre-dropdown" id="genreDropdown">
             <button type="button" class="genre-dropdown-btn" id="genreDropdownBtn">
               <span>🎭</span>
@@ -57,12 +58,32 @@
             </div>
           </div>
 
+          <!-- НОВОЕ: Выпадающий фильтр и поиск по КОНКРЕТНОЙ СТУДИИ -->
+          <div class="genre-dropdown" id="studioDropdown">
+            <button type="button" class="genre-dropdown-btn" id="studioDropdownBtn" style="border-color:rgba(0,245,255,0.5);box-shadow:0 0 16px -4px rgba(0,245,255,0.35);">
+              <span>🎬</span>
+              <span id="studioDropdownLabel">Все студии</span>
+              <span style="font-size:10px;opacity:0.7;">▼</span>
+            </button>
+            <div class="genre-dropdown-menu" id="studioDropdownMenu" style="border-color:rgba(0,245,255,0.45);">
+              <div class="genre-search-box">
+                <input type="search" id="studioSearchInput" class="form-control" placeholder="🔎 Поиск студии (Madhouse, MAPPA...)">
+              </div>
+              <div class="genre-options-list" id="studioOptionsList"></div>
+            </div>
+          </div>
+
           <button type="button" id="btnToggleCalendar" class="btn btn-neon-purple">
             📅 Календарь
           </button>
 
           <button type="button" id="btnAddTitleTop" class="btn btn-neon-gold owner-only">
             ➕ Добавить тайтл
+          </button>
+
+          <!-- ВЫДЕЛЕННАЯ КНОПКА СИНХРОНИЗАЦИИ ДЛЯ ВЛАДЕЛЬЦА -->
+          <button type="button" id="btnSyncNowOwner" class="btn btn-primary owner-only" title="Принудительно опубликовать все изменения и фон для всех пользователей по ссылке">
+            🔄 Синхронизировать со всеми
           </button>
 
           <button type="button" id="btnToggleSettings" class="btn btn-neon-cyan" title="Настройки">
@@ -86,7 +107,7 @@
     <section id="calendarRoot" class="calendar-container" style="display:none;"></section>
   </div>
 
-  <!-- Панель «⚙️ Настройки» (Загрузка фона теперь строго ТОЛЬКО в 1 вкладке «🖼 Фон сайта») -->
+  <!-- Панель «⚙️ Настройки» -->
   <aside id="fxPanel" class="fx-drawer" aria-label="Настройки">
     <div class="fx-drawer-head">
       <strong>⚙️ Студия Кастомизации</strong>
@@ -105,7 +126,6 @@
       <button type="button" class="fx-tab-btn owner-only" data-fx-tab="tabOwnerBg">🖼 Фон сайта</button>
     </div>
 
-    <!-- ВКЛАДКА 1: 3D и Буквы -->
     <div class="fx-tab-pane active" id="tab3d">
       <div class="fx-section-title">1. 3D-стиль букв тира:</div>
       <div class="fx-seg">
@@ -183,7 +203,6 @@
       </div>
     </div>
 
-    <!-- ВКЛАДКА 2: Частицы -->
     <div class="fx-tab-pane" id="tabParticles">
       <div class="fx-section-title">Тип фоновых частиц:</div>
       <div class="fx-seg">
@@ -221,7 +240,6 @@
       </div>
     </div>
 
-    <!-- ВКЛАДКА 3: Карточки -->
     <div class="fx-tab-pane" id="tabCards">
       <div class="fx-sliders">
         <label class="fx-slider-row">
@@ -252,7 +270,6 @@
       </div>
     </div>
 
-    <!-- ВКЛАДКА 4: Палитра -->
     <div class="fx-tab-pane" id="tabTheme">
       <div class="fx-section-title">Шрифт заголовков:</div>
       <div class="fx-seg">
@@ -277,7 +294,6 @@
       </div>
     </div>
 
-    <!-- ВКЛАДКА 5: Экран -->
     <div class="fx-tab-pane" id="tabScreen">
       <div class="fx-sliders">
         <label class="fx-slider-row">
@@ -301,11 +317,10 @@
       </div>
     </div>
 
-    <!-- ВКЛАДКА 6: Фон сайта (БЕЗ класса .owner-only на самом div, чтобы он не дублировался в других вкладках!) -->
     <div class="fx-tab-pane" id="tabOwnerBg">
       <div class="fx-section-title">🖼 Глобальный фон сайта:</div>
       <p style="font-size:11px;color:var(--ink-soft);line-height:1.45;margin:0 0 10px;">
-        Выберите картинку с компьютера — фон установится на весь экран <b>моментально</b> и автоматически загрузится в ваш GitHub, чтобы его видели все посетители по ссылке!
+        Выберите картинку с компьютера — после загрузки нажмите <b>«🔄 Синхронизировать со всеми»</b> в шапке, чтобы этот фон тут же появился у всех по ссылке!
       </p>
       <div class="form-group">
         <label>Загрузить картинку фона с компьютера:</label>
@@ -327,7 +342,7 @@
     </div>
   </aside>
 
-  <!-- Модальное окно 1: Карточка тайтла (ИСПРАВЛЕНА ОБРЕЗКА, ШАПКА С КНОПКАМИ ЗАКРЕПЛЕНА СВЕРХУ) -->
+  <!-- Модальное окно 1: Карточка тайтла -->
   <div id="detailsModal" class="modal-backdrop">
     <div class="modal-box modal-box-wide dossier-cinema-box">
       <div class="dossier-sticky-topbar">
@@ -400,10 +415,13 @@
             <input type="number" step="0.1" min="1" max="10" id="fScore" class="form-control" value="9.0" required>
           </div>
 
+          <!-- Поле Студии с быстрым выбором известных студий -->
           <div class="form-group">
-            <label>Студия:</label>
-            <input type="text" id="fStudio" class="form-control" placeholder="Madhouse, Liden Films...">
+            <label>🎬 Студия (введите или выберите из списка):</label>
+            <input type="text" id="fStudio" list="studioPresetList" class="form-control" placeholder="Madhouse, MAPPA, Liden Films...">
+            <datalist id="studioPresetList"></datalist>
           </div>
+
           <div class="form-group">
             <label>Бейдж реакции:</label>
             <input type="text" id="fReaction" class="form-control" placeholder="👑 Шедевр">
@@ -463,7 +481,7 @@
 
         <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:14px;">
           <button type="button" class="btn" data-close-modal="editorModal">Отмена</button>
-          <button type="submit" class="btn btn-primary">✔ Готово</button>
+          <button type="submit" class="btn btn-primary">✔ Сохранить и синхронизировать</button>
         </div>
       </form>
     </div>
@@ -477,12 +495,12 @@
         <button type="button" class="btn" data-close-modal="authModal">✕</button>
       </div>
       <p style="font-size:12.5px;color:var(--ink-soft);line-height:1.5;">
-        Введите ваш <b>GitHub Personal Access Token</b> — и любое ваше редактирование или перетаскивание карточки будет сохраняться моментально и навсегда.
+        Укажите ваш <b>GitHub Personal Access Token</b> (с правом записи <code>repo</code> или <code>contents:write</code>). Имя репозитория определяется автоматически из вашей ссылки!
       </p>
       <form id="authForm">
         <div class="form-group full">
-          <label>Репозиторий (owner/repo):</label>
-          <input type="text" id="ghRepoInput" class="form-control" value="geraltschwarzenegger-svg/myTierAnime">
+          <label>Ваш репозиторий на GitHub (owner/repo):</label>
+          <input type="text" id="ghRepoInput" class="form-control" placeholder="ваш-логин/имя-репозитория">
         </div>
         <div class="form-group full">
           <label>GitHub Personal Access Token:</label>
