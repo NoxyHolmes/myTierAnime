@@ -1,11 +1,14 @@
-/* ═══════════════════ 3D EMBLEMS, 8 LETTER 3D VARIATIONS & KINEMATICS ═══════════════════ */
+/* ═══════════════════ CROSS-BROWSER 3D EMBLEMS, 8 LETTER STYLES & KINEMATICS ═══════════════════ */
 .lstage {
   position: relative;
   width: 140px;
   height: 152px;
-  display: grid;
-  place-items: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  -webkit-perspective: var(--letter-perspective, 780px);
   perspective: var(--letter-perspective, 780px);
+  -webkit-transform-style: preserve-3d;
   transform-style: preserve-3d;
   margin: 4px auto;
   user-select: none;
@@ -16,8 +19,10 @@
   position: relative;
   width: 100%;
   height: 100%;
-  display: grid;
-  place-items: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  -webkit-transform-style: preserve-3d;
   transform-style: preserve-3d;
   transition: transform 0.22s cubic-bezier(.2, .8, .2, 1);
 }
@@ -26,8 +31,10 @@
   position: relative;
   width: 86px;
   height: 86px;
-  display: grid;
-  place-items: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  -webkit-transform-style: preserve-3d;
   transform-style: preserve-3d;
 }
 
@@ -43,13 +50,14 @@
 }
 
 .ll.back {
+  color: #3a2d5c;
   color: color-mix(in srgb, var(--t) 42%, #120d24);
   text-shadow: 0 0 4px rgba(0, 0, 0, 0.65);
 }
 
 .ll.halo {
   color: transparent;
-  -webkit-text-stroke: 1.5px color-mix(in srgb, var(--t) 70%, #fff);
+  -webkit-text-stroke: 1.5px var(--t);
   transform: translateZ(-2px) scale(1.05);
   filter: blur(4px);
   opacity: 0.55;
@@ -75,10 +83,13 @@ body.hide-seal-caption .seal-caption { display: none !important; }
 .realism-system {
   display: none;
   position: absolute;
-  inset: -8px;
+  top: -8px;
+  left: -8px;
+  right: -8px;
+  bottom: -8px;
   pointer-events: none;
+  -webkit-transform-style: preserve-3d;
   transform-style: preserve-3d;
-  perspective: 720px;
 }
 
 body.emblems-realism .realism-system,
@@ -89,68 +100,59 @@ body.emblems-runic .realism-system,
 body.emblems-synth .realism-system,
 body.emblems-galaxy .realism-system,
 body.emblems-cyber .realism-system {
-  display: grid;
-  place-items: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .seal-canvas-3d {
   position: absolute;
-  width: calc(var(--seal-size, 126px) * 1.18);
-  height: calc(var(--seal-size, 126px) * 1.18);
+  width: 148px;
+  height: 148px;
   left: 50%;
   top: 48%;
   transform: translate(-50%, -50%) translateZ(-8px)
     rotateX(calc(var(--bry, 0deg) * 0.65))
     rotateY(calc(var(--brx, 0deg) * 0.65));
   pointer-events: none;
-  filter: drop-shadow(0 0 calc(14px * var(--seal-glow-mult, 1)) var(--tg));
+  filter: drop-shadow(0 0 14px var(--tg));
   transition: transform 0.22s cubic-bezier(.2, .8, .2, 1);
 }
 
 .realism-gimbal {
   position: absolute;
-  width: var(--seal-size, 126px);
-  height: var(--seal-size, 126px);
+  width: 126px;
+  height: 126px;
   left: 50%;
   top: 48%;
   transform: translate(-50%, -50%) rotateX(var(--bry, 0deg)) rotateY(var(--brx, 0deg));
+  -webkit-transform-style: preserve-3d;
   transform-style: preserve-3d;
   pointer-events: none;
 }
 .rg-ring {
   position: absolute;
-  inset: 4px;
+  top: 4px;
+  left: 4px;
+  right: 4px;
+  bottom: 4px;
   border-radius: 50%;
+  -webkit-transform-style: preserve-3d;
   transform-style: preserve-3d;
-  border: 1.5px solid color-mix(in srgb, var(--t) 72%, #ffffff);
+  border: 1.5px solid var(--t);
   box-shadow:
     0 0 12px -2px var(--tg),
     inset 0 0 10px -2px var(--tg),
     inset 0 1px 0 rgba(255, 255, 255, 0.65);
 }
-.rg-ring::after {
-  content: "";
-  position: absolute;
-  inset: -2px;
-  border-radius: inherit;
-  background: conic-gradient(
-    from 0deg,
-    transparent 0deg 40deg,
-    oklch(92% 0.14 85 / 0.85) 65deg,
-    var(--t2) 95deg,
-    transparent 130deg 220deg,
-    oklch(88% 0.16 210 / 0.7) 255deg,
-    var(--t) 285deg,
-    transparent 320deg 360deg
-  );
-  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 2.5px), #000 calc(100% - 1.5px));
-  mask: radial-gradient(farthest-side, transparent calc(100% - 2.5px), #000 calc(100% - 1.5px));
-}
 .rg-ring.r-outer {
   animation: rgSpinOuter 14s linear infinite;
 }
 .rg-ring.r-inner {
-  inset: 16px;
+  top: 16px;
+  left: 16px;
+  right: 16px;
+  bottom: 16px;
   border-style: dashed;
   border-width: 1px;
   opacity: 0.78;
@@ -167,7 +169,6 @@ body.emblems-cyber .realism-system {
   100% { transform: rotateX(-58deg) rotateY(34deg) rotateZ(360deg); }
 }
 
-/* ── КИНЕМАТИКА ДВИЖЕНИЯ 3D-БУКВ (ИСПРАВЛЕН ПРИОРИТЕТ) ── */
 .l3d {
   transform: translateY(-2px) rotateX(var(--bry, 0deg)) rotateY(var(--brx, 0deg));
 }
@@ -246,7 +247,6 @@ body.motion-pulse .fx-demo-seal .l3d-in {
   50%      { transform: translate3d(0, -4px, 12px) rotateY(18deg) rotateX(-12deg) rotateZ(2deg); }
 }
 
-/* ── 8 ВАРИАЦИЙ 3D-МАТЕРИАЛА БУКВ ТИРА (ВЫСШИЙ ПРИОРИТЕТ) ── */
 .ll.bevel {
   background: linear-gradient(135deg, #ffffff 0%, rgba(255, 255, 255, 0.92) 25%, var(--t2) 55%, transparent 85%);
   -webkit-background-clip: text;
@@ -258,17 +258,9 @@ body.motion-pulse .fx-demo-seal .l3d-in {
   pointer-events: none;
 }
 
-/* 1. Литое золото (letter-style-gold) */
 body.letter-style-gold .ll.face,
 .ll.face {
-  background: linear-gradient(
-    145deg,
-    #ffffff 0%,
-    color-mix(in srgb, var(--t2) 82%, #ffffff) 26%,
-    var(--t) 54%,
-    color-mix(in srgb, var(--t) 65%, #090614) 78%,
-    var(--t2) 100%
-  );
+  background: linear-gradient(145deg, #ffffff 0%, var(--t) 45%, #16102c 78%, var(--t2) 100%);
   background-size: 200% 200%;
   -webkit-background-clip: text;
   background-clip: text;
@@ -276,12 +268,10 @@ body.letter-style-gold .ll.face,
   transform: translateZ(3.5px);
   filter:
     drop-shadow(0 1px 0 rgba(255, 255, 255, 0.72))
-    drop-shadow(0 4px calc(12px * var(--seal-glow-mult, 1)) var(--tg))
-    drop-shadow(0 0 calc(22px * var(--seal-glow-mult, 1)) color-mix(in srgb, var(--t) 55%, transparent));
+    drop-shadow(0 4px 12px var(--tg));
   animation: pbrMetalSheen var(--metal-sheen-dur, 5.2s) ease-in-out infinite;
 }
 
-/* 2. Кристальная призма (letter-style-prism) */
 body.letter-style-prism .ll.face {
   background: linear-gradient(135deg, #ffffff 0%, #99f6ff 38%, #ff7be5 75%, #ffffff 100%) !important;
   -webkit-background-clip: text !important;
@@ -296,7 +286,6 @@ body.letter-style-prism .ll.back {
   color: rgba(120, 235, 255, 0.35) !important;
 }
 
-/* 3. Кибер-Неон (letter-style-neon) */
 body.letter-style-neon .ll.face {
   background: none !important;
   -webkit-text-fill-color: transparent !important;
@@ -314,7 +303,6 @@ body.letter-style-neon .ll.bevel {
   display: none !important;
 }
 
-/* 4. Огненная плазма (letter-style-plasma) */
 body.letter-style-plasma .ll.face {
   background: linear-gradient(180deg, #ffffff 0%, #ffe600 28%, #ff4500 65%, #9000ff 100%) !important;
   background-size: 200% 200% !important;
@@ -329,7 +317,6 @@ body.letter-style-plasma .ll.back {
   color: #5c0f06 !important;
 }
 
-/* 5. Голограмма (letter-style-holo) */
 body.letter-style-holo .ll.face {
   background: linear-gradient(
     125deg,
@@ -349,7 +336,6 @@ body.letter-style-holo .ll.back {
   color: #2b194d !important;
 }
 
-/* 6. Тёмный обсидиан (letter-style-obsidian) */
 body.letter-style-obsidian .ll.face {
   background: linear-gradient(145deg, #251f42 0%, #05040a 55%, #1a1530 100%) !important;
   -webkit-background-clip: text !important;
@@ -362,7 +348,6 @@ body.letter-style-obsidian .ll.back {
   color: #05040a !important;
 }
 
-/* 7. Ледяной кварц (letter-style-ice) */
 body.letter-style-ice .ll.face {
   background: linear-gradient(160deg, #ffffff 0%, #c4f9ff 45%, #38efff 80%, #0077b6 100%) !important;
   -webkit-background-clip: text !important;
@@ -376,7 +361,6 @@ body.letter-style-ice .ll.back {
   color: #0b3c5d !important;
 }
 
-/* 8. Кибер-Глитч (letter-style-glitch) */
 body.letter-style-glitch .ll.face {
   background: linear-gradient(90deg, #00f5ff 0%, #ffffff 50%, #ff0055 100%) !important;
   -webkit-background-clip: text !important;
@@ -407,16 +391,19 @@ body.letter-style-glitch .ll.back {
   font-weight: 800;
   letter-spacing: 0.05em;
   color: #fff;
-  background: linear-gradient(135deg, color-mix(in srgb, var(--t) 55%, rgba(10, 8, 20, 0.82)), rgba(10, 8, 20, 0.88));
-  border: 1px solid color-mix(in srgb, var(--t2) 55%, rgba(255, 255, 255, 0.22));
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.55), 0 0 10px -2px var(--tg);
-  backdrop-filter: blur(6px);
+  background: rgba(16, 12, 32, 0.9);
+  border: 1px solid var(--t);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.55);
   pointer-events: none;
   transform: translateZ(14px);
 }
+
 .card .holo-foil {
   position: absolute;
-  inset: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   z-index: 3;
   pointer-events: none;
   opacity: 0;
@@ -425,16 +412,9 @@ body.letter-style-glitch .ll.back {
     radial-gradient(
       circle at var(--px, 50%) var(--py, 50%),
       rgba(255, 255, 255, 0.38) 0%,
-      oklch(82% 0.18 calc(var(--holo-ang, 0) * 1deg + 40deg) / 0.26) 28%,
-      oklch(76% 0.20 calc(var(--holo-ang, 0) * 1deg + 160deg) / 0.20) 54%,
+      rgba(0, 245, 255, 0.24) 30%,
+      rgba(255, 60, 140, 0.2) 55%,
       transparent 78%
-    ),
-    repeating-linear-gradient(
-      115deg,
-      transparent 0px,
-      rgba(255, 255, 255, 0.04) 2px,
-      transparent 4px,
-      transparent 9px
     );
   transition: opacity 0.28s ease;
 }
@@ -445,12 +425,16 @@ body.fx-tilt:not(.editing) .card:hover .holo-foil {
 .element-system, .orbit-system {
   display: none;
   position: absolute;
-  inset: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   pointer-events: none;
-  place-items: center;
+  align-items: center;
+  justify-content: center;
 }
-.emblems-elements .element-system { display: grid; }
-.emblems-orbits .orbit-system { display: grid; }
+.emblems-elements .element-system { display: flex; }
+.emblems-orbits .orbit-system { display: flex; }
 .orbit-ring {
   position: absolute;
   width: 114px;
