@@ -1,4 +1,4 @@
-/* ═══════════════════ 55+ SETTINGS STUDIO, 12 PARTICLE MODES & GLOBAL OWNER BG ═══════════════════ */
+/* ═══════════════════ SETTINGS STUDIO, 8 LETTER 3D STYLES & INSTANT OWNER BG ═══════════════════ */
 const FXController = (() => {
   let io = null;
   let bgEffect = localStorage.getItem("mta_bg_effect") || "sakura";
@@ -27,11 +27,25 @@ const FXController = (() => {
     "emblems-elements", "emblems-orbits"
   ];
 
-  function init() {
+  const ALL_LETTER_STYLE_CLASSES = [
+    "letter-style-gold", "letter-style-prism", "letter-style-neon", "letter-style-plasma",
+    "letter-style-holo", "letter-style-obsidian", "letter-style-ice", "letter-style-glitch"
+  ];
+
+  const ALL_LETTER_MOTION_CLASSES = [
+    "motion-precession", "motion-spin360", "motion-float", "motion-pulse"
+  ];
+
+  function init(onRebuildLetters) {
     const savedMode = localStorage.getItem("mta_emblem_mode") || "emblems-realism";
     setEmblemMode(savedMode, false);
 
-    // Открытие / закрытие панели настроек
+    const savedLetterStyle = localStorage.getItem("mta_letter_style") || "letter-style-gold";
+    setLetterStyle(savedLetterStyle, false);
+
+    const savedLetterMotion = localStorage.getItem("mta_letter_motion") || "motion-precession";
+    setLetterMotion(savedLetterMotion, false);
+
     const settingsBtn = document.getElementById("btnToggleSettings");
     const fxPanel = document.getElementById("fxPanel");
     if (settingsBtn && fxPanel) {
@@ -41,7 +55,6 @@ const FXController = (() => {
       });
     }
 
-    // Переключение вкладок внутри панели настроек
     document.querySelectorAll("[data-fx-tab]").forEach(btn => {
       btn.addEventListener("click", () => {
         const target = btn.dataset.fxTab;
@@ -50,18 +63,26 @@ const FXController = (() => {
       });
     });
 
-    // Кнопка сброса всех настроек
     document.getElementById("btnResetSettings")?.addEventListener("click", () => {
-      localStorage.removeItem("mta_custom_settings_v3");
+      localStorage.removeItem("mta_emblem_mode");
+      localStorage.removeItem("mta_letter_style");
+      localStorage.removeItem("mta_letter_motion");
+      localStorage.removeItem("mta_letter_depth_step");
       location.reload();
     });
 
-    // Режимы 3D-эмблем
     document.querySelectorAll("[data-emblem-mode]").forEach(btn => {
       btn.addEventListener("click", () => setEmblemMode(btn.dataset.emblemMode, true));
     });
 
-    // 12 видов частиц
+    document.querySelectorAll("[data-letter-style]").forEach(btn => {
+      btn.addEventListener("click", () => setLetterStyle(btn.dataset.letterStyle, true));
+    });
+
+    document.querySelectorAll("[data-letter-motion]").forEach(btn => {
+      btn.addEventListener("click", () => setLetterMotion(btn.dataset.letterMotion, true));
+    });
+
     document.querySelectorAll("[data-bg-effect]").forEach(btn => {
       btn.classList.toggle("active", btn.dataset.bgEffect === bgEffect);
       btn.addEventListener("click", () => {
@@ -72,7 +93,6 @@ const FXController = (() => {
       });
     });
 
-    // Выбор шрифта заголовков
     document.querySelectorAll("[data-font-serif]").forEach(btn => {
       btn.addEventListener("click", () => {
         document.querySelectorAll("[data-font-serif]").forEach(b => b.classList.toggle("active", b === btn));
@@ -80,7 +100,6 @@ const FXController = (() => {
       });
     });
 
-    // Базовые слайдеры частиц и наклона
     const rngSpeed = document.getElementById("rngBgSpeed");
     const lblSpeed = document.getElementById("lblBgSpeed");
     if (rngSpeed) {
@@ -127,14 +146,12 @@ const FXController = (() => {
       });
     }
 
-    // Универсальная привязка всех остальных 30+ ползунков [data-setting]
     document.querySelectorAll("[data-setting]").forEach(inp => {
       inp.addEventListener("input", () => {
-        applySingleSetting(inp.dataset.setting, parseFloat(inp.value));
+        applySingleSetting(inp.dataset.setting, parseFloat(inp.value), onRebuildLetters);
       });
     });
 
-    // Универсальная привязка всех чекбоксов [data-toggle]
     const toggleMap = {
       showGimbalRings: "hide-gimbal-rings",
       showSealFloor: "hide-seal-floor",
@@ -196,11 +213,19 @@ const FXController = (() => {
     initAtmosphereCanvas();
   }
 
-  function applySingleSetting(key, val) {
+  function applySingleSetting(key, val, onRebuildLetters) {
     const root = document.documentElement;
     const lbl = document.querySelector(`[data-val="${key}"]`);
 
-    if (key === "gridCols") {
+    if (key === "letterFontSize") {
+      root.style.setProperty("--letter-font-size", val + "px");
+      if (lbl) lbl.textContent = val + "px";
+    } else if (key === "letterDepthStep") {
+      window.letterDepthStep = val;
+      localStorage.setItem("mta_letter_depth_step", String(val));
+      if (lbl) lbl.textContent = val.toFixed(1) + "px";
+      if (typeof onRebuildLetters === "function") onRebuildLetters();
+    } else if (key === "gridCols") {
       root.style.setProperty("--grid-cols", String(val));
       if (lbl) lbl.textContent = String(val);
     } else if (key === "gridGap") {
@@ -209,32 +234,11 @@ const FXController = (() => {
     } else if (key === "cardRadius") {
       root.style.setProperty("--card-radius", val + "px");
       if (lbl) lbl.textContent = val + "px";
-    } else if (key === "posterZoom") {
-      root.style.setProperty("--poster-zoom", (val / 100).toFixed(2));
-      if (lbl) lbl.textContent = val + "%";
-    } else if (key === "holoOpacity") {
-      root.style.setProperty("--holo-max-opacity", (val / 100).toFixed(2));
-      if (lbl) lbl.textContent = val + "%";
-    } else if (key === "scrimOpacity") {
-      root.style.setProperty("--scrim-opacity", (val / 100).toFixed(2));
-      if (lbl) lbl.textContent = val + "%";
-    } else if (key === "cardTitleSize") {
-      root.style.setProperty("--card-title-size", val + "px");
-      if (lbl) lbl.textContent = val + "px";
     } else if (key === "tierBgAlpha") {
       root.style.setProperty("--tier-bg-alpha", (val / 100).toFixed(2));
       if (lbl) lbl.textContent = val + "%";
     } else if (key === "glassBlur") {
       root.style.setProperty("--glass-blur", val + "px");
-      if (lbl) lbl.textContent = val + "px";
-    } else if (key === "tierRadius") {
-      root.style.setProperty("--tier-radius", val + "px");
-      if (lbl) lbl.textContent = val + "px";
-    } else if (key === "tierGap") {
-      root.style.setProperty("--tier-gap", val + "px");
-      if (lbl) lbl.textContent = val + "px";
-    } else if (key === "badgeColWidth") {
-      root.style.setProperty("--badge-col-width", val + "px");
       if (lbl) lbl.textContent = val + "px";
     } else if (key === "containerWidth") {
       root.style.setProperty("--container-width", val + "px");
@@ -245,36 +249,28 @@ const FXController = (() => {
     } else if (key === "sealGlow") {
       root.style.setProperty("--seal-glow-mult", (val / 100).toFixed(2));
       if (lbl) lbl.textContent = val + "%";
-    } else if (key === "letterPerspective") {
-      root.style.setProperty("--letter-perspective", val + "px");
-      if (lbl) lbl.textContent = val + "px";
     } else if (key === "metalSheenSpeed") {
       root.style.setProperty("--metal-sheen-dur", val + "s");
       if (lbl) lbl.textContent = val + "с";
-    } else if (key === "vignetteStrength") {
-      root.style.setProperty("--vignette-opacity", (val / 100).toFixed(2));
-      if (lbl) lbl.textContent = val + "%";
     } else if (key in custom) {
       custom[key] = val;
       if (lbl) {
-        if (key === "particleOpacity" || key.startsWith("ui")) lbl.textContent = val + (key === "uiHue" ? "°" : "%");
-        else if (key === "particleGlow") lbl.textContent = val + "px";
+        if (key.startsWith("ui")) lbl.textContent = val + "%";
         else lbl.textContent = val.toFixed(1) + "x";
       }
       if (key.startsWith("ui")) {
         document.querySelector(".app-shell").style.filter =
-          `brightness(${custom.uiBrightness}%) contrast(${custom.uiContrast}%) saturate(${custom.uiSaturate}%) hue-rotate(${custom.uiHue}deg)`;
+          `brightness(${custom.uiBrightness}%) contrast(${custom.uiContrast}%) saturate(${custom.uiSaturate}%)`;
       }
     }
   }
 
-  /* Применение глобального фона владельца (который видят все гости по ссылке) */
   function applyGlobalBackground(meta = {}) {
     const bgEl = document.getElementById("globalOwnerBg");
     if (!bgEl) return;
     const url = (meta.bgImage || "").trim();
-    const dim = meta.bgDim ?? 65;
-    const blur = meta.bgBlur ?? 4;
+    const dim = meta.bgDim ?? 60;
+    const blur = meta.bgBlur ?? 2;
 
     document.documentElement.style.setProperty("--owner-bg-dim", (dim / 100).toFixed(2));
     bgEl.style.filter = blur > 0 ? `blur(${blur}px)` : "none";
@@ -292,7 +288,7 @@ const FXController = (() => {
     const blurInp = document.getElementById("rngOwnerBgBlur");
     const dimLbl = document.getElementById("lblOwnerBgDim");
     const blurLbl = document.getElementById("lblOwnerBgBlur");
-    if (urlInp) urlInp.value = url;
+    if (urlInp && !url.startsWith("data:")) urlInp.value = url;
     if (dimInp) dimInp.value = dim;
     if (blurInp) blurInp.value = blur;
     if (dimLbl) dimLbl.textContent = dim + "%";
@@ -307,6 +303,24 @@ const FXController = (() => {
       b.classList.toggle("active", b.dataset.emblemMode === mode);
     });
     window.dispatchEvent(new CustomEvent("fx-change"));
+  }
+
+  function setLetterStyle(styleClass, save = true) {
+    document.body.classList.remove(...ALL_LETTER_STYLE_CLASSES);
+    document.body.classList.add(styleClass);
+    if (save) localStorage.setItem("mta_letter_style", styleClass);
+    document.querySelectorAll("[data-letter-style]").forEach(b => {
+      b.classList.toggle("active", b.dataset.letterStyle === styleClass);
+    });
+  }
+
+  function setLetterMotion(motionClass, save = true) {
+    document.body.classList.remove(...ALL_LETTER_MOTION_CLASSES);
+    document.body.classList.add(motionClass);
+    if (save) localStorage.setItem("mta_letter_motion", motionClass);
+    document.querySelectorAll("[data-letter-motion]").forEach(b => {
+      b.classList.toggle("active", b.dataset.letterMotion === motionClass);
+    });
   }
 
   function observeTiers() {
@@ -356,15 +370,13 @@ const FXController = (() => {
       if (bgEffect !== "none") {
         const sizeMult = custom.particleSize || 1;
         const opMult = (custom.particleOpacity ?? 85) / 100;
-        const swayMult = custom.particleSway ?? 1;
-        const spinMult = custom.particleSpin ?? 1;
 
         for (const p of particles) {
           const sp = bgSpeed;
           if (bgEffect === "embers" || bgEffect === "fireflies" || bgEffect === "bubbles") {
             p.y -= p.vy * sp;
-            p.x += (Math.sin(p.ang) * 0.5 * swayMult + bgWind * 0.4) * sp;
-            p.ang += p.spin * spinMult * sp;
+            p.x += (Math.sin(p.ang) * 0.5 + bgWind * 0.4) * sp;
+            p.ang += p.spin * sp;
             if (p.y < -15) { p.y = h + 15; p.x = Math.random() * w; }
           } else if (bgEffect === "rain") {
             p.y += p.vy * 5.5 * sp;
@@ -372,8 +384,8 @@ const FXController = (() => {
             if (p.y > h + 15) { p.y = -15; p.x = Math.random() * w; }
           } else {
             p.y += p.vy * sp;
-            p.x += (Math.sin(p.ang) * 0.45 * swayMult + bgWind) * sp;
-            p.ang += p.spin * spinMult * sp;
+            p.x += (Math.sin(p.ang) * 0.45 + bgWind) * sp;
+            p.ang += p.spin * sp;
             if (p.y > h + 15) { p.y = -15; p.x = Math.random() * w; }
           }
           if (p.x > w + 15) p.x = -15;
@@ -385,19 +397,14 @@ const FXController = (() => {
           ctx.save();
           ctx.translate(p.x, p.y);
           ctx.rotate(p.ang);
-          if (custom.particleGlow > 0) {
-            ctx.shadowBlur = custom.particleGlow;
-          }
 
           if (bgEffect === "sakura") {
             ctx.fillStyle = `rgba(255, 165, 205, ${al})`;
-            ctx.shadowColor = "rgba(255, 130, 190, 0.6)";
             ctx.beginPath();
             ctx.ellipse(0, 0, sz * 1.3, sz * 0.7, 0, 0, Math.PI * 2);
             ctx.fill();
           } else if (bgEffect === "crimsonLeaves") {
             ctx.fillStyle = `rgba(255, 90, 60, ${al})`;
-            ctx.shadowColor = "rgba(255, 70, 40, 0.6)";
             ctx.beginPath();
             ctx.moveTo(0, -sz * 1.3);
             ctx.lineTo(sz, 0);
@@ -407,13 +414,11 @@ const FXController = (() => {
             ctx.fill();
           } else if (bgEffect === "embers") {
             ctx.fillStyle = `rgba(255, 190, 80, ${al})`;
-            ctx.shadowColor = "#ff6b35";
             ctx.beginPath();
             ctx.arc(0, 0, sz * 0.45, 0, Math.PI * 2);
             ctx.fill();
           } else if (bgEffect === "fireflies") {
             ctx.fillStyle = `rgba(180, 255, 100, ${al})`;
-            ctx.shadowColor = "#7bed9f";
             ctx.beginPath();
             ctx.arc(0, 0, sz * 0.55, 0, Math.PI * 2);
             ctx.fill();
