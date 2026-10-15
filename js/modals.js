@@ -1,4 +1,4 @@
-/* ═══════════════════ MODALS: FULL-VIEW SEASONS GRID (NO SCROLLING NEEDED) ═══════════════════ */
+/* ═══════════════════ MODALS: LARGE POSTER SIDEBAR, VERTICAL SEASONS STACK & GENRE CHIPS ═══════════════════ */
 const Modals = (() => {
   let deleteHandler = null;
 
@@ -14,12 +14,42 @@ const Modals = (() => {
     deleteHandler = fn;
   }
 
+  /* Отрисовка интерактивных чипов жанров с крестиком ✕ в окне редактирования */
+  function syncEditorGenreChips() {
+    const inp = document.getElementById("fGenres");
+    const box = document.getElementById("editorGenreChips");
+    if (!inp || !box) return;
+
+    const genres = inp.value.split(",").map(s => s.trim()).filter(Boolean);
+    if (!genres.length) {
+      box.innerHTML = `<span style="font-size:11px;color:var(--ink-soft);">Жанры не выбраны (необязательно)</span>`;
+      return;
+    }
+
+    box.innerHTML = genres.map((g, idx) => `
+      <span class="editor-chip">
+        <span>${esc(g)}</span>
+        <button type="button" class="editor-chip-x" data-remove-genre-idx="${idx}" title="Удалить жанр «${esc(g)}»">✕</button>
+      </span>
+    `).join("");
+
+    box.querySelectorAll("[data-remove-genre-idx]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const removeIdx = +btn.dataset.removeGenreIdx;
+        const updated = genres.filter((_, i) => i !== removeIdx);
+        inp.value = updated.join(", ");
+        syncEditorGenreChips();
+      });
+    });
+  }
+
   async function showAnimeDetails(item, tier) {
     const body = document.getElementById("detailsModalBody");
     const topBadges = document.getElementById("dossierTopBadges");
     if (!body) return;
 
     const m = calcItemMetrics(item);
+    const displayPoster = item.posterInline || item.poster || "https://placehold.co/400x600/16122b/ffd76a?text=myTierAnime";
 
     if (topBadges) {
       topBadges.innerHTML = `
@@ -28,7 +58,8 @@ const Modals = (() => {
       `;
     }
 
-    function renderSeasonsCards(filterType = "ALL") {
+    /* ВЕРТИКАЛЬНЫЙ СПИСОК СЕЗОНОВ ДРУГ ПОД ДРУГОМ (1 СЕЗОН, ПОД НИМ 2 СЕЗОН И Т.Д.) */
+    function renderSeasonsVerticalStack(filterType = "ALL") {
       const filtered = m.seasons.filter(s => {
         if (filterType === "ALL") return true;
         if (filterType === "TV") return s.type === "TV Сериал";
@@ -47,19 +78,15 @@ const Modals = (() => {
         const noteText = s.note || (isUpcoming ? "Ожидается" : "");
 
         return `
-          <div class="dossier-season-card ${isUpcoming ? "is-upcoming" : ""}">
-            <div class="dsc-top">
-              <div class="dsc-title-group">
-                <span class="dsc-num">#${idx + 1}</span>
-                <strong class="dsc-name">${esc(s.title)}</strong>
-              </div>
-              <div class="dsc-badges">
-                <span class="cum-kind">${esc(s.type)}</span>
-                <span class="dsc-year">${esc(relYr)} г.</span>
-              </div>
+          <div class="dossier-season-bar ${isUpcoming ? "is-upcoming" : ""}">
+            <div class="dsb-main">
+              <span class="dsc-num">#${idx + 1}</span>
+              <strong class="dsc-name">${esc(s.title)}</strong>
+              <span class="cum-kind">${esc(s.type)}</span>
+              <span class="dsc-year">${esc(relYr)} г.</span>
             </div>
 
-            <div class="dsc-metrics">
+            <div class="dsb-stats">
               <div class="dsc-cell">
                 <span class="dsc-lbl">Объём:</span>
                 ${volumeText}
@@ -73,12 +100,11 @@ const Modals = (() => {
                 <b style="color:#00f5ff;">${partHours} ч.</b>
               </div>
               <div class="dsc-cell">
-                <span class="dsc-lbl">Просмотр:</span>
-                <b>${esc(s.date)}</b>
+                <span class="dsc-lbl">Дата:</span>
+                <b>${esc(s.date || "—")}</b>
               </div>
+              ${noteText ? `<div class="dsb-note-inline">💬 ${esc(noteText)}</div>` : ""}
             </div>
-
-            ${noteText ? `<div class="dsc-note">💬 ${esc(noteText)}</div>` : ""}
           </div>
         `;
       }).join("");
@@ -87,27 +113,27 @@ const Modals = (() => {
     const hasComment = item.comment && item.comment.trim().length > 0;
 
     body.innerHTML = `
-      <div class="dossier-hero-banner">
-        <div id="dossierHeroBackdrop" class="dossier-hero-backdrop" style="background-image:url('${esc(item.poster)}');"></div>
+      <div class="dossier-split-layout">
+        <div id="dossierHeroBackdrop" class="dossier-hero-backdrop" style="background-image:url('${esc(displayPoster)}');"></div>
         <div class="dossier-hero-scrim"></div>
 
-        <div class="dossier-hero-grid">
-          <div class="dossier-poster-wrap">
-            <img id="dossierMainPosterImg" src="${esc(item.poster)}" alt="${esc(item.title)}"
+        <!-- ЛЕВАЯ КОЛОНКА: КРУПНАЯ И ЧЁТКАЯ ОБЛОЖКА ТАЙТЛА ВО ВСЮ ВЫСОТУ -->
+        <aside class="dossier-left-poster-col">
+          <div class="dossier-poster-large">
+            <img id="dossierMainPosterImg" src="${esc(displayPoster)}" alt="${esc(item.title)}"
                  onerror="this.src='https://placehold.co/400x600/16122b/ffd76a?text=myTierAnime'">
-            <span class="dossier-score-orb">★ ${esc(item.score)}</span>
+            ${item.score ? `<span class="dossier-score-orb">★ ${esc(item.score)}</span>` : ""}
           </div>
+        </aside>
 
-          <div style="min-width:0;">
-            <div class="dossier-head-row">
-              <div>
-                <h2 class="dossier-title-main">${esc(item.title)}</h2>
-                <div class="dossier-title-orig">
-                  ${esc(item.origTitle || "")}
-                  ${item.year ? ` · <b>${esc(item.year)} г.</b>` : ""}
-                  ${item.studio ? ` · Студия: <b style="color:#ffd76a;">${esc(item.studio)}</b>` : ""}
-                </div>
-              </div>
+        <!-- ПРАВАЯ КОЛОНКА: ИНФОРМАЦИЯ + СТРОГО ВЕРТИКАЛЬНЫЙ СПИСОК СЕЗОНОВ ДРУГ ПОД ДРУГОМ -->
+        <div class="dossier-right-info-col">
+          <div class="dossier-head-info">
+            <h2 class="dossier-title-main">${esc(item.title)}</h2>
+            <div class="dossier-title-orig">
+              ${esc(item.origTitle || "")}
+              ${item.year ? ` · <b>${esc(item.year)} г.</b>` : ""}
+              ${item.studio ? ` · Студия: <b style="color:#ffd76a;">${esc(item.studio)}</b>` : ""}
             </div>
 
             <div class="dossier-metrics-row">
@@ -129,35 +155,37 @@ const Modals = (() => {
 
             ${hasComment ? `<div class="dossier-comment-card">${esc(item.comment)}</div>` : ""}
 
-            <div class="dossier-genres-wrap">
-              ${(item.genres || []).map(g => `<span class="dossier-genre-tag">${esc(g)}</span>`).join("")}
+            ${(item.genres || []).length ? `
+              <div class="dossier-genres-wrap">
+                ${(item.genres || []).map(g => `<span class="dossier-genre-tag">${esc(g)}</span>`).join("")}
+              </div>
+            ` : ""}
+          </div>
+
+          <div class="dossier-seasons-block">
+            <div class="dossier-seasons-header">
+              <strong style="font-size:12px;text-transform:uppercase;color:#d6d0f5;letter-spacing:0.06em;">
+                🎬 Хронология сезонов и частей (${m.seasons.length}):
+              </strong>
+              <div class="dossier-filter-pills">
+                <button type="button" class="dossier-pill-btn active" data-s-filter="ALL">Все (${m.seasons.length})</button>
+                <button type="button" class="dossier-pill-btn" data-s-filter="TV">Сериалы</button>
+                <button type="button" class="dossier-pill-btn" data-s-filter="MOVIE">Фильмы</button>
+                <button type="button" class="dossier-pill-btn" data-s-filter="OTHER">OVA / ONA / Спешлы</button>
+              </div>
+            </div>
+
+            <!-- Строго вертикальный стек сезонов (1 под другим) -->
+            <div id="dossierSeasonsGrid" class="dossier-seasons-vertical-list">
+              ${renderSeasonsVerticalStack("ALL")}
             </div>
           </div>
         </div>
       </div>
-
-      <div class="dossier-body-section">
-        <div class="dossier-seasons-header">
-          <strong style="font-size:12px;text-transform:uppercase;color:#d6d0f5;letter-spacing:0.06em;">
-            🎬 Все сезоны, фильмы и части перед глазами (${m.seasons.length}):
-          </strong>
-          <div class="dossier-filter-pills">
-            <button type="button" class="dossier-pill-btn active" data-s-filter="ALL">Все (${m.seasons.length})</button>
-            <button type="button" class="dossier-pill-btn" data-s-filter="TV">Сериалы</button>
-            <button type="button" class="dossier-pill-btn" data-s-filter="MOVIE">Фильмы</button>
-            <button type="button" class="dossier-pill-btn" data-s-filter="OTHER">OVA / ONA / Спешлы</button>
-          </div>
-        </div>
-
-        <!-- Сетка всех сезонов без внутреннего скроллбара — всё сразу на экране! -->
-        <div id="dossierSeasonsGrid" class="dossier-seasons-grid">
-          ${renderSeasonsCards("ALL")}
-        </div>
-      </div>
     `;
 
-    if (typeof GitHubSync !== "undefined" && typeof GitHubSync.resolveAssetUrl === "function") {
-      GitHubSync.resolveAssetUrl(item.poster, item.posterBlobSha).then(resolvedUrl => {
+    if (!item.posterInline && typeof GitHubSync !== "undefined" && typeof GitHubSync.resolveAssetUrl === "function") {
+      GitHubSync.resolveAssetUrl(item.poster, item.posterBlobSha, "image/jpeg", item.posterInline).then(resolvedUrl => {
         if (!resolvedUrl) return;
         const posterImg = document.getElementById("dossierMainPosterImg");
         const backdropEl = document.getElementById("dossierHeroBackdrop");
@@ -170,7 +198,7 @@ const Modals = (() => {
       btn.addEventListener("click", () => {
         body.querySelectorAll("[data-s-filter]").forEach(b => b.classList.toggle("active", b === btn));
         const gridEl = document.getElementById("dossierSeasonsGrid");
-        if (gridEl) gridEl.innerHTML = renderSeasonsCards(btn.dataset.sFilter);
+        if (gridEl) gridEl.innerHTML = renderSeasonsVerticalStack(btn.dataset.sFilter);
       });
     });
 
@@ -206,6 +234,7 @@ const Modals = (() => {
     openModal("detailsModal");
   }
 
+  /* В строках сезонов все поля НЕОБЯЗАТЕЛЬНЫЕ (кроме авто-значений по умолчанию) */
   function createSeasonRowElement(part = {}) {
     const row = document.createElement("div");
     row.className = "season-row";
@@ -216,18 +245,18 @@ const Modals = (() => {
     const eps = isNaN(parsedEp) ? (type === "Фильм" ? 1 : 12) : Math.max(0, parsedEp);
     const parsedMin = parseFloat(part.epMinutes);
     const mins = isNaN(parsedMin) ? defaultMin : Math.max(0, parsedMin);
-    const dateStr = part.date || new Date().toLocaleDateString("ru-RU");
+    const dateStr = part.date !== undefined ? part.date : new Date().toLocaleDateString("ru-RU");
     const noteStr = part.note || "";
 
     row.innerHTML = `
-      <input type="text" class="form-control s-title" placeholder="Сезон 1 / Фильм" value="${esc(part.title || "Сезон 1")}" required>
+      <input type="text" class="form-control s-title" placeholder="Сезон 1 / Фильм" value="${esc(part.title || "Сезон 1")}">
       <select class="form-control s-type">
         ${["TV Сериал", "Фильм", "OVA", "ONA", "Спешл"].map(t => `<option value="${t}" ${t === type ? "selected" : ""}>${t}</option>`).join("")}
       </select>
-      <input type="number" min="1960" max="2040" class="form-control s-rel-year" title="Год выпуска этого сезона/фильма" placeholder="Год" value="${esc(defaultYear)}" required>
-      <input type="number" min="0" class="form-control s-eps" title="Кол-во серий или фильмов (0 = ожидается / анонс)" value="${eps}" required>
-      <input type="number" min="0" step="0.5" class="form-control s-mins" title="Длительность 1 серии (мин)" value="${mins}" required>
-      <input type="text" class="form-control s-date" placeholder="ДД.ММ.ГГГГ" value="${esc(dateStr)}" required>
+      <input type="number" min="1960" max="2040" class="form-control s-rel-year" title="Год выпуска этого сезона/фильма" placeholder="Год" value="${esc(defaultYear)}">
+      <input type="number" min="0" class="form-control s-eps" title="Кол-во серий или фильмов (0 = ожидается / анонс)" value="${eps}">
+      <input type="number" min="0" step="0.5" class="form-control s-mins" title="Длительность 1 серии (мин)" value="${mins}">
+      <input type="text" class="form-control s-date" placeholder="ДД.ММ.ГГГГ, ММ.ГГГГ или Год" value="${esc(dateStr)}">
       <input type="text" class="form-control s-note" placeholder="Заметка" value="${esc(noteStr)}">
       <span class="s-calc">0 ч.</span>
       <button type="button" class="btn btn-sm s-remove" title="Удалить часть">✕</button>
@@ -305,12 +334,12 @@ const Modals = (() => {
       const mn = isNaN(rawMn) ? 24 : Math.max(0, rawMn);
       const relYr = parseInt(r.querySelector(".s-rel-year")?.value, 10) || fallbackYr;
       return {
-        title: r.querySelector(".s-title").value.trim() || `Часть ${i + 1}`,
+        title: r.querySelector(".s-title").value.trim() || `Сезон ${i + 1}`,
         type: r.querySelector(".s-type").value,
         releaseYear: relYr,
         episodes: ep,
         epMinutes: mn,
-        date: r.querySelector(".s-date").value.trim() || new Date().toLocaleDateString("ru-RU"),
+        date: r.querySelector(".s-date").value.trim(),
         note: r.querySelector(".s-note")?.value.trim() || ""
       };
     });
@@ -331,9 +360,9 @@ const Modals = (() => {
     document.getElementById("fKind").value = existingItem?.kind || "TV Сериал";
     document.getElementById("fTitle").value = existingItem ? existingItem.title : "";
     document.getElementById("fOrigTitle").value = existingItem ? existingItem.origTitle || "" : "";
-    document.getElementById("fYear").value = existingItem ? existingItem.year || 2026 : 2026;
+    document.getElementById("fYear").value = existingItem ? existingItem.year || "" : "";
     document.getElementById("fStudio").value = existingItem ? existingItem.studio || "" : "";
-    document.getElementById("fScore").value = existingItem ? existingItem.score || 9.0 : 9.0;
+    document.getElementById("fScore").value = existingItem ? existingItem.score ?? "" : "";
 
     const posterInp = document.getElementById("fPoster");
     posterInp.value = existingItem ? existingItem.poster || "" : "";
@@ -344,12 +373,14 @@ const Modals = (() => {
     document.getElementById("fGenres").value = existingItem ? (existingItem.genres || []).join(", ") : "";
     document.getElementById("fComment").value = existingItem ? existingItem.comment || "" : "";
 
+    syncEditorGenreChips();
+
     const listHost = document.getElementById("seasonsEditorList");
     listHost.innerHTML = "";
     const baseYear = existingItem?.year || 2026;
     const parts = existingItem
       ? normSeasons(existingItem)
-      : [{ title: "Сезон 1", type: "TV Сериал", releaseYear: baseYear, episodes: 12, epMinutes: 24, date: new Date().toLocaleDateString("ru-RU"), note: "" }];
+      : [{ title: "Сезон 1", type: "TV Сериал", releaseYear: baseYear, episodes: 12, epMinutes: 24, date: String(baseYear), note: "" }];
 
     parts.forEach(p => listHost.appendChild(createSeasonRowElement(p)));
     recalculateSeasonsPreview();
@@ -368,7 +399,7 @@ const Modals = (() => {
       releaseYear: baseYear,
       episodes: type === "Фильм" ? 1 : 12,
       epMinutes: type === "Фильм" ? 110 : 24,
-      date: new Date().toLocaleDateString("ru-RU"),
+      date: String(baseYear),
       note: ""
     }));
     recalculateSeasonsPreview();
@@ -378,6 +409,7 @@ const Modals = (() => {
     openModal,
     closeModal,
     setDeleteHandler,
+    syncEditorGenreChips,
     showAnimeDetails,
     openEditorModal,
     addSeasonRow,
