@@ -4,12 +4,12 @@
     "owner": "geraltschwarzenegger-svg",
     "repo": "noxyholmes/myTierAnime",
     "branch": "main",
-    "updatedAt": "2026-10-16T08:42:41.087Z",
+    "updatedAt": "2026-10-16T08:44:16.735Z",
     "activeMode": "emblems-realism",
     "bgImage": "backgrounds/1792058756499____________________________________.png",
     "bgDim": 65,
     "bgBlur": 5,
-    "revision": 76,
+    "revision": 77,
     "bgBlobSha": "1de942c76368b8d317071e794ae55fed35d163ad",
     "bgMime": "image/png",
     "bgmVolume": 10
@@ -742,6 +742,35 @@
       "subtitle": "Достойные внимания и атмосферные тайтлы",
       "hue": 275,
       "items": [
+        {
+          "uid": "anime-1792140256708",
+          "kind": "TV Сериал",
+          "title": "История электричества в двадцатом веке",
+          "origTitle": "20th Century Electricity Catalog",
+          "year": 2026,
+          "studio": "Kyoto Animation",
+          "score": 0,
+          "poster": "https://placehold.co/400x600/16122b/ffd76a?text=myTierAnime",
+          "genres": [],
+          "comment": "",
+          "seasons": [
+            {
+              "title": "Сезон 1",
+              "type": "TV Сериал",
+              "releaseYear": 2026,
+              "episodes": 13,
+              "epMinutes": 24,
+              "date": "28.09.2026",
+              "note": ""
+            }
+          ],
+          "watched": [
+            {
+              "date": "28.09.2026",
+              "note": "Сезон 1"
+            }
+          ]
+        },
         {
           "uid": "anime-1792139899308",
           "kind": "TV Сериал",
