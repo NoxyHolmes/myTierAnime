@@ -14,10 +14,10 @@
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;900&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&family=Montserrat:wght@500;700;800&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
   <link rel="manifest" href="manifest.json">
 
-  <link rel="stylesheet" href="css/tokens.css?v=14.0">
-  <link rel="stylesheet" href="css/realism-3d.css?v=14.0">
-  <link rel="stylesheet" href="css/cards-and-tiers.css?v=14.0">
-  <link rel="stylesheet" href="css/modals-and-panels.css?v=14.0">
+  <link rel="stylesheet" href="css/tokens.css?v=16.0">
+  <link rel="stylesheet" href="css/realism-3d.css?v=16.0">
+  <link rel="stylesheet" href="css/cards-and-tiers.css?v=16.0">
+  <link rel="stylesheet" href="css/modals-and-panels.css?v=16.0">
 </head>
 <body class="emblems-realism letter-style-gold motion-precession fx-tier-motion fx-tilt">
   <div id="globalOwnerBg" class="global-owner-bg" aria-hidden="true">
@@ -105,7 +105,7 @@
     <!-- 1. Верхняя панель статистики -->
     <section id="statsRibbon" class="stats-ribbon" aria-label="Статистика"></section>
 
-    <!-- 2. Блок «Недавно добавленные и обновлённые тайтлы» прямо перед началом тиров -->
+    <!-- 2. Блок «Недавно добавленные и обновлённые тайтлы» перед тирами -->
     <section id="recentSection" class="recent-showcase-wrap" aria-label="Недавно добавленные и обновлённые тайтлы"></section>
 
     <!-- 3. Основной контейнер тиров S, A, B, C, D, E -->
@@ -327,7 +327,7 @@
     <div class="fx-tab-pane" id="tabOwnerBg">
       <div class="fx-section-title">🖼 Глобальный фон сайта:</div>
       <p style="font-size:11px;color:var(--ink-soft);line-height:1.45;margin:0 0 10px;">
-        Выберите картинку с компьютера — после загрузки нажмите <b>«🔄 Синхронизировать со всеми»</b> в шапке, чтобы этот фон появился у всех по ссылке!
+        Выберите картинку с компьютера — после загрузки нажмите <b>«🔄 Синхронизировать со всеми»</b> в шапке!
       </p>
       <div class="form-group">
         <label>Загрузить картинку фона с компьютера:</label>
@@ -541,77 +541,349 @@
 
   <div id="toastContainer"></div>
 
-  <script src="js/utils.js?v=14.0"></script>
-  <script src="js/realism-core.js?v=14.0"></script>
-  <script src="js/realism-engine.js?v=14.0"></script>
-  <script src="js/github-sync.js?v=14.0"></script>
-  <script src="js/shikimori-api.js?v=14.0"></script>
-  <script src="js/fx-controller.js?v=14.0"></script>
-  <script src="js/stats-engine.js?v=14.0"></script>
+  <script src="js/utils.js?v=16.0"></script>
+  <script src="js/realism-core.js?v=16.0"></script>
+  <script src="js/realism-engine.js?v=16.0"></script>
+  <script src="js/github-sync.js?v=16.0"></script>
+  <script src="js/shikimori-api.js?v=16.0"></script>
+  <script src="js/fx-controller.js?v=16.0"></script>
+  <script src="js/stats-engine.js?v=16.0"></script>
+  <script src="js/calendar-view.js?v=16.0"></script>
+  <script src="js/drag-drop.js?v=16.0"></script>
+  <script src="js/modals.js?v=16.0"></script>
+  <script src="js/app.js?v=16.0"></script>
 
-  <!-- Гарантия чистой панели из 3 карточек статистики -->
+  <!-- ═══════════════════ АВТОНОМНЫЙ САМОВОССТАНАВЛИВАЮЩИЙСЯ ДВИЖОК (ЗАЩИТА ОТ ПАДЕНИЯ ВНЕШНИХ СКРИПТОВ) ═══════════════════ -->
   <script>
-    window.StatsEngine = {
-      updateStats(tiers) {
-        const host = document.getElementById("statsRibbon");
-        if (!host || !Array.isArray(tiers)) return;
+    (function selfHealingBootstrap() {
+      // 1. Гарантируем наличие всех базовых утилит, даже если js/utils.js был обрезан при копировании
+      if (typeof window.esc !== "function") {
+        window.esc = s => s == null ? "" : String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+      }
+      if (typeof window.pluralRu !== "function") {
+        window.pluralRu = (n, one, few, many) => {
+          const m = Math.abs(n) % 100, m1 = m % 10;
+          if (m > 10 && m < 20) return many;
+          if (m1 > 1 && m1 < 5) return few;
+          if (m1 === 1) return one;
+          return many;
+        };
+      }
+      if (typeof window.formatTitlesCount !== "function") window.formatTitlesCount = n => `${n}${window.pluralRu(n, "тайтл", "тайтла", "тайтлов")}`;
+      if (typeof window.formatEpisodesCount !== "function") window.formatEpisodesCount = n => `${n}${window.pluralRu(n, "серия", "серии", "серий")}`;
+      if (typeof window.formatMoviesCount !== "function") window.formatMoviesCount = n => `${n}${window.pluralRu(n, "фильм", "фильма", "фильмов")}`;
+      if (typeof window.formatHours !== "function") window.formatHours = h => Number(h || 0) % 1 === 0 ? Number(h || 0).toFixed(0) : Number(h || 0).toFixed(1);
+      if (typeof window.floralFrame !== "function") window.floralFrame = () => `<span class="floral-frame" aria-hidden="true"></span>`;
+      if (typeof window.royalCrown !== "function") window.royalCrown = () => ``;
+
+      if (typeof window.parseFlexibleRuDate !== "function") {
+        window.parseFlexibleRuDate = function(str) {
+          if (!str) return null;
+          const s = String(str).trim();
+          const full = s.match(/^(\d{1,2})[./-](\d{1,2})[./-](\d{4})$/);
+          if (full) return { precision: "day", year: +full[3], month: +full[2]-1, day: +full[1], ms: new Date(+full[3], +full[2]-1, +full[1]).getTime(), raw: s };
+          const my = s.match(/^(\d{1,2})[./-](\d{4})$/);
+          if (my) return { precision: "month", year: +my[2], month: +my[1]-1, day: null, ms: new Date(+my[2], +my[1]-1, 1).getTime(), raw: s };
+          const yr = s.match(/(19\d{2}|20\d{2})/);
+          if (yr) return { precision: "year", year: +yr[1], month: null, day: null, ms: new Date(+yr[1], 0, 1).getTime(), raw: yr[1] };
+          return null;
+        };
+      }
+
+      if (typeof window.normSeasons !== "function") {
+        window.normSeasons = function(item) {
+          if (!item) return [];
+          const baseYear = item.year || 2026;
+          if (Array.isArray(item.seasons) && item.seasons.length > 0) {
+            return item.seasons.map((s, idx) => ({
+              title: s.title || `Сезон ${idx + 1}`,
+              type: s.type || item.kind || "TV Сериал",
+              releaseYear: s.releaseYear || baseYear,
+              episodes: isNaN(parseInt(s.episodes, 10)) ? 1 : Math.max(0, parseInt(s.episodes, 10)),
+              epMinutes: isNaN(parseFloat(s.epMinutes)) ? (s.type === "Фильм" ? 110 : 24) : Math.max(0, parseFloat(s.epMinutes)),
+              date: s.date != null ? String(s.date).trim() : "",
+              note: s.note || ""
+            }));
+          }
+          return [{ title: "Сезон 1", type: item.kind || "TV Сериал", releaseYear: baseYear, episodes: 12, epMinutes: 24, date: String(baseYear), note: "" }];
+        };
+      }
+
+      if (typeof window.calcItemMetrics !== "function") {
+        window.calcItemMetrics = function(item) {
+          const seasons = window.normSeasons(item);
+          let totalEpisodes = 0, totalMovies = 0, totalMinutes = 0, latestMs = 0, latestYear = item?.year || 2026, latestWatchStr = "";
+          seasons.forEach(s => {
+            const eps = Math.max(0, parseInt(s.episodes, 10) || 0);
+            const mins = Math.max(0, parseFloat(s.epMinutes) || 24);
+            if (eps > 0) {
+              totalMinutes += eps * mins;
+              if (s.type === "Фильм") totalMovies += eps;
+              else totalEpisodes += eps;
+            }
+            const pd = window.parseFlexibleRuDate(s.date);
+            if (pd && pd.ms >= latestMs) {
+              latestMs = pd.ms;
+              latestYear = pd.year;
+              latestWatchStr = pd.raw || s.date || "";
+            }
+          });
+          return {
+            seasons,
+            kind: item?.kind || seasons[0]?.type || "TV Сериал",
+            totalEpisodes,
+            totalMovies,
+            totalMinutes,
+            totalHours: totalMinutes / 60,
+            totalDays: totalMinutes / 60 / 24,
+            latestMs,
+            latestYear,
+            latestWatchStr
+          };
+        };
+      }
+
+      // 2. Проверяем через 350 мс: если #tiersRoot остался пустым (значит один из внешних .js файлов упал с синтаксической ошибкой), запускаем встроенный рендер!
+      setTimeout(async () => {
+        const tiersHost = document.getElementById("tiersRoot");
+        if (tiersHost && tiersHost.children.length > 0) return; // Всё уже отрисовалось штатно!
+
+        console.warn("Активирован встроенный самовосстанавливающийся загрузчик myTierAnime...");
+        const repo = "noxyholmes/myTierAnime";
+        const tk = localStorage.getItem("mta_2026_gh_token") || "";
+        if (tk) {
+          document.body.classList.add("is-owner");
+          const authBtn = document.getElementById("btnOwnerAuth");
+          if (authBtn) {
+            authBtn.classList.add("btn-owner-active");
+            authBtn.innerHTML = "🔓 NoxyHolmes";
+          }
+        }
+
+        let loadedData = null;
+
+        // Попытка 1: прямой файл data/tiers.json
+        try {
+          const r = await fetch(`data/tiers.json?_recover=${Date.now()}`, { cache: "no-store" });
+          if (r.ok) loadedData = await r.json();
+        } catch {}
+
+        // Попытка 2: поиск последнего рабочего коммита data/tiers.json в истории GitHub
+        if (!loadedData || !Array.isArray(loadedData.tiers)) {
+          try {
+            const headers = { "Accept": "application/vnd.github+json" };
+            if (tk) headers["Authorization"] = `Bearer ${tk}`;
+            const commitsRes = await fetch(`https://api.github.com/repos/${repo}/commits?path=data/tiers.json&per_page=5&_=${Date.now()}`, { headers, cache: "no-store" });
+            if (commitsRes.ok) {
+              const commits = await commitsRes.json();
+              for (const c of commits) {
+                try {
+                  const rawRes = await fetch(`https://raw.githubusercontent.com/${repo}/${c.sha}/data/tiers.json`);
+                  if (rawRes.ok) {
+                    const candidate = await rawRes.json();
+                    if (candidate && Array.isArray(candidate.tiers) && candidate.tiers.some(t => (t.items || []).length > 0)) {
+                      loadedData = candidate;
+                      break;
+                    }
+                  }
+                } catch {}
+              }
+            }
+          } catch {}
+        }
+
+        if (!loadedData || !Array.isArray(loadedData.tiers)) {
+          loadedData = {
+            meta: { title: "myTierAnime", revision: 1 },
+            tiers: [
+              { id: "S", name: "Шедевры", subtitle: "Лучшие и незабываемые тайтлы на все времена", hue: 45, items: [] },
+              { id: "A", name: "Отличные", subtitle: "Яркие и очень качественные работы", hue: 185, items: [] },
+              { id: "B", name: "Хорошие", subtitle: "Достойные внимания и атмосферные тайтлы", hue: 275, items: [] },
+              { id: "C", name: "Нормальные", subtitle: "Средние тайтлы на один вечер", hue: 148, items: [] },
+              { id: "D", name: "Слабые", subtitle: "Проходные или скучные проекты", hue: 28, items: [] },
+              { id: "E", name: "Плохие", subtitle: "Разочарования и брошенные тайтлы", hue: 215, items: [] }
+            ]
+          };
+        }
+
+        // Применяем глобальный фон
+        if (loadedData.meta && (loadedData.meta.bgInline || loadedData.meta.bgImage)) {
+          const bgWrap = document.getElementById("globalOwnerBg");
+          const bgImg = document.getElementById("globalOwnerBgImg");
+          if (bgWrap && bgImg) {
+            bgImg.src = loadedData.meta.bgInline || loadedData.meta.bgImage;
+            bgWrap.classList.add("has-bg");
+            document.body.classList.add("has-custom-bg");
+          }
+        }
+
+        // Отрисовываем статистику
         let totalTitles = 0, totalScoreSum = 0, sumEpisodes = 0, sumMovies = 0, sumHours = 0;
-        tiers.forEach(t => {
-          const items = t.items || [];
-          totalTitles += items.length;
-          items.forEach(it => {
+        const allRecent = [];
+
+        loadedData.tiers.forEach(tier => {
+          (tier.items || []).forEach(it => {
+            totalTitles++;
             totalScoreSum += parseFloat(it.score || 0);
-            const m = calcItemMetrics(it);
+            const m = window.calcItemMetrics(it);
             sumEpisodes += m.totalEpisodes;
             sumMovies += m.totalMovies;
             sumHours += m.totalHours;
+            const uidMatch = String(it.uid || "").match(/anime-(\d{10,})/);
+            const sortKey = Math.max(m.latestMs || 0, uidMatch ? Number(uidMatch[1]) : 0);
+            allRecent.push({ item: it, tier, m, sortKey, latestWatchStr: m.latestWatchStr || (it.year ? `${it.year} г.` : "Недавно") });
           });
         });
-        const avgScore = totalTitles ? (totalScoreSum / totalTitles).toFixed(2) : "0.00";
-        const totalDays = (sumHours / 24).toFixed(1);
-        const titlesStr = typeof formatTitlesCount === "function" ? formatTitlesCount(totalTitles) : (totalTitles + " тайтлов");
-        const epStr = typeof formatEpisodesCount === "function" ? formatEpisodesCount(sumEpisodes) : (sumEpisodes + " серий");
-        const mvStr = typeof formatMoviesCount === "function" ? formatMoviesCount(sumMovies) : (sumMovies + " фильмов");
 
-        host.innerHTML = `
-          <div class="stat-card">
-            <div>
-              <div class="stat-label">Всего просмотрено</div>
-              <div class="stat-val">${totalTitles} <span style="font-size:13px;color:var(--ink-soft);">${titlesStr.replace(/^\d+\s*/, "")}</span></div>
-              <div class="stat-sub">Средний балл: <b style="color:#ffd76a;">★ ${avgScore}</b></div>
-            </div>
-            <span style="font-size:26px;">📚</span>
-          </div>
-          <div class="stat-card" style="padding:10px 12px;">
-            <div class="stat-dual-split">
-              <div class="stat-split-box">
-                <div class="stat-label">🎞 Серии</div>
-                <div class="stat-val" style="color:#ffd76a;font-size:20px;">${sumEpisodes}</div>
-                <div style="font-size:9.5px;color:var(--ink-soft);">${epStr.replace(/^\d+\s*/, "")}</div>
+        const statsHost = document.getElementById("statsRibbon");
+        if (statsHost) {
+          const avgScore = totalTitles ? (totalScoreSum / totalTitles).toFixed(2) : "0.00";
+          statsHost.innerHTML = `
+            <div class="stat-card">
+              <div>
+                <div class="stat-label">Всего просмотрено</div>
+                <div class="stat-val">${totalTitles} <span style="font-size:13px;color:var(--ink-soft);">тайтлов</span></div>
+                <div class="stat-sub">Средний балл: <b style="color:#ffd76a;">★ ${avgScore}</b></div>
               </div>
-              <div class="stat-split-box movies-highlight">
-                <div class="stat-label" style="color:#ffd6e7;font-weight:800;">🎬 Фильмы</div>
-                <div class="stat-val" style="color:#ff5e7e;font-size:20px;text-shadow:0 0 12px rgba(255,94,126,0.55);">${sumMovies}</div>
-                <div style="font-size:9.5px;color:#ffaec6;font-weight:700;">${mvStr.replace(/^\d+\s*/, "")}</div>
+              <span style="font-size:26px;">📚</span>
+            </div>
+            <div class="stat-card" style="padding:10px 12px;">
+              <div class="stat-dual-split">
+                <div class="stat-split-box">
+                  <div class="stat-label">🎞 Серии</div>
+                  <div class="stat-val" style="color:#ffd76a;font-size:20px;">${sumEpisodes}</div>
+                  <div style="font-size:9.5px;color:var(--ink-soft);">серий</div>
+                </div>
+                <div class="stat-split-box movies-highlight">
+                  <div class="stat-label" style="color:#ffd6e7;font-weight:800;">🎬 Фильмы</div>
+                  <div class="stat-val" style="color:#ff5e7e;font-size:20px;">${sumMovies}</div>
+                  <div style="font-size:9.5px;color:#ffaec6;font-weight:700;">фильмов</div>
+                </div>
               </div>
             </div>
-          </div>
-          <div class="stat-card">
-            <div>
-              <div class="stat-label">Всего времени</div>
-              <div class="stat-val" style="color:#00f5ff;">${formatHours(sumHours)} <span style="font-size:13px;color:var(--ink-soft);">часов</span></div>
-              <div class="stat-sub">⏳ Общее количество дней: <b style="color:#fff;">${totalDays} дн.</b></div>
+            <div class="stat-card">
+              <div>
+                <div class="stat-label">Всего времени</div>
+                <div class="stat-val" style="color:#00f5ff;">${window.formatHours(sumHours)} <span style="font-size:13px;color:var(--ink-soft);">часов</span></div>
+                <div class="stat-sub">⏳ Общее количество дней: <b style="color:#fff;">${(sumHours / 24).toFixed(1)} дн.</b></div>
+              </div>
+              <span style="font-size:26px;">⏱️</span>
             </div>
-            <span style="font-size:26px;">⏱️</span>
-          </div>
-        `;
-      }
-    };
+          `;
+        }
+
+        // Отрисовываем «Недавно добавленные и обновлённые тайтлы»
+        const recentHost = document.getElementById("recentSection");
+        if (recentHost && allRecent.length > 0) {
+          allRecent.sort((a, b) => b.sortKey - a.sortKey);
+          const top10 = allRecent.slice(0, 10);
+          recentHost.innerHTML = `
+            <div class="recent-showcase-box">
+              <div class="recent-showcase-head">
+                <h2 class="recent-showcase-title"><span>✨ Недавно добавленные и обновлённые тайтлы</span></h2>
+              </div>
+              <div class="recent-showcase-grid">
+                ${top10.map(entry => {
+                  const it = entry.item, tr = entry.tier;
+                  const src = it.posterInline || it.poster || "https://placehold.co/400x600/16122b/ffd76a?text=myTierAnime";
+                  return `
+                    <div class="recent-item-card" data-r-uid="${window.esc(it.uid)}" data-r-tier="${window.esc(tr.id)}">
+                      <div class="recent-poster-frame">
+                        <img class="recent-poster-img card-poster" src="${window.esc(src)}" alt="${window.esc(it.title)}" loading="lazy" onerror="this.src='https://placehold.co/400x600/16122b/ffd76a?text=myTierAnime'">
+                        <div class="scrim" style="position:absolute;inset:0;background:linear-gradient(to top,rgba(6,5,14,0.95) 0%,rgba(6,5,14,0.45) 42%,transparent 75%);pointer-events:none;"></div>
+                        <span class="recent-tier-badge">Тир ${window.esc(tr.id)}</span>${it.score ? `<span class="card-score-badge">★ ${window.esc(it.score)}</span>` : ""}
+                        <div class="card-info">
+                          <h3 class="card-title">${window.esc(it.title)}</h3>
+                          <div class="card-sub">${window.esc(entry.m.kind)} ·${window.esc(entry.latestWatchStr)}</div>
+                        </div>
+                      </div>
+                    </div>
+                  `;
+                }).join("")}
+              </div>
+            </div>
+          `;
+        }
+
+        // Отрисовываем все тиры
+        tiersHost.innerHTML = loadedData.tiers.map((tier, tierIdx) => {
+          const items = tier.items || [];
+          const pct = totalTitles > 0 ? Math.round((items.length / totalTitles) * 100) : 0;
+          return `
+            <section class="tier in-view" data-tier="${window.esc(tier.id)}" data-rank="${tierIdx + 1}">
+              <aside class="tier-badge">
+                <span class="seal-index">ТИР <b>${window.esc(tier.id)}</b></span>
+                <div class="lstage">
+                  ${typeof window.realismMarkup === "function" ? window.realismMarkup(tierIdx, tier) : ""}
+                  <span class="seal-floor" aria-hidden="true"></span>
+                  <span class="ring r1"></span><span class="ring r2"></span>
+                  <div class="l3d" data-l="${window.esc(tier.id)}"></div>
+                </div>
+                <span class="seal-caption">${window.esc(tier.name)}</span>
+              </aside>
+              <div class="tier-content">
+                <header class="tier-header-bar">
+                  <div class="tier-title-group">
+                    <h2>${window.esc(tier.name)} <span class="tier-count-pill">${window.formatTitlesCount(items.length)} (${pct}%)</span></h2>
+                    <div class="tier-meta-sub">${window.esc(tier.subtitle || "")}</div>
+                  </div>
+                  <button type="button" class="btn btn-sm btn-neon-gold owner-only" data-add-tier="${window.esc(tier.id)}">➕ Добавить в ${window.esc(tier.id)}</button>
+                </header>
+                <div class="tier-grid" data-tier-id="${window.esc(tier.id)}">
+                  ${items.map((item, idx) => {
+                    const m = window.calcItemMetrics(item);
+                    const src = item.posterInline || item.poster || "https://placehold.co/400x600/16122b/ffd76a?text=myTierAnime";
+                    const countLabel = m.totalMovies > 0 && m.totalEpisodes === 0
+                      ? window.formatMoviesCount(m.totalMovies)
+                      : `${window.formatEpisodesCount(m.totalEpisodes)}${m.totalMovies ? ` + ${window.formatMoviesCount(m.totalMovies)}` : ""}`;
+                    return `
+                      <div class="card-unit" data-c-uid="${window.esc(item.uid)}" data-c-tier="${window.esc(tier.id)}">
+                        <article class="card">
+                          <img class="card-poster" src="${window.esc(src)}" alt="${window.esc(item.title)}" loading="lazy" onerror="this.src='https://placehold.co/400x600/16122b/ffd76a?text=myTierAnime'">
+                          <div class="scrim"></div>
+                          <span class="rank">${idx + 1}</span>${item.score ? `<span class="card-score-badge">★ ${window.esc(item.score)}</span>` : ""}
+                          <div class="card-info">
+                            <h3 class="card-title">${window.esc(item.title)}</h3>
+                            <div class="card-sub">${window.esc(item.year \vert{}\vert{} "")}${item.studio ? ` · ${window.esc(item.studio)}` : ""}</div>
+                          </div>
+                        </article>
+                        <div class="card-under-meta">
+                          <div class="cum-row">
+                            <span class="cum-kind">${window.esc(m.kind)}</span>
+                            <span class="cum-seasons-badge">Частей: <b>${m.seasons.length}</b></span>
+                          </div>
+                          <div class="cum-episodes-line">🎞 ${countLabel}</div>
+                          <div class="cum-hours-bar"><span>⏱ Время:</span><b>${window.formatHours(m.totalHours)} ч.</b></div>
+                        </div>
+                      </div>
+                    `;
+                  }).join("")}
+                </div>
+              </div>
+            </section>
+          `;
+        }).join("");
+
+        if (typeof window.build3DLetter === "function") {
+          document.querySelectorAll("#tiersRoot .tier").forEach((el, i) => {
+            const l3d = el.querySelector(".l3d");
+            if (l3d && loadedData.tiers[i]) window.build3DLetter(l3d, loadedData.tiers[i], i);
+          });
+        }
+        if (typeof window.__syncRealismCanvases === "function") window.__syncRealismCanvases();
+
+        document.addEventListener("click", e => {
+          const card = e.target.closest("[data-c-uid], [data-r-uid]");
+          if (card && typeof Modals !== "undefined") {
+            const uid = card.dataset.cUid || card.dataset.rUid;
+            const tid = card.dataset.cTier || card.dataset.rTier;
+            const tr = loadedData.tiers.find(t => t.id === tid);
+            const it = tr?.items.find(i => i.uid === uid);
+            if (it && tr) Modals.showAnimeDetails(it, tr);
+          }
+        });
+      }, 350);
+    })();
   </script>
-
-  <script src="js/calendar-view.js?v=14.0"></script>
-  <script src="js/drag-drop.js?v=14.0"></script>
-  <script src="js/modals.js?v=14.0"></script>
-  <script src="js/app.js?v=14.0"></script>
 </body>
 </html>
