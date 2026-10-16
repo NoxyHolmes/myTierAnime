@@ -1,4 +1,4 @@
-/* ═══════════════════ MAIN APPLICATION ORCHESTRATOR (myTierAnime v15.2 FAILSAFE) ═══════════════════ */
+/* ═══════════════════ MAIN APPLICATION ORCHESTRATOR (myTierAnime v17.0 FULL) ═══════════════════ */
 (() => {
   if (typeof window.pluralRu !== "function") {
     window.pluralRu = function (number, one, few, many) {
@@ -20,19 +20,7 @@
     window.formatMoviesCount = n => `${n} ${window.pluralRu(n, "фильм", "фильма", "фильмов")}`;
   }
 
-  const SNAPSHOT_STORAGE_KEY = "mta_2026_instant_snapshot_v21";
-  const OLD_STORAGE_KEYS = [
-    "mta_2026_instant_snapshot_v20",
-    "mta_2026_instant_snapshot_v19",
-    "mta_2026_instant_snapshot_v18",
-    "mta_2026_instant_snapshot_v17",
-    "mta_2026_instant_snapshot_v16",
-    "mta_2026_owner_draft_v15"
-  ];
-  OLD_STORAGE_KEYS.forEach(k => {
-    try { localStorage.removeItem(k); } catch {}
-  });
-
+  const SNAPSHOT_STORAGE_KEY = "mta_2026_instant_snapshot_v22";
   let appData = null;
   let searchQuery = "";
   let selectedGenre = "ALL";
@@ -95,25 +83,21 @@
 
   function computeStateSignature(data) {
     if (!data || !Array.isArray(data.tiers)) return "";
-    const tierSummary = data.tiers.map(t => `${t.id}:${(t.items || []).map(i => `${i.uid}_${i.score}_${i.posterBlobSha || ""}_${i.bgmBlobSha || ""}_${(i.seasons || []).length}`).join(",")}`).join("|");
+    const tierSummary = data.tiers.map(t => `${t.id}:${(t.items || []).map(i => `${i.uid}_${i.score}_${i.posterBlobSha || ""}_${i.bgmBlobSha \vert{}\vert{} ""}_${(i.seasons || []).length}`).join(",")}`).join("|");
     return `${data.meta?.revision || 0}_${tierSummary}_${data.meta?.bgBlobSha || ""}_${data.meta?.bgmVolume ?? 30}`;
   }
 
-  /* Синхронное чтение компактного кэша без риска зависания */
-  function readSyncSnapshot() {
-    try {
-      const raw = localStorage.getItem(SNAPSHOT_STORAGE_KEY);
-      if (raw) {
+  function readCachedSnapshot() {
+    const raw = localStorage.getItem(SNAPSHOT_STORAGE_KEY);
+    if (raw) {
+      try {
         const parsed = JSON.parse(raw);
-        if (parsed && Array.isArray(parsed.tiers) && parsed.tiers.length > 0) {
-          return ensureSixTiers(parsed);
-        }
-      }
-    } catch {}
+        if (parsed && Array.isArray(parsed.tiers)) return ensureSixTiers(parsed);
+      } catch {}
+    }
     return null;
   }
 
-  /* Сохранение снимка: если полный JSON > 5 МБ, автоматически сохраняет компактную структуру со всеми тайтлами, чтобы порядок карточек никогда не сбивался */
   function writeCachedSnapshot(data) {
     if (!data) return;
     try {
@@ -133,15 +117,13 @@
   }
 
   async function loadInitialState() {
-    // 1. Мгновенно проверяем синхронный кэш
-    const cached = readSyncSnapshot();
+    const cached = readCachedSnapshot();
     if (cached) {
       appData = cached;
       lastRenderedSignature = computeStateSignature(appData);
       render();
     }
 
-    // 2. Загружаем актуальный data/tiers.json с сервера и GitHub API
     try {
       let remoteRaw = null;
       if (typeof GitHubSync !== "undefined" && typeof GitHubSync.fetchFreshTiersFromApi === "function") {
