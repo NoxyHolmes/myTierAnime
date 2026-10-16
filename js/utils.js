@@ -1,4 +1,4 @@
-/* ═══════════════════ CORE UTILITIES v15.0 (MEMOIZED METRICS & FAST DATE CACHE) ═══════════════════ */
+/* ═══════════════════ CORE UTILITIES (RESTORED STABLE v14.1) ═══════════════════ */
 window.reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 window.tiltPower = 14;
 
@@ -57,10 +57,6 @@ const RU_MONTH_MAP = {
   "июл": 6, "авг": 7, "сен": 8, "окт": 9, "ноя": 10, "дек": 11
 };
 
-/* Кэш распарсенных дат и метрик тайтлов для мгновенного рендера за O(1) */
-const DATE_PARSE_CACHE = new Map();
-const ITEM_METRICS_CACHE = new WeakMap();
-
 function pluralRu(number, one, few, many) {
   const n = Math.abs(number) % 100;
   const n1 = n % 10;
@@ -82,10 +78,24 @@ function formatMoviesCount(n) {
   return `${n} ${pluralRu(n, "фильм", "фильма", "фильмов")}`;
 }
 
-const ESC_MAP = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" };
 function esc(str) {
   if (str === null || str === undefined) return "";
-  return String(str).replace(/[&<>"]/g, ch => ESC_MAP[ch]);
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+/* Возвращённая функция 3D-наклона карточек и эмблем */
+function tiltToward(el, e, vars, maxDeg = 14) {
+  if (!el || !e) return;
+  const rect = el.getBoundingClientRect();
+  if (!rect.width || !rect.height) return;
+  const x = (e.clientX - rect.left) / rect.width - 0.5;
+  const y = (e.clientY - rect.top) / rect.height - 0.5;
+  el.style.setProperty(vars[0], `${(x * maxDeg * 2).toFixed(2)}deg`);
+  el.style.setProperty(vars[1], `${(-y * maxDeg * 2).toFixed(2)}deg`);
 }
 
 function parseFlexibleRuDate(str) {
@@ -93,70 +103,55 @@ function parseFlexibleRuDate(str) {
   const s = String(str).trim();
   if (!s) return null;
 
-  if (DATE_PARSE_CACHE.has(s)) return DATE_PARSE_CACHE.get(s);
-
-  let result = null;
   const fullRu = s.match(/^(\d{1,2})[./-](\d{1,2})[./-](\d{4})$/);
   if (fullRu) {
     const d = +fullRu[1], m = +fullRu[2] - 1, y = +fullRu[3];
     if (m >= 0 && m <= 11 && d >= 1 && d <= 31) {
-      result = { precision: "day", year: y, month: m, day: d, ms: new Date(y, m, d).getTime(), raw: s };
+      return { precision: "day", year: y, month: m, day: d, ms: new Date(y, m, d).getTime(), raw: s };
     }
   }
 
-  if (!result) {
-    const fullIso = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
-    if (fullIso) {
-      const y = +fullIso[1], m = +fullIso[2] - 1, d = +fullIso[3];
-      if (m >= 0 && m <= 11 && d >= 1 && d <= 31) {
-        result = { precision: "day", year: y, month: m, day: d, ms: new Date(y, m, d).getTime(), raw: s };
-      }
+  const fullIso = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+  if (fullIso) {
+    const y = +fullIso[1], m = +fullIso[2] - 1, d = +fullIso[3];
+    if (m >= 0 && m <= 11 && d >= 1 && d <= 31) {
+      return { precision: "day", year: y, month: m, day: d, ms: new Date(y, m, d).getTime(), raw: s };
     }
   }
 
-  if (!result) {
-    const monthYr = s.match(/^(\d{1,2})[./-](\d{4})$/);
-    if (monthYr) {
-      const m = +monthYr[1] - 1, y = +monthYr[2];
-      if (m >= 0 && m <= 11) {
-        result = { precision: "month", year: y, month: m, day: null, ms: new Date(y, m, 1).getTime(), raw: s };
-      }
+  const monthYr = s.match(/^(\d{1,2})[./-](\d{4})$/);
+  if (monthYr) {
+    const m = +monthYr[1] - 1, y = +monthYr[2];
+    if (m >= 0 && m <= 11) {
+      return { precision: "month", year: y, month: m, day: null, ms: new Date(y, m, 1).getTime(), raw: s };
     }
   }
 
-  if (!result) {
-    const yrMonth = s.match(/^(\d{4})[./-](\d{1,2})$/);
-    if (yrMonth) {
-      const y = +yrMonth[1], m = +yrMonth[2] - 1;
-      if (m >= 0 && m <= 11) {
-        result = { precision: "month", year: y, month: m, day: null, ms: new Date(y, m, 1).getTime(), raw: s };
-      }
+  const yrMonth = s.match(/^(\d{4})[./-](\d{1,2})$/);
+  if (yrMonth) {
+    const y = +yrMonth[1], m = +yrMonth[2] - 1;
+    if (m >= 0 && m <= 11) {
+      return { precision: "month", year: y, month: m, day: null, ms: new Date(y, m, 1).getTime(), raw: s };
     }
   }
 
-  if (!result) {
-    const textMonthMatch = s.toLowerCase().match(/([а-яё]{3,})\s*(\d{4})/);
-    if (textMonthMatch) {
-      const prefix = textMonthMatch[1].slice(0, 3);
-      const y = +textMonthMatch[2];
-      if (prefix in RU_MONTH_MAP) {
-        const m = RU_MONTH_MAP[prefix];
-        result = { precision: "month", year: y, month: m, day: null, ms: new Date(y, m, 1).getTime(), raw: s };
-      }
+  const textMonthMatch = s.toLowerCase().match(/([а-яё]{3,})\s*(\d{4})/);
+  if (textMonthMatch) {
+    const prefix = textMonthMatch[1].slice(0, 3);
+    const y = +textMonthMatch[2];
+    if (prefix in RU_MONTH_MAP) {
+      const m = RU_MONTH_MAP[prefix];
+      return { precision: "month", year: y, month: m, day: null, ms: new Date(y, m, 1).getTime(), raw: s };
     }
   }
 
-  if (!result) {
-    const yearOnly = s.match(/(?:^|\D)(19\d{2}|20\d{2})(?:\D|$)/);
-    if (yearOnly) {
-      const y = +yearOnly[1];
-      result = { precision: "year", year: y, month: null, day: null, ms: new Date(y, 0, 1).getTime(), raw: String(y) };
-    }
+  const yearOnly = s.match(/(?:^|\D)(19\d{2}|20\d{2})(?:\D|$)/);
+  if (yearOnly) {
+    const y = +yearOnly[1];
+    return { precision: "year", year: y, month: null, day: null, ms: new Date(y, 0, 1).getTime(), raw: String(y) };
   }
 
-  if (DATE_PARSE_CACHE.size > 2000) DATE_PARSE_CACHE.clear();
-  DATE_PARSE_CACHE.set(s, result);
-  return result;
+  return null;
 }
 
 function parseRuDate(str) {
@@ -209,28 +204,15 @@ function normSeasons(item) {
   ];
 }
 
-/* Мемоизированный расчёт метрик: если объект item не менялся, возвращает готовый результат за 0 мс */
 function calcItemMetrics(item) {
-  if (!item || typeof item !== "object") {
-    return { seasons: [], kind: "TV Сериал", totalEpisodes: 0, totalMovies: 0, totalMinutes: 0, totalHours: 0, totalDays: 0, latestMs: 0, latestYear: 2026 };
-  }
-
-  const cacheSig = `${item.kind || ""}_${item.year || ""}_${(item.seasons || []).length}_${item.seasons ? item.seasons.map(s => `${s.type}:${s.episodes}:${s.epMinutes}:${s.date}`).join("|") : item.episodes}`;
-  const cached = ITEM_METRICS_CACHE.get(item);
-  if (cached && cached.sig === cacheSig) {
-    return cached.value;
-  }
-
   const seasons = normSeasons(item);
   let totalEpisodes = 0;
   let totalMovies = 0;
   let totalMinutes = 0;
   let latestMs = 0;
-  let latestYear = item.year || 2026;
-  let latestWatchStr = "";
+  let latestYear = item?.year || 2026;
 
-  for (let i = 0; i < seasons.length; i++) {
-    const s = seasons[i];
+  seasons.forEach(s => {
     const rawEp = parseInt(s.episodes, 10);
     const eps = isNaN(rawEp) ? 0 : Math.max(0, rawEp);
     const rawMin = parseFloat(s.epMinutes);
@@ -247,28 +229,23 @@ function calcItemMetrics(item) {
     if (parsedDate && parsedDate.ms >= latestMs) {
       latestMs = parsedDate.ms;
       latestYear = parsedDate.year;
-      latestWatchStr = parsedDate.raw || s.date || "";
     }
-  }
+  });
 
   const totalHours = totalMinutes / 60;
   const totalDays = totalHours / 24;
 
-  const computed = {
+  return {
     seasons,
-    kind: item.kind || seasons[0]?.type || "TV Сериал",
+    kind: item?.kind || seasons[0]?.type || "TV Сериал",
     totalEpisodes,
     totalMovies,
     totalMinutes,
     totalHours,
     totalDays,
     latestMs,
-    latestYear,
-    latestWatchStr
+    latestYear
   };
-
-  ITEM_METRICS_CACHE.set(item, { sig: cacheSig, value: computed });
-  return computed;
 }
 
 function formatHours(hoursFloat) {
