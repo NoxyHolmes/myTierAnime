@@ -1,10 +1,11 @@
-/* ═══════════════════ RECENTLY ADDED SHOWCASE & TIERS LAYOUT (v14.0) ═══════════════════ */
+/* ═══════════════════ GPU-ACCELERATED RECENT SHOWCASE & TIERS LAYOUT (v15.0) ═══════════════════ */
 
 /* ──────── БЛОК «НЕДАВНО ДОБАВЛЕННЫЕ И ОБНОВЛЁННЫЕ ТАЙТЛЫ» ПЕРЕД ТИРАМИ ──────── */
 .recent-showcase-wrap {
   max-width: var(--container-width, 1780px);
   margin: 12px auto 6px;
   padding: 0 20px;
+  contain: layout style;
 }
 
 .recent-showcase-box {
@@ -40,18 +41,6 @@
   letter-spacing: 0.03em;
 }
 
-.recent-count-pill {
-  font-family: var(--sans, 'Inter', sans-serif);
-  font-size: 11px;
-  font-weight: 700;
-  padding: 2px 10px;
-  border-radius: 999px;
-  background: rgba(0, 245, 255, 0.12);
-  border: 1px solid rgba(0, 245, 255, 0.45);
-  color: #b8fbff;
-}
-
-/* Аккуратная 10-колоночная сетка для недавних тайтлов (вровень с сеткой тиров) */
 .recent-showcase-grid {
   display: grid;
   grid-template-columns: repeat(var(--grid-cols, 10), minmax(0, 1fr));
@@ -65,6 +54,7 @@
   gap: 5px;
   min-width: 0;
   cursor: pointer;
+  contain: layout style;
 }
 
 .recent-poster-frame {
@@ -76,11 +66,14 @@
   background: #120f24;
   border: 1px solid rgba(255, 255, 255, 0.16);
   box-shadow: 0 8px 20px -6px rgba(0, 0, 0, 0.78);
-  transition: transform 0.2s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+  will-change: transform;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  transition: transform 0.18s cubic-bezier(.2, .8, .2, 1), border-color 0.22s ease, box-shadow 0.22s ease;
 }
 
 .recent-item-card:hover .recent-poster-frame {
-  transform: translateY(-3px);
+  transform: translate3d(0, -3px, 0);
   border-color: #00f5ff;
   box-shadow: 0 14px 28px -6px rgba(0, 0, 0, 0.92), 0 0 18px -4px rgba(0, 245, 255, 0.45);
 }
@@ -90,11 +83,12 @@
   height: 100%;
   object-fit: cover;
   display: block;
-  transition: transform 0.4s ease;
+  backface-visibility: hidden;
+  transition: transform 0.35s cubic-bezier(.2, .8, .2, 1);
 }
 
 .recent-item-card:hover .recent-poster-img {
-  transform: scale(1.05);
+  transform: scale3d(1.05, 1.05, 1);
 }
 
 .recent-tier-badge {
@@ -109,21 +103,6 @@
   color: #090614;
   background: linear-gradient(135deg, #ffd76a, #ff9f43);
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.65);
-}
-
-.recent- date-foot {
-  background: rgba(14, 12, 28, 0.92);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
-  padding: 4px 7px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 4px;
-  font-size: 9.5px;
-  color: #cbc4eb;
-  white-space: nowrap;
-  overflow: hidden;
 }
 
 /* ──────── ОСНОВНОЙ КОНТЕЙНЕР ТИРОВ ──────── */
@@ -146,9 +125,10 @@
   border-radius: var(--tier-radius, 22px);
   box-shadow: 0 20px 50px -12px rgba(0, 0, 0, 0.85), 0 0 40px -18px var(--tg);
   overflow: hidden;
+  contain: layout style;
   -webkit-backdrop-filter: blur(var(--glass-blur, 16px));
   backdrop-filter: blur(var(--glass-blur, 16px));
-  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  transition: border-color 0.25s ease;
 }
 
 .tier:hover {
@@ -244,6 +224,7 @@
   flex-direction: column;
   gap: 6px;
   min-width: 0;
+  contain: layout style;
 }
 
 .card {
@@ -256,8 +237,10 @@
   box-shadow: 0 8px 20px -6px rgba(0, 0, 0, 0.75);
   cursor: pointer;
   transform-style: preserve-3d;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
   transform: perspective(800px) rotateX(var(--crx, 0deg)) rotateY(var(--cry, 0deg));
-  transition: transform 0.18s cubic-bezier(.2, .8, .2, 1), box-shadow 0.28s ease, border-color 0.28s ease;
+  transition: transform 0.15s cubic-bezier(.2, .8, .2, 1), box-shadow 0.22s ease, border-color 0.22s ease;
 }
 
 .card:hover {
@@ -271,10 +254,11 @@
   height: 100%;
   object-fit: cover;
   display: block;
-  transition: transform 0.45s cubic-bezier(.2, .8, .2, 1);
+  backface-visibility: hidden;
+  transition: transform 0.38s cubic-bezier(.2, .8, .2, 1);
 }
 .card:hover .card-poster {
-  transform: scale(var(--poster-zoom, 1.05));
+  transform: scale3d(var(--poster-zoom, 1.05), var(--poster-zoom, 1.05), 1);
 }
 
 .card .scrim {
