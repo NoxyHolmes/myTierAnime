@@ -4,12 +4,12 @@
     "owner": "geraltschwarzenegger-svg",
     "repo": "noxyholmes/myTierAnime",
     "branch": "main",
-    "updatedAt": "2026-10-16T16:54:33.478Z",
+    "updatedAt": "2026-10-16T16:54:45.069Z",
     "activeMode": "emblems-realism",
     "bgImage": "backgrounds/1792058756499____________________________________.png",
     "bgDim": 65,
     "bgBlur": 5,
-    "revision": 102,
+    "revision": 103,
     "bgBlobSha": "1de942c76368b8d317071e794ae55fed35d163ad",
     "bgMime": "image/png",
     "bgmVolume": 10
@@ -1043,7 +1043,7 @@
           "comment": "",
           "seasons": [
             {
-              "title": "Фильм 2",
+              "title": "Фильм",
               "type": "Фильм",
               "releaseYear": 1989,
               "episodes": 1,
@@ -1055,7 +1055,7 @@
           "watched": [
             {
               "date": "2012",
-              "note": "Фильм 2"
+              "note": "Фильм"
             }
           ]
         },
