@@ -1,4 +1,4 @@
-/* ═══════════════════ MAIN APPLICATION ORCHESTRATOR (myTierAnime v17.0 FULL) ═══════════════════ */
+/* ═══════════════════ MAIN APPLICATION ORCHESTRATOR (myTierAnime v17.1 STABLE) ═══════════════════ */
 (() => {
   if (typeof window.pluralRu !== "function") {
     window.pluralRu = function (number, one, few, many) {
@@ -20,7 +20,7 @@
     window.formatMoviesCount = n => `${n} ${window.pluralRu(n, "фильм", "фильма", "фильмов")}`;
   }
 
-  const SNAPSHOT_STORAGE_KEY = "mta_2026_instant_snapshot_v22";
+  const SNAPSHOT_STORAGE_KEY = "mta_2026_instant_snapshot_v23";
   let appData = null;
   let searchQuery = "";
   let selectedGenre = "ALL";
@@ -83,8 +83,8 @@
 
   function computeStateSignature(data) {
     if (!data || !Array.isArray(data.tiers)) return "";
-    const tierSummary = data.tiers.map(t => `${t.id}:${(t.items || []).map(i => `${i.uid}_${i.score}_${i.posterBlobSha || ""}_${i.bgmBlobSha \vert{}\vert{} ""}_${(i.seasons || []).length}`).join(",")}`).join("|");
-    return `${data.meta?.revision || 0}_${tierSummary}_${data.meta?.bgBlobSha || ""}_${data.meta?.bgmVolume ?? 30}`;
+    const tierSummary = data.tiers.map(t => `${t.id}:${(t.items || []).length}`).join("|");
+    return `${data.meta?.revision || 0}_${tierSummary}_${data.meta?.bgBlobSha || ""}`;
   }
 
   function readCachedSnapshot() {
@@ -150,11 +150,8 @@
     }
 
     if (!appData) appData = ensureSixTiers(null);
-    const newSig = computeStateSignature(appData);
-    if (newSig !== lastRenderedSignature || !cached) {
-      lastRenderedSignature = newSig;
-      render();
-    }
+    lastRenderedSignature = computeStateSignature(appData);
+    render();
     if (typeof FXController !== "undefined" && typeof FXController.applyGlobalBackground === "function") {
       FXController.applyGlobalBackground(appData.meta || {});
     }
@@ -618,18 +615,6 @@
         saveAndAutoSync(`Delete ${item?.title || uid}`, true);
       });
     }
-
-    document.addEventListener("pointerover", e => {
-      const cardNode = e.target.closest(".card-unit, .recent-item-card");
-      if (!cardNode || !appData) return;
-      const uid = cardNode.dataset.uid || cardNode.dataset.recentUid;
-      const tierId = cardNode.dataset.tierId || cardNode.dataset.recentTier;
-      const tier = appData.tiers.find(t => t.id === tierId);
-      const item = tier?.items.find(i => i.uid === uid);
-      if (item && typeof GitHubSync !== "undefined" && typeof GitHubSync.prefetchItemAssets === "function") {
-        GitHubSync.prefetchItemAssets(item);
-      }
-    }, { passive: true });
 
     document.getElementById("btnCloseFxPanel")?.addEventListener("click", () => {
       document.getElementById("fxPanel")?.classList.remove("show");
