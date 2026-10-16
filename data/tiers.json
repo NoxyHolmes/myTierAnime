@@ -4,12 +4,12 @@
     "owner": "geraltschwarzenegger-svg",
     "repo": "noxyholmes/myTierAnime",
     "branch": "main",
-    "updatedAt": "2026-10-16T09:00:29.626Z",
+    "updatedAt": "2026-10-16T09:00:51.052Z",
     "activeMode": "emblems-realism",
     "bgImage": "backgrounds/1792058756499____________________________________.png",
     "bgDim": 65,
     "bgBlur": 5,
-    "revision": 84,
+    "revision": 85,
     "bgBlobSha": "1de942c76368b8d317071e794ae55fed35d163ad",
     "bgMime": "image/png",
     "bgmVolume": 10
@@ -116,7 +116,7 @@
             {
               "title": "Сезон 1",
               "type": "ONA",
-              "releaseYear": 2026,
+              "releaseYear": 2025,
               "episodes": 13,
               "epMinutes": 24,
               "date": "18.09.2026",
