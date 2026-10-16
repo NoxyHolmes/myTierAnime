@@ -1,4 +1,4 @@
-/* ═══════════════════ MAIN APPLICATION ORCHESTRATOR (myTierAnime v15.1 NO-JUMP IDB CACHE) ═══════════════════ */
+/* ═══════════════════ MAIN APPLICATION ORCHESTRATOR (myTierAnime v15.2 FAILSAFE) ═══════════════════ */
 (() => {
   if (typeof window.pluralRu !== "function") {
     window.pluralRu = function (number, one, few, many) {
@@ -20,65 +20,18 @@
     window.formatMoviesCount = n => `${n} ${window.pluralRu(n, "фильм", "фильма", "фильмов")}`;
   }
 
-  const SNAPSHOT_STORAGE_KEY = "mta_2026_instant_snapshot_v20";
+  const SNAPSHOT_STORAGE_KEY = "mta_2026_instant_snapshot_v21";
   const OLD_STORAGE_KEYS = [
+    "mta_2026_instant_snapshot_v20",
     "mta_2026_instant_snapshot_v19",
     "mta_2026_instant_snapshot_v18",
     "mta_2026_instant_snapshot_v17",
     "mta_2026_instant_snapshot_v16",
     "mta_2026_owner_draft_v15"
   ];
-
-  // Удаляем все старые застрявшие снимки на 17 тайтлов из localStorage, чтобы они никогда не вызывали скачок!
   OLD_STORAGE_KEYS.forEach(k => {
     try { localStorage.removeItem(k); } catch {}
   });
-
-  /* Безлимитное хранилище IndexedDB (не имеет ограничения в 5 МБ, в отличие от localStorage) */
-  const IDB_NAME = "MtaTurboCacheDB";
-  const IDB_STORE = "snapshots";
-  const IDB_KEY = "latest_app_data";
-
-  function openCacheDB() {
-    return new Promise((resolve, reject) => {
-      if (!window.indexedDB) return reject(new Error("No IndexedDB"));
-      const req = indexedDB.open(IDB_NAME, 1);
-      req.onupgradeneeded = e => {
-        const db = e.target.result;
-        if (!db.objectStoreNames.contains(IDB_STORE)) {
-          db.createObjectStore(IDB_STORE);
-        }
-      };
-      req.onsuccess = () => resolve(req.result);
-      req.onerror = () => reject(req.error);
-    });
-  }
-
-  async function readIdbSnapshot() {
-    try {
-      const db = await openCacheDB();
-      return await new Promise(resolve => {
-        const tx = db.transaction(IDB_STORE, "readonly");
-        const req = tx.objectStore(IDB_STORE).get(IDB_KEY);
-        req.onsuccess = () => resolve(req.result || null);
-        req.onerror = () => resolve(null);
-      });
-    } catch {
-      return null;
-    }
-  }
-
-  async function writeIdbSnapshot(data) {
-    try {
-      const db = await openCacheDB();
-      await new Promise((resolve, reject) => {
-        const tx = db.transaction(IDB_STORE, "readwrite");
-        tx.objectStore(IDB_STORE).put(data, IDB_KEY);
-        tx.oncomplete = () => resolve();
-        tx.onerror = () => reject(tx.error);
-      });
-    } catch {}
-  }
 
   let appData = null;
   let searchQuery = "";
@@ -146,40 +99,26 @@
     return `${data.meta?.revision || 0}_${tierSummary}_${data.meta?.bgBlobSha || ""}_${data.meta?.bgmVolume ?? 30}`;
   }
 
-  /* Читаем самый свежий снимок из IndexedDB и localStorage (выбирая тот, у которого выше ревизия!) */
-  async function readCachedSnapshot() {
-    let lsParsed = null;
-    const raw = localStorage.getItem(SNAPSHOT_STORAGE_KEY);
-    if (raw) {
-      try {
-        const p = JSON.parse(raw);
-        if (p && Array.isArray(p.tiers)) lsParsed = ensureSixTiers(p);
-      } catch {}
-    }
-
-    const idbRaw = await readIdbSnapshot();
-    let idbParsed = null;
-    if (idbRaw && Array.isArray(idbRaw.tiers)) {
-      idbParsed = ensureSixTiers(idbRaw);
-    }
-
-    if (idbParsed && lsParsed) {
-      return Number(idbParsed.meta?.revision || 0) >= Number(lsParsed.meta?.revision || 0)
-        ? idbParsed
-        : lsParsed;
-    }
-    return idbParsed || lsParsed || null;
+  /* Синхронное чтение компактного кэша без риска зависания */
+  function readSyncSnapshot() {
+    try {
+      const raw = localStorage.getItem(SNAPSHOT_STORAGE_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed && Array.isArray(parsed.tiers) && parsed.tiers.length > 0) {
+          return ensureSixTiers(parsed);
+        }
+      }
+    } catch {}
+    return null;
   }
 
-  /* Сохраняем полный снимок (с картинками и фоном) в безлимитный IndexedDB + облегчённую копию в localStorage */
+  /* Сохранение снимка: если полный JSON > 5 МБ, автоматически сохраняет компактную структуру со всеми тайтлами, чтобы порядок карточек никогда не сбивался */
   function writeCachedSnapshot(data) {
     if (!data) return;
-    writeIdbSnapshot(data);
-
     try {
       localStorage.setItem(SNAPSHOT_STORAGE_KEY, JSON.stringify(data));
     } catch {
-      // Если полный JSON > 5 МБ (из-за Base64 обложек/фона), сохраняем в localStorage компактную копию с актуальным списком всех тайтлов, чтобы порядок карточек никогда не сбивался!
       try {
         const slimCopy = {
           meta: { ...data.meta, bgInline: "" },
@@ -194,18 +133,21 @@
   }
 
   async function loadInitialState() {
-    const cached = await readCachedSnapshot();
+    // 1. Мгновенно проверяем синхронный кэш
+    const cached = readSyncSnapshot();
     if (cached) {
       appData = cached;
       lastRenderedSignature = computeStateSignature(appData);
       render();
     }
 
+    // 2. Загружаем актуальный data/tiers.json с сервера и GitHub API
     try {
       let remoteRaw = null;
       if (typeof GitHubSync !== "undefined" && typeof GitHubSync.fetchFreshTiersFromApi === "function") {
         remoteRaw = await GitHubSync.fetchFreshTiersFromApi(true);
-      } else {
+      }
+      if (!remoteRaw) {
         const res = await fetch(`data/tiers.json?nocache=${Date.now()}`, { cache: "no-store" });
         if (res.ok) remoteRaw = await res.json();
       }
@@ -227,8 +169,6 @@
 
     if (!appData) appData = ensureSixTiers(null);
     const newSig = computeStateSignature(appData);
-
-    // Перерисовываем экран ТОЛЬКО если с сервера пришли действительно новые данные (исключает повторное мигание!)
     if (newSig !== lastRenderedSignature || !cached) {
       lastRenderedSignature = newSig;
       render();
@@ -320,16 +260,29 @@
     appData.tiers.forEach(tier => {
       (tier.items || []).forEach(item => {
         const m = calcItemMetrics(item);
+        let latestWatchMs = m.latestMs || 0;
+        let latestWatchStr = m.latestWatchStr || "";
+
+        if (!latestWatchStr && Array.isArray(m.seasons)) {
+          m.seasons.forEach(s => {
+            const parsed = typeof parseFlexibleRuDate === "function" ? parseFlexibleRuDate(s.date) : { ms: parseRuDate(s.date), raw: s.date };
+            if (parsed && parsed.ms >= latestWatchMs) {
+              latestWatchMs = parsed.ms;
+              latestWatchStr = parsed.raw || s.date || "";
+            }
+          });
+        }
+
         const uidTimeMatch = String(item.uid || "").match(/anime-(\d{10,})/);
         const createdMs = uidTimeMatch ? Number(uidTimeMatch[1]) : 0;
-        const sortKey = Math.max(m.latestMs || 0, createdMs);
+        const sortKey = Math.max(latestWatchMs, createdMs);
 
         allEntries.push({
           item,
           tier,
           m,
           sortKey,
-          latestWatchStr: m.latestWatchStr || (item.year ? `${item.year} г.` : "Недавно")
+          latestWatchStr: latestWatchStr || (item.year ? `${item.year} г.` : "Недавно")
         });
       });
     });
@@ -691,7 +644,7 @@
       const tierId = cardNode.dataset.tierId || cardNode.dataset.recentTier;
       const tier = appData.tiers.find(t => t.id === tierId);
       const item = tier?.items.find(i => i.uid === uid);
-      if (item && typeof GitHubSync.prefetchItemAssets === "function") {
+      if (item && typeof GitHubSync !== "undefined" && typeof GitHubSync.prefetchItemAssets === "function") {
         GitHubSync.prefetchItemAssets(item);
       }
     }, { passive: true });
