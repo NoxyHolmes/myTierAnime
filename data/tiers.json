@@ -4,12 +4,12 @@
     "owner": "geraltschwarzenegger-svg",
     "repo": "noxyholmes/myTierAnime",
     "branch": "main",
-    "updatedAt": "2026-10-16T08:44:16.735Z",
+    "updatedAt": "2026-10-16T08:44:52.386Z",
     "activeMode": "emblems-realism",
     "bgImage": "backgrounds/1792058756499____________________________________.png",
     "bgDim": 65,
     "bgBlur": 5,
-    "revision": 77,
+    "revision": 78,
     "bgBlobSha": "1de942c76368b8d317071e794ae55fed35d163ad",
     "bgMime": "image/png",
     "bgmVolume": 10
@@ -612,12 +612,25 @@
               "epMinutes": 24,
               "date": "29.09.2026",
               "note": ""
+            },
+            {
+              "title": "Сезон 2",
+              "type": "TV Сериал",
+              "releaseYear": 2027,
+              "episodes": 0,
+              "epMinutes": 24,
+              "date": "",
+              "note": ""
             }
           ],
           "watched": [
             {
               "date": "29.09.2026",
               "note": "Сезон 1"
+            },
+            {
+              "date": "",
+              "note": "Сезон 2"
             }
           ]
         },
