@@ -14,10 +14,10 @@
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;900&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&family=Montserrat:wght@500;700;800&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
   <link rel="manifest" href="manifest.json">
 
-  <link rel="stylesheet" href="css/tokens.css?v=13.0">
-  <link rel="stylesheet" href="css/realism-3d.css?v=13.0">
-  <link rel="stylesheet" href="css/cards-and-tiers.css?v=13.0">
-  <link rel="stylesheet" href="css/modals-and-panels.css?v=13.0">
+  <link rel="stylesheet" href="css/tokens.css?v=14.0">
+  <link rel="stylesheet" href="css/realism-3d.css?v=14.0">
+  <link rel="stylesheet" href="css/cards-and-tiers.css?v=14.0">
+  <link rel="stylesheet" href="css/modals-and-panels.css?v=14.0">
 </head>
 <body class="emblems-realism letter-style-gold motion-precession fx-tier-motion fx-tilt">
   <div id="globalOwnerBg" class="global-owner-bg" aria-hidden="true">
@@ -102,13 +102,16 @@
       </div>
     </header>
 
-    <!-- Верхняя лента из 3 карточек статистики (без блока "Недавно добавленные") -->
+    <!-- 1. Верхняя панель статистики -->
     <section id="statsRibbon" class="stats-ribbon" aria-label="Статистика"></section>
 
-    <!-- Основной контейнер тиров S, A, B, C, D, E -->
+    <!-- 2. Блок «Недавно добавленные и обновлённые тайтлы» прямо перед началом тиров -->
+    <section id="recentSection" class="recent-showcase-wrap" aria-label="Недавно добавленные и обновлённые тайтлы"></section>
+
+    <!-- 3. Основной контейнер тиров S, A, B, C, D, E -->
     <main id="tiersRoot" class="tiers-container"></main>
 
-    <!-- Контейнер календаря -->
+    <!-- 4. Контейнер календаря -->
     <section id="calendarRoot" class="calendar-container" style="display:none;"></section>
   </div>
 
@@ -538,15 +541,15 @@
 
   <div id="toastContainer"></div>
 
-  <script src="js/utils.js?v=13.0"></script>
-  <script src="js/realism-core.js?v=13.0"></script>
-  <script src="js/realism-engine.js?v=13.0"></script>
-  <script src="js/github-sync.js?v=13.0"></script>
-  <script src="js/shikimori-api.js?v=13.0"></script>
-  <script src="js/fx-controller.js?v=13.0"></script>
-  <script src="js/stats-engine.js?v=13.0"></script>
+  <script src="js/utils.js?v=14.0"></script>
+  <script src="js/realism-core.js?v=14.0"></script>
+  <script src="js/realism-engine.js?v=14.0"></script>
+  <script src="js/github-sync.js?v=14.0"></script>
+  <script src="js/shikimori-api.js?v=14.0"></script>
+  <script src="js/fx-controller.js?v=14.0"></script>
+  <script src="js/stats-engine.js?v=14.0"></script>
 
-  <!-- Жесткий перехватчик: даже если браузер закешировал старый stats-engine.js, он принудительно заменяется на чистые 3 карточки без гигантского списка "Недавно добавленные"! -->
+  <!-- Гарантия чистой панели из 3 карточек статистики -->
   <script>
     window.StatsEngine = {
       updateStats(tiers) {
@@ -606,9 +609,9 @@
     };
   </script>
 
-  <script src="js/calendar-view.js?v=13.0"></script>
-  <script src="js/drag-drop.js?v=13.0"></script>
-  <script src="js/modals.js?v=13.0"></script>
-  <script src="js/app.js?v=13.0"></script>
+  <script src="js/calendar-view.js?v=14.0"></script>
+  <script src="js/drag-drop.js?v=14.0"></script>
+  <script src="js/modals.js?v=14.0"></script>
+  <script src="js/app.js?v=14.0"></script>
 </body>
 </html>
