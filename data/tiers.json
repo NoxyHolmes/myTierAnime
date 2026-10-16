@@ -4,12 +4,12 @@
     "owner": "geraltschwarzenegger-svg",
     "repo": "noxyholmes/myTierAnime",
     "branch": "main",
-    "updatedAt": "2026-10-16T16:48:35.440Z",
+    "updatedAt": "2026-10-16T16:50:39.376Z",
     "activeMode": "emblems-realism",
     "bgImage": "backgrounds/1792058756499____________________________________.png",
     "bgDim": 65,
     "bgBlur": 5,
-    "revision": 99,
+    "revision": 100,
     "bgBlobSha": "1de942c76368b8d317071e794ae55fed35d163ad",
     "bgMime": "image/png",
     "bgmVolume": 10
@@ -980,6 +980,46 @@
       "subtitle": "Достойные внимания и атмосферные тайтлы",
       "hue": 275,
       "items": [
+        {
+          "uid": "anime-1792169439331",
+          "kind": "TV Сериал",
+          "title": "Ведьмина служба доставки",
+          "origTitle": "Kiki's Delivery Service",
+          "year": 1989,
+          "studio": "Studio Ghibli",
+          "score": 0,
+          "poster": "https://placehold.co/400x600/16122b/ffd76a?text=myTierAnime",
+          "genres": [
+            "Драма",
+            "Комедия",
+            "Приключения",
+            "Романтика",
+            "Фэнтези",
+            "Альтернативная реальность",
+            "Ведьмы",
+            "Магия",
+            "Повседневность",
+            "Полулюди"
+          ],
+          "comment": "",
+          "seasons": [
+            {
+              "title": "Фильм 2",
+              "type": "Фильм",
+              "releaseYear": 1989,
+              "episodes": 1,
+              "epMinutes": 100,
+              "date": "2012",
+              "note": ""
+            }
+          ],
+          "watched": [
+            {
+              "date": "2012",
+              "note": "Фильм 2"
+            }
+          ]
+        },
         {
           "uid": "anime-1792142024157",
           "kind": "TV Сериал",
