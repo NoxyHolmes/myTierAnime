@@ -4,12 +4,12 @@
     "owner": "geraltschwarzenegger-svg",
     "repo": "noxyholmes/myTierAnime",
     "branch": "main",
-    "updatedAt": "2026-10-16T08:38:19.336Z",
+    "updatedAt": "2026-10-16T08:38:30.519Z",
     "activeMode": "emblems-realism",
     "bgImage": "backgrounds/1792058756499____________________________________.png",
     "bgDim": 65,
     "bgBlur": 5,
-    "revision": 73,
+    "revision": 74,
     "bgBlobSha": "1de942c76368b8d317071e794ae55fed35d163ad",
     "bgMime": "image/png",
     "bgmVolume": 10
@@ -743,7 +743,16 @@
               "note": "Сезон 1"
             }
           ]
-        },
+        }
+      ]
+    },
+    {
+      "id": "C",
+      "rank": 4,
+      "name": "Нормальные",
+      "subtitle": "Средние тайтлы на один вечер",
+      "hue": 148,
+      "items": [
         {
           "uid": "anime-1792138032725",
           "kind": "TV Сериал",
@@ -812,14 +821,6 @@
           ]
         }
       ]
-    },
-    {
-      "id": "C",
-      "rank": 4,
-      "name": "Нормальные",
-      "subtitle": "Средние тайтлы на один вечер",
-      "hue": 148,
-      "items": []
     },
     {
       "id": "D",
