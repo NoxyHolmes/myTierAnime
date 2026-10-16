@@ -1,4 +1,4 @@
-/* ═══════════════════ SETTINGS STUDIO v15.0 (RAF-THROTTLED 60FPS TILT & SMART CANVAS PAUSE) ═══════════════════ */
+/* ═══════════════════ SETTINGS STUDIO (RESTORED STABLE v14.1) ═══════════════════ */
 const FXController = (() => {
   let io = null;
   let bgEffect = localStorage.getItem("mta_bg_effect") || "sakura";
@@ -17,7 +17,6 @@ const FXController = (() => {
 
   let particles = [];
   let currentBgSignature = "";
-  let tiltRafId = 0;
 
   const ALL_EMBLEM_CLASSES = [
     "emblems-realism", "emblems-quantum", "emblems-crystal", "emblems-eclipse",
@@ -187,22 +186,12 @@ const FXController = (() => {
       window.dispatchEvent(new CustomEvent("motion-change"));
     });
 
-    /* Оптимизированный 3D-наклон через requestAnimationFrame: не нагружает CPU и отключается, когда открыто модальное окно */
     document.addEventListener("pointermove", e => {
-      if (!document.body.classList.contains("fx-tilt") || tiltRafId) return;
-      if (document.querySelector(".modal-backdrop.open")) return;
-
+      if (!document.body.classList.contains("fx-tilt") || typeof tiltToward !== "function") return;
       const card = e.target.closest(".card");
-      const badge = !card ? e.target.closest(".tier-badge") : null;
-      if (!card && !badge) return;
-
-      const clientX = e.clientX;
-      const clientY = e.clientY;
-      tiltRafId = requestAnimationFrame(() => {
-        tiltRafId = 0;
-        if (card) tiltToward(card, { clientX, clientY }, ["--cry", "--crx"], window.tiltPower || 14);
-        else if (badge) tiltToward(badge, { clientX, clientY }, ["--brx", "--bry"], 22);
-      });
+      if (card) tiltToward(card, e, ["--cry", "--crx"], window.tiltPower || 14);
+      const badge = e.target.closest(".tier-badge");
+      if (badge) tiltToward(badge, e, ["--brx", "--bry"], 22);
     }, { passive: true });
 
     document.addEventListener("pointerout", e => {
@@ -216,7 +205,7 @@ const FXController = (() => {
         badge.style.setProperty("--brx", "0deg");
         badge.style.setProperty("--bry", "0deg");
       }
-    }, { passive: true });
+    });
 
     initAtmosphereCanvas();
   }
@@ -393,11 +382,11 @@ const FXController = (() => {
     window.addEventListener("resize", () => {
       w = cv.width = window.innerWidth;
       h = cv.height = window.innerHeight;
-    }, { passive: true });
+    });
 
     function tick() {
-      if (!document.hidden && bgEffect !== "none") {
-        ctx.clearRect(0, 0, w, h);
+      ctx.clearRect(0, 0, w, h);
+      if (bgEffect !== "none") {
         const sizeMult = custom.particleSize || 1;
         const opMult = (custom.particleOpacity ?? 85) / 100;
 
