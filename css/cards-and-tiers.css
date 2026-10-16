@@ -1,24 +1,42 @@
-/* ═══════════════════ REBUILT CARDS & TIERS GRID CSS ═══════════════════ */
+/* ═══════════════════ STABLE CARDS AND TIERS LAYOUT (v13.0) ═══════════════════ */
 .tiers-container {
-  max-width: 1780px;
+  max-width: var(--container-width, 1780px);
   margin: 0 auto;
   padding: 14px 20px 80px;
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: var(--tier-gap, 24px);
+}
+
+/* Гарантированная блокировка любых старых блоков "Недавно добавленные", если они остались в кэше */
+.recent-feed,
+.recent-strip,
+.recent-section,
+.recent-grid,
+.recent-card,
+#recentFeed,
+#recentStrip,
+#statsRibbon > :nth-child(n+4) {
+  display: none !important;
 }
 
 .tier {
   position: relative;
   display: grid;
-  grid-template-columns: 185px 1fr;
+  grid-template-columns: var(--badge-col-width, 185px) 1fr;
   background: rgba(16, 13, 30, 0.9);
   border: 1px solid rgba(255, 255, 255, 0.14);
-  border-radius: 22px;
-  box-shadow: 0 20px 50px -12px rgba(0, 0, 0, 0.85);
+  border-color: color-mix(in srgb, var(--t) 28%, rgba(255,255,255,0.08));
+  border-radius: var(--tier-radius, 22px);
+  box-shadow: 0 20px 50px -12px rgba(0, 0, 0, 0.85), 0 0 40px -18px var(--tg);
   overflow: hidden;
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(var(--glass-blur, 16px));
+  backdrop-filter: blur(var(--glass-blur, 16px));
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.tier:hover {
+  border-color: var(--t);
 }
 
 .tier-badge {
@@ -41,7 +59,7 @@
   text-transform: uppercase;
 }
 .seal-index b {
-  color: #ffd76a;
+  color: var(--t);
   font-weight: 800;
 }
 
@@ -50,6 +68,7 @@
   font-weight: 700;
   color: #f5f3ff;
   letter-spacing: 0.04em;
+  text-shadow: 0 0 10px var(--tg);
 }
 
 .tier-meta-sub {
@@ -87,19 +106,19 @@
 }
 
 .tier-count-pill {
+  font-family: var(--sans, 'Inter', sans-serif);
   font-size: 11px;
   padding: 2px 9px;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.07);
-  border: 1px solid #ffd76a;
-  color: #ffd76a;
+  border: 1px solid var(--t);
+  color: var(--t);
 }
 
-/* СЕТКА КАРТОЧЕК В ТИРАХ (10 колонок в ряд) */
 .tier-grid {
   display: grid;
-  grid-template-columns: repeat(10, minmax(0, 1fr));
-  gap: 11px;
+  grid-template-columns: repeat(var(--grid-cols, 10), minmax(0, 1fr));
+  gap: var(--grid-gap, 11px);
   min-height: 190px;
   align-items: start;
 }
@@ -114,18 +133,20 @@
 .card {
   position: relative;
   aspect-ratio: 2 / 3;
-  border-radius: 10px;
+  border-radius: var(--card-radius, 10px);
   overflow: hidden;
   background: #120f24;
   border: 1px solid rgba(255, 255, 255, 0.14);
   box-shadow: 0 8px 20px -6px rgba(0, 0, 0, 0.75);
   cursor: pointer;
-  transition: transform 0.18s ease, box-shadow 0.28s ease, border-color 0.28s ease;
+  transform-style: preserve-3d;
+  transform: perspective(800px) rotateX(var(--crx, 0deg)) rotateY(var(--cry, 0deg));
+  transition: transform 0.18s cubic-bezier(.2, .8, .2, 1), box-shadow 0.28s ease, border-color 0.28s ease;
 }
 
 .card:hover {
-  border-color: #00f5ff;
-  box-shadow: 0 14px 28px -6px rgba(0, 0, 0, 0.92);
+  border-color: var(--t);
+  box-shadow: 0 14px 28px -6px rgba(0, 0, 0, 0.92), 0 0 20px -4px var(--tg);
   z-index: 5;
 }
 
@@ -134,16 +155,21 @@
   height: 100%;
   object-fit: cover;
   display: block;
-  transition: transform 0.45s ease;
+  transition: transform 0.45s cubic-bezier(.2, .8, .2, 1);
 }
 .card:hover .card-poster {
-  transform: scale(1.05);
+  transform: scale(var(--poster-zoom, 1.05));
 }
 
 .card .scrim {
   position: absolute;
   top: 0; left: 0; right: 0; bottom: 0;
-  background: linear-gradient(to top, rgba(6, 5, 14, 0.95) 0%, rgba(6, 5, 14, 0.5) 40%, transparent 72%);
+  background: linear-gradient(
+    to top,
+    rgba(6, 5, 14, 0.95) 0%,
+    rgba(6, 5, 14, 0.5) 40%,
+    transparent 72%
+  );
   z-index: 2;
   pointer-events: none;
 }
@@ -160,7 +186,7 @@
   font-size: 9.5px;
   font-weight: 800;
   color: #090614;
-  background: #ffd76a;
+  background: var(--t);
   box-shadow: 0 2px 6px rgba(0,0,0,0.6);
 }
 
@@ -177,15 +203,23 @@
   border: 1px solid rgba(255, 215, 106, 0.45);
 }
 
+body.hide-card-rank .card .rank { display: none !important; }
+body.hide-card-score .card-score-badge { display: none !important; }
+body.hide-card-year .card-year-3d { display: none !important; }
+body.hide-card-crown .card-coronet,
+body.hide-card-crown .floral-frame { display: none !important; }
+body.hide-under-meta .card-under-meta { display: none !important; }
+
 .card-info {
   position: absolute;
   bottom: 0; left: 0; right: 0;
   padding: 7px 7px 6px;
   z-index: 4;
+  transform: translateZ(16px);
 }
 
 .card-title {
-  font-size: 11px;
+  font-size: var(--card-title-size, 11px);
   font-weight: 700;
   line-height: 1.2;
   color: #fff;
@@ -202,6 +236,25 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.card-coronet {
+  position: absolute;
+  top: -2px; left: 50%;
+  transform: translateX(-50%);
+  z-index: 5;
+  width: 24px; height: 14px;
+  pointer-events: none;
+  filter: drop-shadow(0 0 6px rgba(255, 215, 106, 0.85));
+}
+
+.floral-frame {
+  position: absolute;
+  top: 2px; left: 2px; right: 2px; bottom: 2px;
+  border: 1px solid rgba(255, 215, 106, 0.38);
+  border-radius: 8px;
+  z-index: 3;
+  pointer-events: none;
 }
 
 .card-under-meta {
@@ -226,11 +279,12 @@
   font-size: 8.5px;
   font-weight: 800;
   text-transform: uppercase;
+  letter-spacing: 0.04em;
   padding: 2px 6px;
   border-radius: 4px;
   background: rgba(255, 255, 255, 0.08);
-  color: #00f5ff;
-  border: 1px solid rgba(0, 245, 255, 0.45);
+  color: var(--t);
+  border: 1px solid var(--t);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -268,6 +322,16 @@
   color: #00f5ff;
   font-weight: 800;
   font-size: 10px;
+}
+
+.card-unit.dragging {
+  opacity: 0.45;
+  transform: scale(0.95);
+}
+.tier-grid.drag-over {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 14px;
+  outline: 1.5px dashed var(--t);
 }
 
 @media (max-width: 1480px) {
