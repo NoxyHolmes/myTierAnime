@@ -4,12 +4,12 @@
     "owner": "geraltschwarzenegger-svg",
     "repo": "noxyholmes/myTierAnime",
     "branch": "main",
-    "updatedAt": "2026-10-16T12:23:44.289Z",
+    "updatedAt": "2026-10-16T16:33:15.385Z",
     "activeMode": "emblems-realism",
     "bgImage": "backgrounds/1792058756499____________________________________.png",
     "bgDim": 65,
     "bgBlur": 5,
-    "revision": 92,
+    "revision": 93,
     "bgBlobSha": "1de942c76368b8d317071e794ae55fed35d163ad",
     "bgMime": "image/png",
     "bgmVolume": 10
@@ -1113,6 +1113,67 @@
       "subtitle": "Средние тайтлы на один вечер",
       "hue": 148,
       "items": [
+        {
+          "uid": "anime-1792168395348",
+          "kind": "Фильм",
+          "title": "Приключения пингвинёнка Лоло",
+          "origTitle": "Chiisana Penguin Lolo no Bouken",
+          "year": 1986,
+          "studio": "Life Work Corporation, Aist Corporation, Совинфильм, Союзмультфильм",
+          "score": 0,
+          "poster": "https://placehold.co/400x600/16122b/ffd76a?text=myTierAnime",
+          "genres": [
+            "Драма",
+            "Приключения",
+            "Фэнтези",
+            "Повседневность",
+            "Не японское"
+          ],
+          "comment": "",
+          "seasons": [
+            {
+              "title": "Фильм 1",
+              "type": "Фильм",
+              "releaseYear": 1986,
+              "episodes": 1,
+              "epMinutes": 30,
+              "date": "2007",
+              "note": ""
+            },
+            {
+              "title": "Фильм 2",
+              "type": "Фильм",
+              "releaseYear": 1987,
+              "episodes": 1,
+              "epMinutes": 20,
+              "date": "2007",
+              "note": ""
+            },
+            {
+              "title": "Фильм 3",
+              "type": "Фильм",
+              "releaseYear": 1987,
+              "episodes": 1,
+              "epMinutes": 30,
+              "date": "2007",
+              "note": ""
+            }
+          ],
+          "watched": [
+            {
+              "date": "2007",
+              "note": "Фильм 1"
+            },
+            {
+              "date": "2007",
+              "note": "Фильм 2"
+            },
+            {
+              "date": "2007",
+              "note": "Фильм 3"
+            }
+          ]
+        },
         {
           "uid": "anime-1792140779052",
           "kind": "TV Сериал",
