@@ -4,885 +4,221 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-  <meta http-equiv="Pragma" content="no-cache">
-  <meta http-equiv="Expires" content="0">
   <title>myTierAnime</title>
   <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
-  <link rel="apple-touch-icon" href="assets/favicon.svg">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;900&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&family=Montserrat:wght@500;700;800&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
-  <link rel="manifest" href="manifest.json">
-
-  <link rel="stylesheet" href="css/tokens.css?v=16.0">
-  <link rel="stylesheet" href="css/realism-3d.css?v=16.0">
-  <link rel="stylesheet" href="css/cards-and-tiers.css?v=16.0">
-  <link rel="stylesheet" href="css/modals-and-panels.css?v=16.0">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;900&family=Inter:wght@400;500;600;700;800&family=Montserrat:wght@500;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/cards-and-tiers.css">
+  <link rel="stylesheet" href="css/modals-and-panels.css">
+  <style>
+    body { margin: 0; background: #06050c; color: #f5f3ff; font-family: 'Inter', sans-serif; min-height: 100vh; overflow-x: hidden; }
+    .topbar { position: sticky; top: 0; z-index: 500; background: rgba(13, 10, 28, 0.94); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255,255,255,0.14); padding: 12px 22px; }
+    .topbar-inner { max-width: 1780px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; }
+    .brand { display: flex; align-items: center; gap: 12px; cursor: pointer; }
+    .brand-orb { width: 40px; height: 40px; border-radius: 12px; background: linear-gradient(135deg, #ffd76a, #ff3c8c, #00f5ff); display: flex; align-items: center; justify-content: center; font-family: 'Cinzel', serif; font-size: 20px; font-weight: 900; color: #090614; }
+    .brand-text h1 { font-family: 'Cinzel', serif; font-size: 22px; font-weight: 900; margin: 0; color: #ffe8a3; }
+    .toolbar-controls { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .btn { display: inline-flex; align-items: center; gap: 6px; padding: 9px 15px; border-radius: 999px; font-size: 12.5px; font-weight: 700; border: 1px solid rgba(255,255,255,0.16); background: rgba(255,255,255,0.07); color: #f5f3ff; cursor: pointer; }
+    .btn-primary { background: linear-gradient(135deg, #ffd76a, #ff9f43); color: #0b0818; border-color: transparent; }
+    .stats-ribbon { max-width: 1780px; margin: 18px auto 6px; padding: 0 20px; display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
+    .stat-card { background: rgba(18, 15, 36, 0.9); border: 1px solid rgba(255,255,255,0.12); border-radius: 14px; padding: 13px 16px; display: flex; align-items: center; justify-content: space-between; }
+    .stat-label { font-size: 10.5px; color: #a6a0c4; text-transform: uppercase; }
+    .stat-val { font-family: 'Cinzel', serif; font-size: 22px; font-weight: 800; color: #fff; margin-top: 3px; }
+    .stat-sub { font-size: 11.5px; color: #a6a0c4; margin-top: 3px; font-weight: 600; }
+    .tiers-container { max-width: 1780px; margin: 0 auto; padding: 10px 20px 80px; display: flex; flex-direction: column; gap: 24px; }
+    .tier { position: relative; display: grid; grid-template-columns: 185px 1fr; background: rgba(16, 13, 30, 0.9); border: 1px solid rgba(255,255,255,0.14); border-radius: 22px; overflow: hidden; margin-bottom: 20px; }
+    .tier-badge { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; padding: 14px 10px; background: rgba(8, 6, 16, 0.72); border-right: 1px solid rgba(255,255,255,0.1); text-align: center; }
+    .seal-index { font-size: 9.5px; letter-spacing: 0.16em; color: #a6a0c4; text-transform: uppercase; }
+    .seal-index b { color: #ffd76a; font-weight: 800; }
+    .seal-caption { font-size: 11px; font-weight: 700; color: #f5f3ff; }
+    .tier-content { padding: 16px 18px; display: flex; flex-direction: column; gap: 12px; }
+    .tier-header-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.09); }
+    .tier-title-group h2 { font-family: 'Cinzel', serif; font-size: 17px; font-weight: 700; color: #f5f3ff; margin: 0; display: flex; align-items: center; gap: 10px; }
+    .tier-count-pill { font-size: 11px; padding: 2px 9px; border-radius: 999px; background: rgba(255,255,255,0.07); border: 1px solid #ffd76a; color: #ffd76a; }
+    .tier-grid { display: grid; grid-template-columns: repeat(10, minmax(0, 1fr)); gap: 11px; align-items: start; }
+    .card-unit { display: flex; flex-direction: column; gap: 6px; cursor: pointer; }
+    .card { position: relative; aspect-ratio: 2 / 3; border-radius: 10px; overflow: hidden; background: #120f24; border: 1px solid rgba(255,255,255,0.14); }
+    .card-poster { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .card .rank { position: absolute; top: 6px; left: 6px; z-index: 4; width: 19px; height: 19px; border-radius: 5px; display: flex; align-items: center; justify-content: center; font-size: 9.5px; font-weight: 800; color: #090614; background: #ffd76a; }
+    .card-score-badge { position: absolute; top: 6px; right: 6px; z-index: 4; padding: 1.5px 5px; border-radius: 5px; font-size: 9px; font-weight: 800; color: #ffd76a; background: rgba(10,8,20,0.88); border: 1px solid rgba(255,215,106,0.45); }
+    .card-info { position: absolute; bottom: 0; left: 0; right: 0; padding: 7px 7px 6px; z-index: 4; background: linear-gradient(to top, rgba(6,5,14,0.95) 0%, rgba(6,5,14,0.5) 40%, transparent 72%); }
+    .card-title { font-size: 11px; font-weight: 700; color: #fff; margin: 0 0 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .card-sub { font-size: 9px; color: #a6a0c4; }
+    .card-under-meta { background: rgba(14,12,28,0.92); border: 1px solid rgba(255,255,255,0.11); border-radius: 10px; padding: 6px 8px; display: flex; flex-direction: column; gap: 4px; font-size: 10px; }
+    .cum-row { display: flex; align-items: center; justify-content: space-between; }
+    .cum-kind { font-size: 8.5px; font-weight: 800; text-transform: uppercase; padding: 2px 6px; border-radius: 4px; background: rgba(255,255,255,0.08); color: #00f5ff; border: 1px solid rgba(0,245,255,0.45); }
+    .cum-episodes-line { font-size: 10px; font-weight: 700; color: #f5f3ff; }
+    .cum-hours-bar { display: flex; align-items: center; justify-content: space-between; background: rgba(0,245,255,0.08); border-radius: 6px; padding: 3px 7px; color: #b8fbff; }
+    .cum-hours-bar b { color: #00f5ff; }
+    .recent-showcase-wrap { max-width: 1780px; margin: 12px auto 6px; padding: 0 20px; }
+    .recent-showcase-box { background: rgba(20,16,40,0.9); border: 1px solid rgba(0,245,255,0.28); border-radius: 20px; padding: 14px 18px 16px; }
+    .recent-showcase-head { padding-bottom: 10px; margin-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.09); }
+    .recent-showcase-title { margin: 0; font-family: 'Cinzel', serif; font-size: 15.5px; font-weight: 800; color: #fff; }
+    .recent-showcase-grid { display: grid; grid-template-columns: repeat(10, minmax(0, 1fr)); gap: 11px; }
+    .recent-poster-frame { position: relative; aspect-ratio: 2 / 3; border-radius: 10px; overflow: hidden; background: #120f24; border: 1px solid rgba(255,255,255,0.16); }
+    .recent-tier-badge { position: absolute; top: 6px; left: 6px; z-index: 4; padding: 2px 6px; border-radius: 5px; font-size: 9px; font-weight: 900; color: #090614; background: #ffd76a; }
+  </style>
 </head>
-<body class="emblems-realism letter-style-gold motion-precession fx-tier-motion fx-tilt">
-  <div id="globalOwnerBg" class="global-owner-bg" aria-hidden="true">
-    <img id="globalOwnerBgImg" class="global-owner-bg-img" alt="">
-    <div id="globalOwnerBgDimmer" class="global-owner-bg-dimmer"></div>
-  </div>
-  <div id="screenFxOverlay" class="screen-fx-overlay" aria-hidden="true"></div>
-  <canvas id="bgStarsCanvas" aria-hidden="true"></canvas>
-
+<body>
   <div class="app-shell">
     <header class="topbar">
-      <div class="topbar-glow-line"></div>
       <div class="topbar-inner">
-        <div class="brand" id="brandHomeBtn" title="На главную" style="cursor:pointer;">
+        <div class="brand" onclick="location.reload()">
           <div class="brand-orb">S</div>
-          <div class="brand-text">
-            <h1>myTierAnime</h1>
-          </div>
-          <span id="syncStatusBadge" class="sync-status-badge owner-only">☁ Готов к синхронизации</span>
+          <div class="brand-text"><h1>myTierAnime</h1></div>
         </div>
-
         <div class="toolbar-controls">
-          <div class="search-input-wrap">
-            <span class="search-icon">🔍</span>
-            <input type="search" id="searchInput" class="search-input" placeholder="Поиск тайтла...">
-          </div>
-
-          <div class="genre-dropdown" id="genreDropdown">
-            <button type="button" class="genre-dropdown-btn" id="genreDropdownBtn">
-              <span>🎭</span>
-              <span id="genreDropdownLabel">Все жанры</span>
-              <span style="font-size:10px;opacity:0.7;">▼</span>
-            </button>
-            <button type="button" id="btnClearGenreFilter" class="filter-clear-x" style="display:none;" title="Сбросить фильтр жанра">✕</button>
-            <div class="genre-dropdown-menu" id="genreDropdownMenu">
-              <div class="genre-search-box">
-                <input type="search" id="genreSearchInput" class="form-control" placeholder="🔎 Поиск жанра...">
-              </div>
-              <div class="genre-options-list" id="genreOptionsList"></div>
-            </div>
-          </div>
-
-          <div class="genre-dropdown" id="studioDropdown">
-            <button type="button" class="genre-dropdown-btn" id="studioDropdownBtn" style="border-color:rgba(0,245,255,0.5);box-shadow:0 0 16px -4px rgba(0,245,255,0.35);">
-              <span>🎬</span>
-              <span id="studioDropdownLabel">Все студии</span>
-              <span style="font-size:10px;opacity:0.7;">▼</span>
-            </button>
-            <button type="button" id="btnClearStudioFilter" class="filter-clear-x cyan" style="display:none;" title="Сбросить фильтр студии">✕</button>
-            <div class="genre-dropdown-menu" id="studioDropdownMenu" style="border-color:rgba(0,245,255,0.45);">
-              <div class="genre-search-box">
-                <input type="search" id="studioSearchInput" class="form-control" placeholder="🔎 Поиск студии (Madhouse, MAPPA...)">
-              </div>
-              <div class="genre-options-list" id="studioOptionsList"></div>
-            </div>
-          </div>
-
-          <button type="button" id="btnToggleCalendar" class="btn btn-neon-purple">
-            📅 Календарь
-          </button>
-
-          <button type="button" id="btnAddTitleTop" class="btn btn-neon-gold owner-only">
-            ➕ Добавить тайтл
-          </button>
-
-          <button type="button" id="btnSyncNowOwner" class="btn btn-primary owner-only" title="Опубликовать все изменения, музыку и фон для всех по ссылке">
-            🔄 Синхронизировать со всеми
-          </button>
-
-          <button type="button" id="btnToggleSettings" class="btn btn-neon-cyan" title="Настройки">
-            ⚙️ Настройки
-          </button>
-
-          <button type="button" id="btnExportJson" class="btn owner-only" title="Скачать резервную копию JSON">
-            ⬇ JSON
-          </button>
-
-          <button type="button" id="btnOwnerAuth" class="btn">
-            🔑 Вход
-          </button>
+          <button type="button" class="btn btn-primary" onclick="location.reload()">🔄 Обновить страницу</button>
         </div>
       </div>
     </header>
 
-    <!-- 1. Верхняя панель статистики -->
-    <section id="statsRibbon" class="stats-ribbon" aria-label="Статистика"></section>
-
-    <!-- 2. Блок «Недавно добавленные и обновлённые тайтлы» перед тирами -->
-    <section id="recentSection" class="recent-showcase-wrap" aria-label="Недавно добавленные и обновлённые тайтлы"></section>
-
-    <!-- 3. Основной контейнер тиров S, A, B, C, D, E -->
+    <section id="statsRibbon" class="stats-ribbon"></section>
+    <section id="recentSection" class="recent-showcase-wrap"></section>
     <main id="tiersRoot" class="tiers-container"></main>
-
-    <!-- 4. Контейнер календаря -->
-    <section id="calendarRoot" class="calendar-container" style="display:none;"></section>
   </div>
 
-  <!-- Панель «⚙️ Настройки» -->
-  <aside id="fxPanel" class="fx-drawer" aria-label="Настройки">
-    <div class="fx-drawer-head">
-      <strong>⚙️ Студия Кастомизации</strong>
-      <div style="display:flex;gap:6px;">
-        <button type="button" id="btnResetSettings" class="btn btn-sm">↺ Сброс</button>
-        <button type="button" class="btn btn-sm" id="btnCloseFxPanel">✕</button>
-      </div>
-    </div>
-
-    <div class="fx-tabs-nav">
-      <button type="button" class="fx-tab-btn active" data-fx-tab="tab3d">🔮 3D и Буквы</button>
-      <button type="button" class="fx-tab-btn" data-fx-tab="tabParticles">🌸 Частицы</button>
-      <button type="button" class="fx-tab-btn" data-fx-tab="tabCards">🃏 Карточки</button>
-      <button type="button" class="fx-tab-btn" data-fx-tab="tabTheme">🎨 Палитра</button>
-      <button type="button" class="fx-tab-btn" data-fx-tab="tabScreen">✨ Экран</button>
-      <button type="button" class="fx-tab-btn owner-only" data-fx-tab="tabOwnerBg">🖼 Фон сайта</button>
-    </div>
-
-    <div class="fx-tab-pane active" id="tab3d">
-      <div class="fx-section-title">1. 3D-стиль букв тира:</div>
-      <div class="fx-seg">
-        <button type="button" data-letter-style="letter-style-gold" class="active">👑 Литое золото</button>
-        <button type="button" data-letter-style="letter-style-prism">💎 Кристалл-Призма</button>
-        <button type="button" data-letter-style="letter-style-neon">⚡ Кибер-Неон</button>
-        <button type="button" data-letter-style="letter-style-plasma">🔥 Огненная плазма</button>
-        <button type="button" data-letter-style="letter-style-holo">🌈 Голограмма</button>
-        <button type="button" data-letter-style="letter-style-obsidian">🌑 Тёмный обсидиан</button>
-        <button type="button" data-letter-style="letter-style-ice">❄️ Ледяной кварц</button>
-        <button type="button" data-letter-style="letter-style-glitch">👾 Кибер-Глитч</button>
-      </div>
-
-      <div class="fx-section-title">2. Кинематика движения 3D-букв:</div>
-      <div class="fx-seg">
-        <button type="button" data-letter-motion="motion-precession" class="active">🪐 Прецессия 3D</button>
-        <button type="button" data-letter-motion="motion-spin360">🔄 Оборот 360°</button>
-        <button type="button" data-letter-motion="motion-float">🌊 Левитация</button>
-        <button type="button" data-letter-motion="motion-pulse">💓 Энерго-Пульс</button>
-      </div>
-
-      <div class="fx-section-title">3. Архитектура 3D-эмблем вокруг буквы:</div>
-      <div class="fx-seg">
-        <button type="button" data-emblem-mode="emblems-realism" class="active">👑 Королевский</button>
-        <button type="button" data-emblem-mode="emblems-quantum">🌀 Квантовый Вихрь</button>
-        <button type="button" data-emblem-mode="emblems-crystal">💎 Кристалл-Сфера</button>
-        <button type="button" data-emblem-mode="emblems-eclipse">🌑 Затмение</button>
-        <button type="button" data-emblem-mode="emblems-runic">🔯 Геометрия</button>
-        <button type="button" data-emblem-mode="emblems-synth">🌆 Ретровейв</button>
-        <button type="button" data-emblem-mode="emblems-galaxy">🌌 Галактика</button>
-        <button type="button" data-emblem-mode="emblems-cyber">⚡ Кибер-Куб</button>
-        <button type="button" data-emblem-mode="emblems-elements">🌸 Импульс</button>
-        <button type="button" data-emblem-mode="emblems-orbits">🪐 Орбита</button>
-      </div>
-
-      <div id="fxDemo" class="fx-demo-seal" data-rank="1" style="display:grid;place-items:center;padding:4px 0;">
-        <div class="lstage" style="--seal-size:100px;height:124px;">
-          <div class="realism-system">
-            <canvas class="seal-canvas-3d" width="180" height="180" data-seal-idx="0" data-hue="45"></canvas>
-            <div class="realism-gimbal"><span class="rg-ring r-outer"></span><span class="rg-ring r-inner"></span></div>
-          </div>
-          <div class="l3d" data-l="S"></div>
-        </div>
-      </div>
-
-      <div class="fx-sliders">
-        <label class="fx-slider-row">
-          <span>Размер 3D-буквы тира: <b data-val="letterFontSize">64px</b></span>
-          <input type="range" data-setting="letterFontSize" min="44" max="88" step="2" value="64">
-        </label>
-        <label class="fx-slider-row">
-          <span>Глубина 3D-экструзии буквы (объём): <b data-val="letterDepthStep">2.1px</b></span>
-          <input type="range" data-setting="letterDepthStep" min="0.5" max="4.5" step="0.2" value="2.1">
-        </label>
-        <label class="fx-slider-row">
-          <span>Масштаб всей 3D-эмблемы: <b data-val="sealScale">100%</b></span>
-          <input type="range" data-setting="sealScale" min="70" max="130" step="2" value="100">
-        </label>
-        <label class="fx-slider-row">
-          <span>Яркость свечения буквы и эмблемы: <b data-val="sealGlow">100%</b></span>
-          <input type="range" data-setting="sealGlow" min="0" max="220" step="5" value="100">
-        </label>
-        <label class="fx-slider-row">
-          <span>Скорость перелива металла букв: <b data-val="metalSheenSpeed">5.2с</b></span>
-          <input type="range" data-setting="metalSheenSpeed" min="1.5" max="12.0" step="0.5" value="5.2">
-        </label>
-      </div>
-
-      <div class="fx-toggles">
-        <label class="fx-check-row"><input type="checkbox" data-toggle="showGimbalRings" checked><span>Внешние карданные 3D-кольца</span></label>
-        <label class="fx-check-row"><input type="checkbox" data-toggle="showSealFloor" checked><span>Световое отражение под буквой</span></label>
-        <label class="fx-check-row"><input type="checkbox" data-toggle="showLetterHalo" checked><span>Неоновый ореол буквы</span></label>
-        <label class="fx-check-row"><input type="checkbox" data-toggle="showSealCaption" checked><span>Подпись названия под буквой</span></label>
-        <label class="fx-check-row"><input type="checkbox" id="chkMotion" checked><span>60 FPS физическая анимация 3D-сцен</span></label>
-      </div>
-    </div>
-
-    <div class="fx-tab-pane" id="tabParticles">
-      <div class="fx-section-title">Тип фоновых частиц:</div>
-      <div class="fx-seg">
-        <button type="button" data-bg-effect="sakura" class="active">🌸 Сакура</button>
-        <button type="button" data-bg-effect="crimsonLeaves">🍁 Клен</button>
-        <button type="button" data-bg-effect="stars">✨ Звезды</button>
-        <button type="button" data-bg-effect="embers">🔥 Угли</button>
-        <button type="button" data-bg-effect="fireflies">🪲 Светлячки</button>
-        <button type="button" data-bg-effect="rain">🌧 Дождь</button>
-        <button type="button" data-bg-effect="snow">❄️ Снег</button>
-        <button type="button" data-bg-effect="hearts">💖 Сердца</button>
-        <button type="button" data-bg-effect="feathers">🪶 Перья</button>
-        <button type="button" data-bg-effect="bubbles">🫧 Сферы</button>
-        <button type="button" data-bg-effect="matrix">💻 Матрица</button>
-        <button type="button" data-bg-effect="none">🚫 Откл.</button>
-      </div>
-
-      <div class="fx-sliders">
-        <label class="fx-slider-row">
-          <span>Скорость: <b id="lblBgSpeed">1.0x</b></span>
-          <input type="range" id="rngBgSpeed" min="0.1" max="3.5" step="0.1" value="1.0">
-        </label>
-        <label class="fx-slider-row">
-          <span>Количество: <b id="lblBgCount">65</b></span>
-          <input type="range" id="rngBgCount" min="10" max="220" step="5" value="65">
-        </label>
-        <label class="fx-slider-row">
-          <span>Размер частиц: <b data-val="particleSize">1.0x</b></span>
-          <input type="range" data-setting="particleSize" min="0.4" max="2.6" step="0.1" value="1.0">
-        </label>
-        <label class="fx-slider-row">
-          <span>Ветер: <b id="lblBgWind">0.5</b></span>
-          <input type="range" id="rngBgWind" min="-2.5" max="2.5" step="0.1" value="0.5">
-        </label>
-      </div>
-    </div>
-
-    <div class="fx-tab-pane" id="tabCards">
-      <div class="fx-sliders">
-        <label class="fx-slider-row">
-          <span>Тайтлов в ряду (Колонок): <b data-val="gridCols">10</b></span>
-          <input type="range" data-setting="gridCols" min="4" max="14" step="1" value="10">
-        </label>
-        <label class="fx-slider-row">
-          <span>Отступ между карточками: <b data-val="gridGap">10px</b></span>
-          <input type="range" data-setting="gridGap" min="4" max="26" step="1" value="10">
-        </label>
-        <label class="fx-slider-row">
-          <span>Скругление карточек: <b data-val="cardRadius">10px</b></span>
-          <input type="range" data-setting="cardRadius" min="0" max="26" step="1" value="10">
-        </label>
-        <label class="fx-slider-row">
-          <span>Угол 3D-наклона: <b id="lblTiltPower">14°</b></span>
-          <input type="range" id="rngTiltPower" min="0" max="30" step="1" value="14">
-        </label>
-      </div>
-      <div class="fx-toggles">
-        <label class="fx-check-row"><input type="checkbox" id="chkTilt" checked><span>3D-наклон и голография</span></label>
-        <label class="fx-check-row"><input type="checkbox" data-toggle="showCardRank" checked><span>Порядковый номер</span></label>
-        <label class="fx-check-row"><input type="checkbox" data-toggle="showCardScore" checked><span>Оценка (★)</span></label>
-        <label class="fx-check-row"><input type="checkbox" data-toggle="showCardYear" checked><span>Бейдж года</span></label>
-        <label class="fx-check-row"><input type="checkbox" data-toggle="showCardCrown" checked><span>Золотая корона S-тира</span></label>
-        <label class="fx-check-row"><input type="checkbox" data-toggle="showUnderMeta" checked><span>Нижняя плашка (серии/часы)</span></label>
-      </div>
-    </div>
-
-    <div class="fx-tab-pane" id="tabTheme">
-      <div class="fx-section-title">Шрифт заголовков:</div>
-      <div class="fx-seg">
-        <button type="button" data-font-serif="Cinzel" class="active">Cinzel</button>
-        <button type="button" data-font-serif="Playfair Display">Playfair</button>
-        <button type="button" data-font-serif="Montserrat">Montserrat</button>
-        <button type="button" data-font-serif="JetBrains Mono">JetBrains</button>
-      </div>
-      <div class="fx-sliders">
-        <label class="fx-slider-row">
-          <span>Прозрачность блоков тиров: <b data-val="tierBgAlpha">88%</b></span>
-          <input type="range" data-setting="tierBgAlpha" min="35" max="98" step="2" value="88">
-        </label>
-        <label class="fx-slider-row">
-          <span>Размытие стекла (Blur): <b data-val="glassBlur">16px</b></span>
-          <input type="range" data-setting="glassBlur" min="0" max="36" step="2" value="16">
-        </label>
-        <label class="fx-slider-row">
-          <span>Ширина контейнера: <b data-val="containerWidth">1780px</b></span>
-          <input type="range" data-setting="containerWidth" min="1200" max="2400" step="40" value="1780">
-        </label>
-      </div>
-    </div>
-
-    <div class="fx-tab-pane" id="tabScreen">
-      <div class="fx-sliders">
-        <label class="fx-slider-row">
-          <span>Яркость: <b data-val="uiBrightness">100%</b></span>
-          <input type="range" data-setting="uiBrightness" min="75" max="130" step="5" value="100">
-        </label>
-        <label class="fx-slider-row">
-          <span>Контрастность: <b data-val="uiContrast">100%</b></span>
-          <input type="range" data-setting="uiContrast" min="80" max="135" step="5" value="100">
-        </label>
-        <label class="fx-slider-row">
-          <span>Насыщенность: <b data-val="uiSaturate">100%</b></span>
-          <input type="range" data-setting="uiSaturate" min="50" max="170" step="5" value="100">
-        </label>
-      </div>
-      <div class="fx-toggles">
-        <label class="fx-check-row"><input type="checkbox" data-toggle="showTopRainbow" checked><span>Неоновая линия в шапке</span></label>
-        <label class="fx-check-row"><input type="checkbox" data-toggle="showStatsRibbon" checked><span>Верхняя панель статистики</span></label>
-        <label class="fx-check-row"><input type="checkbox" data-toggle="showCyberGrid"><span>Фоновая кибер-сетка</span></label>
-        <label class="fx-check-row"><input type="checkbox" data-toggle="showScanlines"><span>CRT-сканлайны</span></label>
-      </div>
-    </div>
-
-    <div class="fx-tab-pane" id="tabOwnerBg">
-      <div class="fx-section-title">🖼 Глобальный фон сайта:</div>
-      <p style="font-size:11px;color:var(--ink-soft);line-height:1.45;margin:0 0 10px;">
-        Выберите картинку с компьютера — после загрузки нажмите <b>«🔄 Синхронизировать со всеми»</b> в шапке!
-      </p>
-      <div class="form-group">
-        <label>Загрузить картинку фона с компьютера:</label>
-        <input type="file" id="ownerBgFileInput" accept="image/*" class="form-control">
-      </div>
-      <div class="fx-sliders">
-        <label class="fx-slider-row">
-          <span>Затемнение поверх фона: <b id="lblOwnerBgDim">55%</b></span>
-          <input type="range" id="rngOwnerBgDim" min="0" max="90" step="5" value="55">
-        </label>
-        <label class="fx-slider-row">
-          <span>Размытие фона (Blur): <b id="lblOwnerBgBlur">0px</b></span>
-          <input type="range" id="rngOwnerBgBlur" min="0" max="20" step="1" value="0">
-        </label>
-        <label class="fx-slider-row" style="margin-top:10px;">
-          <span>🔊 Громкость фоновой музыки тайтлов: <b id="lblBgmVol">30%</b></span>
-          <input type="range" id="rngBgmVol" min="0" max="100" step="5" value="30">
-        </label>
-      </div>
-      <div style="display:flex;gap:8px;margin-top:8px;">
-        <button type="button" id="btnClearOwnerBg" class="btn btn-danger" style="width:100%;justify-content:center;">✕ Сбросить на стандартный фон</button>
-      </div>
-    </div>
-  </aside>
-
-  <!-- Модальное окно 1: Личная карточка тайтла -->
-  <div id="detailsModal" class="modal-backdrop">
-    <div class="modal-box modal-box-wide dossier-cinema-box">
-      <div class="dossier-sticky-topbar">
-        <div id="dossierTopBadges" class="dossier-badges-row" style="margin:0;"></div>
-        <div class="dossier-top-btns">
-          <button type="button" id="btnBgmToggle" class="btn btn-sm btn-neon-cyan" style="display:none;" title="Включить / отключить фоновую музыку">🔊 Музыка</button>
-          <button type="button" id="btnDetailsEdit" class="btn btn-sm btn-neon-gold owner-only">✎ Редактировать тайтл</button>
-          <button type="button" id="btnDetailsDelete" class="btn btn-sm btn-danger owner-only">🗑 Удалить</button>
-          <button type="button" id="btnDetailsClose" class="btn btn-sm" data-close-modal="detailsModal">✕ Закрыть</button>
-        </div>
-      </div>
-      <div id="detailsModalBody" class="dossier-scroll-content"></div>
-    </div>
-  </div>
-
-  <!-- Модальное окно 2: Добавление / Редактирование тайтла -->
-  <div id="editorModal" class="modal-backdrop">
-    <div class="modal-box modal-box-wide">
-      <div class="modal-header">
-        <h3 id="editModalTitle">Добавить тайтл</h3>
-        <button type="button" class="btn" data-close-modal="editorModal">✕</button>
-      </div>
-
-      <div class="form-group full" style="position:relative;">
-        <label>⚡ Автозаполнение из базы Shikimori / MyAnimeList:</label>
-        <input type="search" id="shikiSearchInput" class="form-control" placeholder="Например: Песнь ночных сов, Фрирен, Oshi no Ko...">
-        <div id="shikiResults" class="shiki-results"></div>
-      </div>
-
-      <form id="animeEditorForm" novalidate>
-        <input type="hidden" id="fUid">
-        <div class="form-grid">
-          <div class="form-group">
-            <label>Тир (Ранг S–E):</label>
-            <select id="fTier" class="form-control">
-              <option value="S">Тир S — Шедевры</option>
-              <option value="A">Тир A — Отличные</option>
-              <option value="B">Тир B — Хорошие</option>
-              <option value="C">Тир C — Нормальные</option>
-              <option value="D">Тир D — Слабые</option>
-              <option value="E">Тир E — Плохие</option>
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label>Основной тип тайтла:</label>
-            <select id="fKind" class="form-control">
-              <option value="TV Сериал">TV Сериал</option>
-              <option value="Фильм">Фильм</option>
-              <option value="OVA">OVA</option>
-              <option value="ONA">ONA</option>
-              <option value="Спешл">Спешл</option>
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label style="color:#ffd76a;">Название (RU) * (обязательно):</label>
-            <input type="text" id="fTitle" class="form-control" placeholder="Введите русское название..." required>
-          </div>
-          <div class="form-group">
-            <label>Оригинальное название (необязательно):</label>
-            <input type="text" id="fOrigTitle" class="form-control" placeholder="Romaji / English">
-          </div>
-
-          <div class="form-group">
-            <label>Год релиза (необязательно):</label>
-            <input type="number" id="fYear" class="form-control" placeholder="2026">
-          </div>
-          <div class="form-group">
-            <label>Личная оценка 1–10 (необязательно):</label>
-            <input type="number" step="0.1" min="0" max="10" id="fScore" class="form-control" placeholder="9.0">
-          </div>
-
-          <div class="form-group full">
-            <label>🎬 Студия (необязательно — выберите из списка или введите):</label>
-            <div class="input-with-clear">
-              <input type="text" id="fStudio" list="studioPresetList" class="form-control" placeholder="Madhouse, MAPPA, Liden Films...">
-              <button type="button" id="btnClearEditorStudio" class="input-clear-btn" title="Очистить студию">✕</button>
-            </div>
-            <datalist id="studioPresetList"></datalist>
-          </div>
-
-          <div class="form-group full poster-upload-box">
-            <label>🖼 Обложка (необязательно — загрузите с ПК или укажите путь в <code>posters/</code>):</label>
-            <div class="poster-upload-grid">
-              <div>
-                <div style="font-size:11px;color:var(--ink-soft);margin-bottom:4px;">1. Загрузить файл с ПК:</div>
-                <input type="file" id="fPosterFile" accept="image/*" class="form-control">
-              </div>
-              <div>
-                <div style="font-size:11px;color:var(--ink-soft);margin-bottom:4px;">2. Путь в posters/ или ссылка:</div>
-                <div class="input-with-clear">
-                  <input type="text" id="fPoster" class="form-control" placeholder="posters/my-anime.jpg (необязательно)">
-                  <button type="button" id="btnClearEditorPoster" class="input-clear-btn" title="Очистить ссылку">✕</button>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="form-group full poster-upload-box" style="border-color:rgba(181,124,255,0.45);background:rgba(181,124,255,0.04);">
-            <label>🎵 Фоновая музыка тайтла (необязательно — загрузите MP3/WAV файл с ПК):</label>
-            <div style="display:flex;gap:8px;align-items:center;">
-              <input type="file" id="fBgmFile" accept="audio/*" class="form-control" style="flex:1;">
-              <input type="hidden" id="fBgmUrl">
-              <span id="bgmFileNameLabel" style="font-size:11.5px;color:#ffd76a;">Музыка не выбрана</span>
-            </div>
-          </div>
-
-          <div class="form-group full">
-            <div style="display:flex;justify-content:space-between;align-items:center;">
-              <label>🎭 Жанры (необязательно — удаляйте лишние нажатием на ✕):</label>
-              <button type="button" id="btnClearAllEditorGenres" class="btn btn-sm" style="padding:2px 8px;font-size:10.5px;">✕ Очистить все жанры</button>
-            </div>
-            <div class="editor-genre-bar">
-              <input type="search" id="editorGenreSearch" class="form-control" placeholder="🔎 Быстрый фильтр списка жанров...">
-              <select id="genreQuickPicker" class="form-control">
-                <option value="">+ Нажмите, чтобы добавить жанр...</option>
-              </select>
-            </div>
-            <div id="editorGenreChips" class="editor-chips-wrap"></div>
-            <input type="text" id="fGenres" class="form-control" placeholder="Или введите через запятую..." style="margin-top:4px;">
-          </div>
-        </div>
-
-        <div class="seasons-builder-box">
-          <div class="seasons-builder-head">
-            <div>
-              <strong>🎬 Сезоны, Фильмы, OVA, ONA и Спешлы</strong>
-              <div style="font-size:11px;color:var(--ink-soft);">
-                Дату просмотра можно указать полностью (<b>03.04.2026</b>), только месяц и год (<b>04.2026</b>) или просто год (<b>2026</b>). Для анонса укажите <b>0</b> серий.
-              </div>
-            </div>
-            <div style="display:flex;gap:6px;flex-wrap:wrap;">
-              <button type="button" class="btn btn-sm" data-add-part="TV Сериал">+ Сезон (TV)</button>
-              <button type="button" class="btn btn-sm" data-add-part="Фильм">+ Фильм</button>
-              <button type="button" class="btn btn-sm" data-add-part="OVA">+ OVA</button>
-              <button type="button" class="btn btn-sm" data-add-part="ONA">+ ONA</button>
-              <button type="button" class="btn btn-sm" data-add-part="Спешл">+ Спешл</button>
-            </div>
-          </div>
-
-          <div id="seasonsEditorList" class="seasons-editor-list"></div>
-          <div id="seasonsTotalPreview" class="seasons-total-preview"></div>
-        </div>
-
-        <div class="form-group full" style="margin-top:12px;">
-          <label>Личная рецензия / комментарий (необязательно):</label>
-          <textarea id="fComment" rows="3" class="form-control"></textarea>
-        </div>
-
-        <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:14px;">
-          <button type="button" class="btn" data-close-modal="editorModal">Отмена</button>
-          <button type="submit" class="btn btn-primary">✔ Сохранить и синхронизировать</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- Модальное окно 3: Вход владельца по GitHub Token -->
-  <div id="authModal" class="modal-backdrop">
-    <div class="modal-box" style="max-width:480px;">
-      <div class="modal-header">
-        <h3>🔑 Вход Владельца (GitHub Token)</h3>
-        <button type="button" class="btn" data-close-modal="authModal">✕</button>
-      </div>
-      <p style="font-size:12.5px;color:var(--ink-soft);line-height:1.5;">
-        Укажите ваш <b>GitHub Personal Access Token</b> (с правом записи <code>repo</code> или <code>contents:write</code>).
-      </p>
-      <form id="authForm">
-        <div class="form-group full">
-          <label>Ваш репозиторий на GitHub (owner/repo):</label>
-          <input type="text" id="ghRepoInput" class="form-control" placeholder="noxyholmes/myTierAnime">
-        </div>
-        <div class="form-group full">
-          <label>GitHub Personal Access Token:</label>
-          <input type="password" id="ghTokenInput" class="form-control" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx">
-        </div>
-        <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:14px;">
-          <button type="button" class="btn" id="btnLogoutOwner">Выйти</button>
-          <button type="submit" class="btn btn-primary">Войти</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <div id="toastContainer"></div>
-
-  <script src="js/utils.js?v=16.0"></script>
-  <script src="js/realism-core.js?v=16.0"></script>
-  <script src="js/realism-engine.js?v=16.0"></script>
-  <script src="js/github-sync.js?v=16.0"></script>
-  <script src="js/shikimori-api.js?v=16.0"></script>
-  <script src="js/fx-controller.js?v=16.0"></script>
-  <script src="js/stats-engine.js?v=16.0"></script>
-  <script src="js/calendar-view.js?v=16.0"></script>
-  <script src="js/drag-drop.js?v=16.0"></script>
-  <script src="js/modals.js?v=16.0"></script>
-  <script src="js/app.js?v=16.0"></script>
-
-  <!-- ═══════════════════ АВТОНОМНЫЙ САМОВОССТАНАВЛИВАЮЩИЙСЯ ДВИЖОК (ЗАЩИТА ОТ ПАДЕНИЯ ВНЕШНИХ СКРИПТОВ) ═══════════════════ -->
   <script>
-    (function selfHealingBootstrap() {
-      // 1. Гарантируем наличие всех базовых утилит, даже если js/utils.js был обрезан при копировании
-      if (typeof window.esc !== "function") {
-        window.esc = s => s == null ? "" : String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
-      }
-      if (typeof window.pluralRu !== "function") {
-        window.pluralRu = (n, one, few, many) => {
-          const m = Math.abs(n) % 100, m1 = m % 10;
-          if (m > 10 && m < 20) return many;
-          if (m1 > 1 && m1 < 5) return few;
-          if (m1 === 1) return one;
-          return many;
-        };
-      }
-      if (typeof window.formatTitlesCount !== "function") window.formatTitlesCount = n => `${n}${window.pluralRu(n, "тайтл", "тайтла", "тайтлов")}`;
-      if (typeof window.formatEpisodesCount !== "function") window.formatEpisodesCount = n => `${n}${window.pluralRu(n, "серия", "серии", "серий")}`;
-      if (typeof window.formatMoviesCount !== "function") window.formatMoviesCount = n => `${n}${window.pluralRu(n, "фильм", "фильма", "фильмов")}`;
-      if (typeof window.formatHours !== "function") window.formatHours = h => Number(h || 0) % 1 === 0 ? Number(h || 0).toFixed(0) : Number(h || 0).toFixed(1);
-      if (typeof window.floralFrame !== "function") window.floralFrame = () => `<span class="floral-frame" aria-hidden="true"></span>`;
-      if (typeof window.royalCrown !== "function") window.royalCrown = () => ``;
+    (async function initStandaloneApp() {
+      let data = null;
+      try {
+        const res = await fetch("data/tiers.json?nocache=" + Date.now());
+        if (res.ok) data = await res.json();
+      } catch {}
 
-      if (typeof window.parseFlexibleRuDate !== "function") {
-        window.parseFlexibleRuDate = function(str) {
-          if (!str) return null;
-          const s = String(str).trim();
-          const full = s.match(/^(\d{1,2})[./-](\d{1,2})[./-](\d{4})$/);
-          if (full) return { precision: "day", year: +full[3], month: +full[2]-1, day: +full[1], ms: new Date(+full[3], +full[2]-1, +full[1]).getTime(), raw: s };
-          const my = s.match(/^(\d{1,2})[./-](\d{4})$/);
-          if (my) return { precision: "month", year: +my[2], month: +my[1]-1, day: null, ms: new Date(+my[2], +my[1]-1, 1).getTime(), raw: s };
-          const yr = s.match(/(19\d{2}|20\d{2})/);
-          if (yr) return { precision: "year", year: +yr[1], month: null, day: null, ms: new Date(+yr[1], 0, 1).getTime(), raw: yr[1] };
-          return null;
+      if (!data || !Array.isArray(data.tiers)) {
+        data = {
+          tiers: [
+            { id: "S", name: "Шедевры", subtitle: "Лучшие и незабываемые тайтлы", items: [] },
+            { id: "A", name: "Отличные", subtitle: "Яркие и качественные работы", items: [] },
+            { id: "B", name: "Хорошие", subtitle: "Достойные внимания", items: [] },
+            { id: "C", name: "Нормальные", subtitle: "Средние тайтлы", items: [] },
+            { id: "D", name: "Слабые", subtitle: "Проходные проекты", items: [] },
+            { id: "E", name: "Плохие", subtitle: "Разочарования", items: [] }
+          ]
         };
       }
 
-      if (typeof window.normSeasons !== "function") {
-        window.normSeasons = function(item) {
-          if (!item) return [];
-          const baseYear = item.year || 2026;
-          if (Array.isArray(item.seasons) && item.seasons.length > 0) {
-            return item.seasons.map((s, idx) => ({
-              title: s.title || `Сезон ${idx + 1}`,
-              type: s.type || item.kind || "TV Сериал",
-              releaseYear: s.releaseYear || baseYear,
-              episodes: isNaN(parseInt(s.episodes, 10)) ? 1 : Math.max(0, parseInt(s.episodes, 10)),
-              epMinutes: isNaN(parseFloat(s.epMinutes)) ? (s.type === "Фильм" ? 110 : 24) : Math.max(0, parseFloat(s.epMinutes)),
-              date: s.date != null ? String(s.date).trim() : "",
-              note: s.note || ""
-            }));
-          }
-          return [{ title: "Сезон 1", type: item.kind || "TV Сериал", releaseYear: baseYear, episodes: 12, epMinutes: 24, date: String(baseYear), note: "" }];
-        };
-      }
+      let totalTitles = 0, sumEp = 0, sumMv = 0, sumHr = 0, scoreSum = 0;
+      const recentList = [];
 
-      if (typeof window.calcItemMetrics !== "function") {
-        window.calcItemMetrics = function(item) {
-          const seasons = window.normSeasons(item);
-          let totalEpisodes = 0, totalMovies = 0, totalMinutes = 0, latestMs = 0, latestYear = item?.year || 2026, latestWatchStr = "";
+      data.tiers.forEach(t => {
+        (t.items || []).forEach(it => {
+          totalTitles++;
+          scoreSum += parseFloat(it.score || 0);
+          let eps = 0, mvs = 0, hrs = 0;
+          const seasons = Array.isArray(it.seasons) ? it.seasons : [{ episodes: it.episodes || 12, epMinutes: 24, type: it.kind || "TV Сериал", date: "2026" }];
           seasons.forEach(s => {
-            const eps = Math.max(0, parseInt(s.episodes, 10) || 0);
-            const mins = Math.max(0, parseFloat(s.epMinutes) || 24);
-            if (eps > 0) {
-              totalMinutes += eps * mins;
-              if (s.type === "Фильм") totalMovies += eps;
-              else totalEpisodes += eps;
-            }
-            const pd = window.parseFlexibleRuDate(s.date);
-            if (pd && pd.ms >= latestMs) {
-              latestMs = pd.ms;
-              latestYear = pd.year;
-              latestWatchStr = pd.raw || s.date || "";
+            const e = parseInt(s.episodes, 10) || 0;
+            const mn = parseFloat(s.epMinutes) || (s.type === "Фильм" ? 110 : 24);
+            if (e > 0) {
+              hrs += (e * mn) / 60;
+              if (s.type === "Фильм") mvs += e; else eps += e;
             }
           });
-          return {
-            seasons,
-            kind: item?.kind || seasons[0]?.type || "TV Сериал",
-            totalEpisodes,
-            totalMovies,
-            totalMinutes,
-            totalHours: totalMinutes / 60,
-            totalDays: totalMinutes / 60 / 24,
-            latestMs,
-            latestYear,
-            latestWatchStr
-          };
-        };
+          sumEp += eps; sumMv += mvs; sumHr += hrs;
+          recentList.push({ item: it, tier: t, kind: it.kind || seasons[0]?.type || "TV Сериал", hrs, eps });
+        });
+      });
+
+      const avgScore = totalTitles ? (scoreSum / totalTitles).toFixed(2) : "0.00";
+
+      document.getElementById("statsRibbon").innerHTML = `
+        <div class="stat-card">
+          <div>
+            <div class="stat-label">Всего просмотрено</div>
+            <div class="stat-val">${totalTitles} тайтлов</div>
+            <div class="stat-sub">Средний балл: <b style="color:#ffd76a;">★ ${avgScore}</b></div>
+          </div>
+          <span style="font-size:26px;">📚</span>
+        </div>
+        <div class="stat-card" style="padding:10px 12px;">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%;">
+            <div style="background:rgba(255,255,255,0.04);border-radius:10px;padding:8px 12px;">
+              <div class="stat-label">🎞 Серии</div>
+              <div style="font-family:'Cinzel',serif;font-size:20px;font-weight:800;color:#ffd76a;margin-top:2px;">${sumEp}</div>
+            </div>
+            <div style="background:linear-gradient(135deg,rgba(255,60,140,0.16),rgba(255,215,106,0.12));border-radius:10px;padding:8px 12px;">
+              <div class="stat-label" style="color:#ffd6e7;">🎬 Фильмы</div>
+              <div style="font-family:'Cinzel',serif;font-size:20px;font-weight:800;color:#ff5e7e;margin-top:2px;">${sumMv}</div>
+            </div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div>
+            <div class="stat-label">Всего времени</div>
+            <div class="stat-val" style="color:#00f5ff;">${Number(sumHr).toFixed(1)} часов</div>
+            <div class="stat-sub">⏳ Дней: <b style="color:#fff;">${(sumHr / 24).toFixed(1)} дн.</b></div>
+          </div>
+          <span style="font-size:26px;">⏱️</span>
+        </div>
+      `;
+
+      if (recentList.length > 0) {
+        document.getElementById("recentSection").innerHTML = `
+          <div class="recent-showcase-box">
+            <div class="recent-showcase-head">
+              <h2 class="recent-showcase-title"><span>✨ Недавно добавленные и обновлённые тайтлы</span></h2>
+            </div>
+            <div class="recent-showcase-grid">
+              ${recentList.slice(0, 10).map(r => `
+                <div class="recent-item-card" onclick="alert('${r.item.title}')">
+                  <div class="recent-poster-frame">
+                    <img class="card-poster" src="${r.item.poster \vert{}\vert{} 'https://placehold.co/400x600/16122b/ffd76a?text=myTierAnime'}" alt="${r.item.title}" loading="lazy" onerror="this.src='https://placehold.co/400x600/16122b/ffd76a?text=myTierAnime'">
+                    <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(6,5,14,0.95) 0%,rgba(6,5,14,0.45) 42%,transparent 75%);pointer-events:none;"></div>
+                    <span class="recent-tier-badge">Тир ${r.tier.id}</span>${r.item.score ? `<span class="card-score-badge">★ ${r.item.score}</span>` : ""}
+                    <div class="card-info">
+                      <div class="card-title">${r.item.title}</div>
+                      <div class="card-sub">${r.kind}</div>
+                    </div>
+                  </div>
+                </div>
+              `).join("")}
+            </div>
+          </div>
+        `;
       }
 
-      // 2. Проверяем через 350 мс: если #tiersRoot остался пустым (значит один из внешних .js файлов упал с синтаксической ошибкой), запускаем встроенный рендер!
-      setTimeout(async () => {
-        const tiersHost = document.getElementById("tiersRoot");
-        if (tiersHost && tiersHost.children.length > 0) return; // Всё уже отрисовалось штатно!
-
-        console.warn("Активирован встроенный самовосстанавливающийся загрузчик myTierAnime...");
-        const repo = "noxyholmes/myTierAnime";
-        const tk = localStorage.getItem("mta_2026_gh_token") || "";
-        if (tk) {
-          document.body.classList.add("is-owner");
-          const authBtn = document.getElementById("btnOwnerAuth");
-          if (authBtn) {
-            authBtn.classList.add("btn-owner-active");
-            authBtn.innerHTML = "🔓 NoxyHolmes";
-          }
-        }
-
-        let loadedData = null;
-
-        // Попытка 1: прямой файл data/tiers.json
-        try {
-          const r = await fetch(`data/tiers.json?_recover=${Date.now()}`, { cache: "no-store" });
-          if (r.ok) loadedData = await r.json();
-        } catch {}
-
-        // Попытка 2: поиск последнего рабочего коммита data/tiers.json в истории GitHub
-        if (!loadedData || !Array.isArray(loadedData.tiers)) {
-          try {
-            const headers = { "Accept": "application/vnd.github+json" };
-            if (tk) headers["Authorization"] = `Bearer ${tk}`;
-            const commitsRes = await fetch(`https://api.github.com/repos/${repo}/commits?path=data/tiers.json&per_page=5&_=${Date.now()}`, { headers, cache: "no-store" });
-            if (commitsRes.ok) {
-              const commits = await commitsRes.json();
-              for (const c of commits) {
-                try {
-                  const rawRes = await fetch(`https://raw.githubusercontent.com/${repo}/${c.sha}/data/tiers.json`);
-                  if (rawRes.ok) {
-                    const candidate = await rawRes.json();
-                    if (candidate && Array.isArray(candidate.tiers) && candidate.tiers.some(t => (t.items || []).length > 0)) {
-                      loadedData = candidate;
-                      break;
-                    }
-                  }
-                } catch {}
-              }
-            }
-          } catch {}
-        }
-
-        if (!loadedData || !Array.isArray(loadedData.tiers)) {
-          loadedData = {
-            meta: { title: "myTierAnime", revision: 1 },
-            tiers: [
-              { id: "S", name: "Шедевры", subtitle: "Лучшие и незабываемые тайтлы на все времена", hue: 45, items: [] },
-              { id: "A", name: "Отличные", subtitle: "Яркие и очень качественные работы", hue: 185, items: [] },
-              { id: "B", name: "Хорошие", subtitle: "Достойные внимания и атмосферные тайтлы", hue: 275, items: [] },
-              { id: "C", name: "Нормальные", subtitle: "Средние тайтлы на один вечер", hue: 148, items: [] },
-              { id: "D", name: "Слабые", subtitle: "Проходные или скучные проекты", hue: 28, items: [] },
-              { id: "E", name: "Плохие", subtitle: "Разочарования и брошенные тайтлы", hue: 215, items: [] }
-            ]
-          };
-        }
-
-        // Применяем глобальный фон
-        if (loadedData.meta && (loadedData.meta.bgInline || loadedData.meta.bgImage)) {
-          const bgWrap = document.getElementById("globalOwnerBg");
-          const bgImg = document.getElementById("globalOwnerBgImg");
-          if (bgWrap && bgImg) {
-            bgImg.src = loadedData.meta.bgInline || loadedData.meta.bgImage;
-            bgWrap.classList.add("has-bg");
-            document.body.classList.add("has-custom-bg");
-          }
-        }
-
-        // Отрисовываем статистику
-        let totalTitles = 0, totalScoreSum = 0, sumEpisodes = 0, sumMovies = 0, sumHours = 0;
-        const allRecent = [];
-
-        loadedData.tiers.forEach(tier => {
-          (tier.items || []).forEach(it => {
-            totalTitles++;
-            totalScoreSum += parseFloat(it.score || 0);
-            const m = window.calcItemMetrics(it);
-            sumEpisodes += m.totalEpisodes;
-            sumMovies += m.totalMovies;
-            sumHours += m.totalHours;
-            const uidMatch = String(it.uid || "").match(/anime-(\d{10,})/);
-            const sortKey = Math.max(m.latestMs || 0, uidMatch ? Number(uidMatch[1]) : 0);
-            allRecent.push({ item: it, tier, m, sortKey, latestWatchStr: m.latestWatchStr || (it.year ? `${it.year} г.` : "Недавно") });
-          });
-        });
-
-        const statsHost = document.getElementById("statsRibbon");
-        if (statsHost) {
-          const avgScore = totalTitles ? (totalScoreSum / totalTitles).toFixed(2) : "0.00";
-          statsHost.innerHTML = `
-            <div class="stat-card">
-              <div>
-                <div class="stat-label">Всего просмотрено</div>
-                <div class="stat-val">${totalTitles} <span style="font-size:13px;color:var(--ink-soft);">тайтлов</span></div>
-                <div class="stat-sub">Средний балл: <b style="color:#ffd76a;">★ ${avgScore}</b></div>
-              </div>
-              <span style="font-size:26px;">📚</span>
-            </div>
-            <div class="stat-card" style="padding:10px 12px;">
-              <div class="stat-dual-split">
-                <div class="stat-split-box">
-                  <div class="stat-label">🎞 Серии</div>
-                  <div class="stat-val" style="color:#ffd76a;font-size:20px;">${sumEpisodes}</div>
-                  <div style="font-size:9.5px;color:var(--ink-soft);">серий</div>
+      document.getElementById("tiersRoot").innerHTML = data.tiers.map(t => {
+        const items = t.items || [];
+        const pct = totalTitles > 0 ? Math.round((items.length / totalTitles) * 100) : 0;
+        return `
+          <section class="tier">
+            <aside class="tier-badge">
+              <span class="seal-index">ТИР <b>${t.id}</b></span>
+              <span class="seal-caption">${t.name}</span>
+            </aside>
+            <div class="tier-content">
+              <header class="tier-header-bar">
+                <div class="tier-title-group">
+                  <h2>${t.name} <span class="tier-count-pill">${items.length} тайтлов (${pct}%)</span></h2>
                 </div>
-                <div class="stat-split-box movies-highlight">
-                  <div class="stat-label" style="color:#ffd6e7;font-weight:800;">🎬 Фильмы</div>
-                  <div class="stat-val" style="color:#ff5e7e;font-size:20px;">${sumMovies}</div>
-                  <div style="font-size:9.5px;color:#ffaec6;font-weight:700;">фильмов</div>
-                </div>
-              </div>
-            </div>
-            <div class="stat-card">
-              <div>
-                <div class="stat-label">Всего времени</div>
-                <div class="stat-val" style="color:#00f5ff;">${window.formatHours(sumHours)} <span style="font-size:13px;color:var(--ink-soft);">часов</span></div>
-                <div class="stat-sub">⏳ Общее количество дней: <b style="color:#fff;">${(sumHours / 24).toFixed(1)} дн.</b></div>
-              </div>
-              <span style="font-size:26px;">⏱️</span>
-            </div>
-          `;
-        }
-
-        // Отрисовываем «Недавно добавленные и обновлённые тайтлы»
-        const recentHost = document.getElementById("recentSection");
-        if (recentHost && allRecent.length > 0) {
-          allRecent.sort((a, b) => b.sortKey - a.sortKey);
-          const top10 = allRecent.slice(0, 10);
-          recentHost.innerHTML = `
-            <div class="recent-showcase-box">
-              <div class="recent-showcase-head">
-                <h2 class="recent-showcase-title"><span>✨ Недавно добавленные и обновлённые тайтлы</span></h2>
-              </div>
-              <div class="recent-showcase-grid">
-                ${top10.map(entry => {
-                  const it = entry.item, tr = entry.tier;
-                  const src = it.posterInline || it.poster || "https://placehold.co/400x600/16122b/ffd76a?text=myTierAnime";
-                  return `
-                    <div class="recent-item-card" data-r-uid="${window.esc(it.uid)}" data-r-tier="${window.esc(tr.id)}">
-                      <div class="recent-poster-frame">
-                        <img class="recent-poster-img card-poster" src="${window.esc(src)}" alt="${window.esc(it.title)}" loading="lazy" onerror="this.src='https://placehold.co/400x600/16122b/ffd76a?text=myTierAnime'">
-                        <div class="scrim" style="position:absolute;inset:0;background:linear-gradient(to top,rgba(6,5,14,0.95) 0%,rgba(6,5,14,0.45) 42%,transparent 75%);pointer-events:none;"></div>
-                        <span class="recent-tier-badge">Тир ${window.esc(tr.id)}</span>${it.score ? `<span class="card-score-badge">★ ${window.esc(it.score)}</span>` : ""}
-                        <div class="card-info">
-                          <h3 class="card-title">${window.esc(it.title)}</h3>
-                          <div class="card-sub">${window.esc(entry.m.kind)} ·${window.esc(entry.latestWatchStr)}</div>
-                        </div>
+              </header>
+              <div class="tier-grid">
+                ${items.map((item, idx) => `
+                  <div class="card-unit">
+                    <article class="card">
+                      <img class="card-poster" src="${item.poster \vert{}\vert{} 'https://placehold.co/400x600/16122b/ffd76a?text=myTierAnime'}" alt="${item.title}" loading="lazy">
+                      <span class="rank">${idx + 1}</span>${item.score ? `<span class="card-score-badge">★ ${item.score}</span>` : ""}
+                      <div class="card-info">
+                        <div class="card-title">${item.title}</div>
+                        <div class="card-sub">${item.year || ""}</div>
                       </div>
+                    </article>
+                    <div class="card-under-meta">
+                      <div class="cum-row">
+                        <span class="cum-kind">${item.kind || 'TV'}</span>
+                      </div>
+                      <div class="cum-episodes-line">🎞 ${item.seasons ? item.seasons.length + ' частей' : '12 серий'}</div>
+                      <div class="cum-hours-bar"><span>⏱</span><b>${Number(item.totalHours || 4.8).toFixed(1)} ч.</b></div>
                     </div>
-                  `;
-                }).join("")}
+                  </div>
+                `).join("")}
               </div>
             </div>
-          `;
-        }
-
-        // Отрисовываем все тиры
-        tiersHost.innerHTML = loadedData.tiers.map((tier, tierIdx) => {
-          const items = tier.items || [];
-          const pct = totalTitles > 0 ? Math.round((items.length / totalTitles) * 100) : 0;
-          return `
-            <section class="tier in-view" data-tier="${window.esc(tier.id)}" data-rank="${tierIdx + 1}">
-              <aside class="tier-badge">
-                <span class="seal-index">ТИР <b>${window.esc(tier.id)}</b></span>
-                <div class="lstage">
-                  ${typeof window.realismMarkup === "function" ? window.realismMarkup(tierIdx, tier) : ""}
-                  <span class="seal-floor" aria-hidden="true"></span>
-                  <span class="ring r1"></span><span class="ring r2"></span>
-                  <div class="l3d" data-l="${window.esc(tier.id)}"></div>
-                </div>
-                <span class="seal-caption">${window.esc(tier.name)}</span>
-              </aside>
-              <div class="tier-content">
-                <header class="tier-header-bar">
-                  <div class="tier-title-group">
-                    <h2>${window.esc(tier.name)} <span class="tier-count-pill">${window.formatTitlesCount(items.length)} (${pct}%)</span></h2>
-                    <div class="tier-meta-sub">${window.esc(tier.subtitle || "")}</div>
-                  </div>
-                  <button type="button" class="btn btn-sm btn-neon-gold owner-only" data-add-tier="${window.esc(tier.id)}">➕ Добавить в ${window.esc(tier.id)}</button>
-                </header>
-                <div class="tier-grid" data-tier-id="${window.esc(tier.id)}">
-                  ${items.map((item, idx) => {
-                    const m = window.calcItemMetrics(item);
-                    const src = item.posterInline || item.poster || "https://placehold.co/400x600/16122b/ffd76a?text=myTierAnime";
-                    const countLabel = m.totalMovies > 0 && m.totalEpisodes === 0
-                      ? window.formatMoviesCount(m.totalMovies)
-                      : `${window.formatEpisodesCount(m.totalEpisodes)}${m.totalMovies ? ` + ${window.formatMoviesCount(m.totalMovies)}` : ""}`;
-                    return `
-                      <div class="card-unit" data-c-uid="${window.esc(item.uid)}" data-c-tier="${window.esc(tier.id)}">
-                        <article class="card">
-                          <img class="card-poster" src="${window.esc(src)}" alt="${window.esc(item.title)}" loading="lazy" onerror="this.src='https://placehold.co/400x600/16122b/ffd76a?text=myTierAnime'">
-                          <div class="scrim"></div>
-                          <span class="rank">${idx + 1}</span>${item.score ? `<span class="card-score-badge">★ ${window.esc(item.score)}</span>` : ""}
-                          <div class="card-info">
-                            <h3 class="card-title">${window.esc(item.title)}</h3>
-                            <div class="card-sub">${window.esc(item.year \vert{}\vert{} "")}${item.studio ? ` · ${window.esc(item.studio)}` : ""}</div>
-                          </div>
-                        </article>
-                        <div class="card-under-meta">
-                          <div class="cum-row">
-                            <span class="cum-kind">${window.esc(m.kind)}</span>
-                            <span class="cum-seasons-badge">Частей: <b>${m.seasons.length}</b></span>
-                          </div>
-                          <div class="cum-episodes-line">🎞 ${countLabel}</div>
-                          <div class="cum-hours-bar"><span>⏱ Время:</span><b>${window.formatHours(m.totalHours)} ч.</b></div>
-                        </div>
-                      </div>
-                    `;
-                  }).join("")}
-                </div>
-              </div>
-            </section>
-          `;
-        }).join("");
-
-        if (typeof window.build3DLetter === "function") {
-          document.querySelectorAll("#tiersRoot .tier").forEach((el, i) => {
-            const l3d = el.querySelector(".l3d");
-            if (l3d && loadedData.tiers[i]) window.build3DLetter(l3d, loadedData.tiers[i], i);
-          });
-        }
-        if (typeof window.__syncRealismCanvases === "function") window.__syncRealismCanvases();
-
-        document.addEventListener("click", e => {
-          const card = e.target.closest("[data-c-uid], [data-r-uid]");
-          if (card && typeof Modals !== "undefined") {
-            const uid = card.dataset.cUid || card.dataset.rUid;
-            const tid = card.dataset.cTier || card.dataset.rTier;
-            const tr = loadedData.tiers.find(t => t.id === tid);
-            const it = tr?.items.find(i => i.uid === uid);
-            if (it && tr) Modals.showAnimeDetails(it, tr);
-          }
-        });
-      }, 350);
+          </section>
+        `;
+      }).join("");
     })();
   </script>
 </body>
