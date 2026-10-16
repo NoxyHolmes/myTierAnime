@@ -1,4 +1,4 @@
-/* ═══════════════════ GITHUB SYNC ENGINE v12.2 (FAST AUDIO STREAMING & INSTANT DOSSIER) ═══════════════════ */
+/* ═══════════════════ GITHUB SYNC ENGINE v15.0 (PARALLEL TURBO SYNC & URL CACHE) ═══════════════════ */
 const GitHubSync = (() => {
   const TOKEN_KEY = "mta_2026_gh_token";
   const REPO_KEY  = "mta_2026_gh_repo";
@@ -7,7 +7,11 @@ const GitHubSync = (() => {
   let verifiedUser = null;
   let detectedBranch = "main";
   let lastKnownCommitSha = "";
+  let cachedBranchInfo = null;
+  let cachedBranchInfoTime = 0;
+
   const blobUrlCache = new Map();
+  const resolvedUrlCache = new Map();
 
   function detectRepoFromLocation() {
     try {
@@ -144,86 +148,74 @@ const GitHubSync = (() => {
     }
   }
 
-  async function getLatestBranchCommitSha() {
+  async function getLatestBranchCommitSha(forceFresh = false) {
+    const now = Date.now();
+    if (!forceFresh && cachedBranchInfo && now - cachedBranchInfoTime < 2500) {
+      return cachedBranchInfo;
+    }
+
     const repo = getRepo();
     const tk = getToken();
     const headers = { "Accept": "application/vnd.github+json" };
     if (tk) headers["Authorization"] = `Bearer ${tk}`;
 
-    for (const br of [detectedBranch, "main", "master"]) {
-      try {
-        const res = await fetch(`https://api.github.com/repos/${repo}/commits/${br}?_ya_bust=${Date.now()}_${Math.random()}`, {
-          headers,
-          cache: "no-store"
-        });
-        if (res.ok) {
-          const data = await res.json();
-          if (data && data.sha) {
-            detectedBranch = br;
-            return { commitSha: data.sha, treeSha: data.commit?.tree?.sha };
-          }
+    try {
+      const res = await fetch(`https://api.github.com/repos/${repo}/commits/${detectedBranch}?_ya_bust=${now}`, {
+        headers,
+        cache: "no-store"
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data && data.sha) {
+          cachedBranchInfo = { commitSha: data.sha, treeSha: data.commit?.tree?.sha };
+          cachedBranchInfoTime = now;
+          return cachedBranchInfo;
         }
-      } catch {}
-    }
+      }
+    } catch {}
+
+    const fallbackBranch = detectedBranch === "main" ? "master" : "main";
+    try {
+      const res2 = await fetch(`https://api.github.com/repos/${repo}/commits/${fallbackBranch}?_ya_bust=${now}`, {
+        headers,
+        cache: "no-store"
+      });
+      if (res2.ok) {
+        const data2 = await res2.json();
+        if (data2 && data2.sha) {
+          detectedBranch = fallbackBranch;
+          cachedBranchInfo = { commitSha: data2.sha, treeSha: data2.commit?.tree?.sha };
+          cachedBranchInfoTime = now;
+          return cachedBranchInfo;
+        }
+      }
+    } catch {}
+
     return null;
   }
 
-  async function fetchFreshTiersFromApi() {
+  /* Параллельная загрузка свежей базы без последовательных задержек */
+  async function fetchFreshTiersFromApi(forceFresh = false) {
     const repo = getRepo();
-    const tk = getToken();
-    const headers = { "Accept": "application/vnd.github+json" };
-    if (tk) headers["Authorization"] = `Bearer ${tk}`;
+    const now = Date.now();
 
-    const candidates = [];
+    const localPromise = fetch(`data/tiers.json?_ya_nocache=${now}`, { cache: "no-store" })
+      .then(r => r.ok ? r.json() : null)
+      .catch(() => null);
 
-    try {
-      const localRes = await fetch(`data/tiers.json?_ya_nocache=${Date.now()}_${Math.random()}`, {
+    const remotePromise = (async () => {
+      const branchInfo = await getLatestBranchCommitSha(forceFresh);
+      if (!branchInfo || !branchInfo.commitSha) return null;
+      lastKnownCommitSha = branchInfo.commitSha;
+      const rawRes = await fetch(`https://raw.githubusercontent.com/${repo}/${branchInfo.commitSha}/${FILE_PATH}?_ya=${now}`, {
         cache: "no-store"
       });
-      if (localRes.ok) {
-        candidates.push(await localRes.json());
-      }
-    } catch {}
+      if (rawRes.ok) return await rawRes.json();
+      return null;
+    })().catch(() => null);
 
-    try {
-      const branchInfo = await getLatestBranchCommitSha();
-      if (branchInfo && branchInfo.commitSha) {
-        try {
-          const rawRes = await fetch(`https://raw.githubusercontent.com/${repo}/${branchInfo.commitSha}/${FILE_PATH}?_ya=${Date.now()}`, {
-            cache: "no-store"
-          });
-          if (rawRes.ok) {
-            const parsed = await rawRes.json();
-            lastKnownCommitSha = branchInfo.commitSha;
-            candidates.push(parsed);
-          }
-        } catch {}
-
-        if (branchInfo.treeSha) {
-          const treeRes = await fetch(`https://api.github.com/repos/${repo}/git/trees/${branchInfo.treeSha}?recursive=1&_ya=${Date.now()}`, {
-            headers,
-            cache: "no-store"
-          });
-          if (treeRes.ok) {
-            const treeData = await treeRes.json();
-            const fileNode = (treeData.tree || []).find(n => n.path === FILE_PATH);
-            if (fileNode && fileNode.sha) {
-              const blobRes = await fetch(`https://api.github.com/repos/${repo}/git/blobs/${fileNode.sha}?_ya=${Date.now()}`, {
-                headers,
-                cache: "no-store"
-              });
-              if (blobRes.ok) {
-                const blobData = await blobRes.json();
-                if (blobData.content) {
-                  lastKnownCommitSha = branchInfo.commitSha;
-                  candidates.push(JSON.parse(base64ToUtf8(blobData.content)));
-                }
-              }
-            }
-          }
-        }
-      }
-    } catch {}
+    const results = await Promise.all([localPromise, remotePromise]);
+    const candidates = results.filter(Boolean);
 
     if (!candidates.length) return null;
     candidates.sort((a, b) => Number(b?.meta?.revision || 0) - Number(a?.meta?.revision || 0));
@@ -241,8 +233,8 @@ const GitHubSync = (() => {
 
     let inlineDataUrl = "";
     if (folder !== "audio" && file.type && file.type.startsWith("image/")) {
-      const maxW = folder === "backgrounds" ? 1600 : 600;
-      const qual = folder === "backgrounds" ? 0.78 : 0.84;
+      const maxW = folder === "backgrounds" ? 1600 : 540;
+      const qual = folder === "backgrounds" ? 0.78 : 0.82;
       inlineDataUrl = await createInlineDataUrl(file, maxW, qual);
     }
 
@@ -284,6 +276,7 @@ const GitHubSync = (() => {
     }
 
     if (blobSha) blobUrlCache.set(blobSha, blobUrl);
+    resolvedUrlCache.set(`${relPath}_${blobSha}`, inlineDataUrl || blobUrl);
 
     return {
       path: relPath,
@@ -294,7 +287,7 @@ const GitHubSync = (() => {
     };
   }
 
-  /* БЫСТРОЕ РАЗРЕШЕНИЕ ССЫЛОК (ДЛЯ АУДИО — ПОТОКОВЫЙ STREAMING URL БЕЗ ТОРМОЗОВ!) */
+  /* Мгновенное разрешение URL с постоянным кэшированием в памяти сессии */
   async function resolveAssetUrl(pathOrUrl, blobSha, mime = "image/jpeg", inlineDataUrl = "") {
     if (inlineDataUrl && inlineDataUrl.startsWith("data:")) {
       return inlineDataUrl;
@@ -307,14 +300,20 @@ const GitHubSync = (() => {
       return blobUrlCache.get(blobSha);
     }
 
+    const cacheKey = `${pathOrUrl || ""}_${blobSha || ""}`;
+    if (resolvedUrlCache.has(cacheKey)) {
+      return resolvedUrlCache.get(cacheKey);
+    }
+
     const repo = getRepo();
     const isAudio = mime.startsWith("audio/") || (pathOrUrl && pathOrUrl.startsWith("audio/"));
 
-    // Для аудиофайлов сначала отдаём прямую потоковую ссылку (чтобы музыка начинала играть за 0.1 сек без ожидания скачивания всего MP3 в Base64!)
     if (isAudio && pathOrUrl) {
       const cleanPath = pathOrUrl.replace(/^\.?\//, "");
       const ref = lastKnownCommitSha || detectedBranch || "main";
-      return `https://raw.githubusercontent.com/${repo}/${ref}/${cleanPath}`;
+      const streamUrl = `https://raw.githubusercontent.com/${repo}/${ref}/${cleanPath}`;
+      resolvedUrlCache.set(cacheKey, streamUrl);
+      return streamUrl;
     }
 
     if (blobSha) {
@@ -322,9 +321,8 @@ const GitHubSync = (() => {
         const tk = getToken();
         const headers = { "Accept": "application/vnd.github+json" };
         if (tk) headers["Authorization"] = `Bearer ${tk}`;
-        const res = await fetch(`https://api.github.com/repos/${repo}/git/blobs/${blobSha}?_ya=${Date.now()}`, {
-          headers,
-          cache: "no-store"
+        const res = await fetch(`https://api.github.com/repos/${repo}/git/blobs/${blobSha}`, {
+          headers
         });
         if (res.ok) {
           const data = await res.json();
@@ -333,6 +331,7 @@ const GitHubSync = (() => {
             const blob = new Blob([bytes], { type: mime });
             const objUrl = URL.createObjectURL(blob);
             blobUrlCache.set(blobSha, objUrl);
+            resolvedUrlCache.set(cacheKey, objUrl);
             return objUrl;
           }
         }
@@ -342,10 +341,23 @@ const GitHubSync = (() => {
     if (pathOrUrl) {
       const cleanPath = pathOrUrl.replace(/^\.?\//, "");
       const ref = lastKnownCommitSha || detectedBranch || "main";
-      return `https://raw.githubusercontent.com/${repo}/${ref}/${cleanPath}?_ya=${Date.now()}`;
+      const rawUrl = `https://raw.githubusercontent.com/${repo}/${ref}/${cleanPath}`;
+      resolvedUrlCache.set(cacheKey, rawUrl);
+      return rawUrl;
     }
 
     return pathOrUrl;
+  }
+
+  /* Фоновый прогрев ссылок на постер и музыку при наведении мыши на карточку */
+  function prefetchItemAssets(item) {
+    if (!item) return;
+    if (!item.posterInline && (item.poster || item.posterBlobSha)) {
+      resolveAssetUrl(item.poster, item.posterBlobSha, "image/jpeg", item.posterInline).catch(() => {});
+    }
+    if (item.bgmUrl || item.bgmBlobSha) {
+      resolveAssetUrl(item.bgmUrl, item.bgmBlobSha, "audio/mpeg").catch(() => {});
+    }
   }
 
   async function commitTiersToGitHub(payloadObj, commitMsg = "Sync via myTierAnime") {
@@ -364,7 +376,7 @@ const GitHubSync = (() => {
     payloadObj.meta.updatedAt = new Date().toISOString();
     const jsonStr = JSON.stringify(payloadObj, null, 2);
 
-    const branchInfo = await getLatestBranchCommitSha();
+    const branchInfo = await getLatestBranchCommitSha(true);
     if (branchInfo && branchInfo.commitSha && branchInfo.treeSha) {
       const blobRes = await fetch(`https://api.github.com/repos/${repo}/git/blobs`, {
         method: "POST",
@@ -438,6 +450,8 @@ const GitHubSync = (() => {
             });
             if (refRes.ok) {
               lastKnownCommitSha = createdCommit.sha;
+              cachedBranchInfo = { commitSha: createdCommit.sha, treeSha: newTree.sha };
+              cachedBranchInfoTime = Date.now();
               fetch(`https://purge.jsdelivr.net/gh/${repo}@${detectedBranch}/${FILE_PATH}`).catch(() => {});
               return createdCommit;
             }
@@ -483,6 +497,7 @@ const GitHubSync = (() => {
     createInlineDataUrl,
     uploadAssetFile,
     resolveAssetUrl,
+    prefetchItemAssets,
     commitTiersToGitHub,
     logout
   };
