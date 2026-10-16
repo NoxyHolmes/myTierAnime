@@ -1,4 +1,4 @@
-/* ═══════════════════ MAIN APPLICATION ORCHESTRATOR (myTierAnime v15.0 TURBO) ═══════════════════ */
+/* ═══════════════════ MAIN APPLICATION ORCHESTRATOR (myTierAnime v15.1 NO-JUMP IDB CACHE) ═══════════════════ */
 (() => {
   if (typeof window.pluralRu !== "function") {
     window.pluralRu = function (number, one, few, many) {
@@ -20,7 +20,66 @@
     window.formatMoviesCount = n => `${n} ${window.pluralRu(n, "фильм", "фильма", "фильмов")}`;
   }
 
-  const SNAPSHOT_STORAGE_KEY = "mta_2026_instant_snapshot_v19";
+  const SNAPSHOT_STORAGE_KEY = "mta_2026_instant_snapshot_v20";
+  const OLD_STORAGE_KEYS = [
+    "mta_2026_instant_snapshot_v19",
+    "mta_2026_instant_snapshot_v18",
+    "mta_2026_instant_snapshot_v17",
+    "mta_2026_instant_snapshot_v16",
+    "mta_2026_owner_draft_v15"
+  ];
+
+  // Удаляем все старые застрявшие снимки на 17 тайтлов из localStorage, чтобы они никогда не вызывали скачок!
+  OLD_STORAGE_KEYS.forEach(k => {
+    try { localStorage.removeItem(k); } catch {}
+  });
+
+  /* Безлимитное хранилище IndexedDB (не имеет ограничения в 5 МБ, в отличие от localStorage) */
+  const IDB_NAME = "MtaTurboCacheDB";
+  const IDB_STORE = "snapshots";
+  const IDB_KEY = "latest_app_data";
+
+  function openCacheDB() {
+    return new Promise((resolve, reject) => {
+      if (!window.indexedDB) return reject(new Error("No IndexedDB"));
+      const req = indexedDB.open(IDB_NAME, 1);
+      req.onupgradeneeded = e => {
+        const db = e.target.result;
+        if (!db.objectStoreNames.contains(IDB_STORE)) {
+          db.createObjectStore(IDB_STORE);
+        }
+      };
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    });
+  }
+
+  async function readIdbSnapshot() {
+    try {
+      const db = await openCacheDB();
+      return await new Promise(resolve => {
+        const tx = db.transaction(IDB_STORE, "readonly");
+        const req = tx.objectStore(IDB_STORE).get(IDB_KEY);
+        req.onsuccess = () => resolve(req.result || null);
+        req.onerror = () => resolve(null);
+      });
+    } catch {
+      return null;
+    }
+  }
+
+  async function writeIdbSnapshot(data) {
+    try {
+      const db = await openCacheDB();
+      await new Promise((resolve, reject) => {
+        const tx = db.transaction(IDB_STORE, "readwrite");
+        tx.objectStore(IDB_STORE).put(data, IDB_KEY);
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error);
+      });
+    } catch {}
+  }
+
   let appData = null;
   let searchQuery = "";
   let selectedGenre = "ALL";
@@ -87,26 +146,55 @@
     return `${data.meta?.revision || 0}_${tierSummary}_${data.meta?.bgBlobSha || ""}_${data.meta?.bgmVolume ?? 30}`;
   }
 
-  function readCachedSnapshot() {
+  /* Читаем самый свежий снимок из IndexedDB и localStorage (выбирая тот, у которого выше ревизия!) */
+  async function readCachedSnapshot() {
+    let lsParsed = null;
     const raw = localStorage.getItem(SNAPSHOT_STORAGE_KEY);
     if (raw) {
       try {
-        const parsed = JSON.parse(raw);
-        if (parsed && Array.isArray(parsed.tiers)) return ensureSixTiers(parsed);
+        const p = JSON.parse(raw);
+        if (p && Array.isArray(p.tiers)) lsParsed = ensureSixTiers(p);
       } catch {}
     }
-    return null;
+
+    const idbRaw = await readIdbSnapshot();
+    let idbParsed = null;
+    if (idbRaw && Array.isArray(idbRaw.tiers)) {
+      idbParsed = ensureSixTiers(idbRaw);
+    }
+
+    if (idbParsed && lsParsed) {
+      return Number(idbParsed.meta?.revision || 0) >= Number(lsParsed.meta?.revision || 0)
+        ? idbParsed
+        : lsParsed;
+    }
+    return idbParsed || lsParsed || null;
   }
 
+  /* Сохраняем полный снимок (с картинками и фоном) в безлимитный IndexedDB + облегчённую копию в localStorage */
   function writeCachedSnapshot(data) {
     if (!data) return;
+    writeIdbSnapshot(data);
+
     try {
       localStorage.setItem(SNAPSHOT_STORAGE_KEY, JSON.stringify(data));
-    } catch {}
+    } catch {
+      // Если полный JSON > 5 МБ (из-за Base64 обложек/фона), сохраняем в localStorage компактную копию с актуальным списком всех тайтлов, чтобы порядок карточек никогда не сбивался!
+      try {
+        const slimCopy = {
+          meta: { ...data.meta, bgInline: "" },
+          tiers: (data.tiers || []).map(t => ({
+            ...t,
+            items: (t.items || []).map(it => ({ ...it, posterInline: undefined }))
+          }))
+        };
+        localStorage.setItem(SNAPSHOT_STORAGE_KEY, JSON.stringify(slimCopy));
+      } catch {}
+    }
   }
 
   async function loadInitialState() {
-    const cached = readCachedSnapshot();
+    const cached = await readCachedSnapshot();
     if (cached) {
       appData = cached;
       lastRenderedSignature = computeStateSignature(appData);
@@ -139,6 +227,8 @@
 
     if (!appData) appData = ensureSixTiers(null);
     const newSig = computeStateSignature(appData);
+
+    // Перерисовываем экран ТОЛЬКО если с сервера пришли действительно новые данные (исключает повторное мигание!)
     if (newSig !== lastRenderedSignature || !cached) {
       lastRenderedSignature = newSig;
       render();
@@ -276,16 +366,15 @@
             return `
               <div class="recent-item-card" data-recent-uid="${esc(it.uid)}" data-recent-tier="${esc(tr.id)}">
                 <div class="recent-poster-frame">
-                  <img class="recent-poster-img card-poster" decoding="async" draggable="false" src="${esc(displayPoster)}" data-raw-path="${esc(it.poster || "")}" data-blob-sha="${esc(it.posterBlobSha || "")}" alt="${esc(it.title)}" loading="lazy"
+                  <img class="recent-poster-img card-poster" decoding="async" draggable="false" src="${esc(displayPoster)}" data-raw-path="${esc(it.poster || "")}" data-blob-sha="${esc(it.posterBlobSha \vert{}\vert{} "")}" alt="${esc(it.title)}" loading="lazy"
                        onerror="this.src='https://placehold.co/400x600/16122b/ffd76a?text=myTierAnime'">
                   <div class="scrim" style="position:absolute;inset:0;background:linear-gradient(to top,rgba(6,5,14,0.95) 0%,rgba(6,5,14,0.45) 42%,transparent 75%);pointer-events:none;"></div>
-                  <span class="recent-tier-badge">Тир ${esc(tr.id)}</span>
-                  ${it.score ? `<span class="card-score-badge">★ ${esc(it.score)}</span>` : ""}
+                  <span class="recent-tier-badge">Тир ${esc(tr.id)}</span>${it.score ? `<span class="card-score-badge">★ ${esc(it.score)}</span>` : ""}
                   ${musicBadge}
 
                   <div class="card-info">
                     <h3 class="card-title">${esc(it.title)}</h3>
-                    <div class="card-sub">${esc(entry.m.kind)} · ${esc(entry.latestWatchStr)}</div>
+                    <div class="card-sub">${esc(entry.m.kind)} ·${esc(entry.latestWatchStr)}</div>
                   </div>
                 </div>
               </div>
@@ -595,7 +684,6 @@
       });
     }
 
-    /* МГНОВЕННОЕ ДЕЛЕГИРОВАНИЕ КЛИКОВ И ПРЕДЗАГРУЗКА ПРИ НАВЕДЕНИИ МЫШИ */
     document.addEventListener("pointerover", e => {
       const cardNode = e.target.closest(".card-unit, .recent-item-card");
       if (!cardNode || !appData) return;
@@ -633,7 +721,6 @@
     });
 
     document.addEventListener("click", e => {
-      // 1. Клик по кнопке "+ Добавить в тир"
       const addTierBtn = e.target.closest("[data-add-to-tier]");
       if (addTierBtn) {
         if (typeof GitHubSync === "undefined" || !GitHubSync.isOwner()) {
@@ -649,7 +736,6 @@
         return;
       }
 
-      // 2. Клик по карточке в блоке "Недавно добавленные" или в тирах
       const recentCard = e.target.closest("[data-recent-uid]");
       if (recentCard && appData) {
         const tier = appData.tiers.find(t => t.id === recentCard.dataset.recentTier);
@@ -666,7 +752,6 @@
         return;
       }
 
-      // 3. Выпадающие списки Жанров и Студий
       const gMenu = document.getElementById("genreDropdownMenu");
       const stMenu = document.getElementById("studioDropdownMenu");
 
@@ -912,7 +997,6 @@
       saveAndAutoSync("Clear global background", true);
     });
 
-    /* Плавный поиск через requestAnimationFrame без лагов при быстрой печати */
     document.getElementById("searchInput")?.addEventListener("input", e => {
       searchQuery = e.target.value;
       if (searchRafId) cancelAnimationFrame(searchRafId);
