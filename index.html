@@ -91,6 +91,10 @@
             ⚙️ Настройки
           </button>
 
+          <button type="button" id="btnExportJson" class="btn owner-only" title="Скачать резервную копию JSON">
+            ⬇ JSON
+          </button>
+
           <button type="button" id="btnOwnerAuth" class="btn">
             🔑 Вход
           </button>
@@ -98,13 +102,13 @@
       </div>
     </header>
 
-    <!-- Верхняя панель статистики -->
+    <!-- Верхняя лента из 3 карточек статистики (без блока "Недавно добавленные") -->
     <section id="statsRibbon" class="stats-ribbon" aria-label="Статистика"></section>
 
-    <!-- НОВОЕ: Секция последних добавленных / просмотренных тайтлов между статистикой и тирами -->
-    <section id="recentAdditionsSection" class="recent-strip-wrap" aria-label="Последние добавленные тайтлы"></section>
-
+    <!-- Основной контейнер тиров S, A, B, C, D, E -->
     <main id="tiersRoot" class="tiers-container"></main>
+
+    <!-- Контейнер календаря -->
     <section id="calendarRoot" class="calendar-container" style="display:none;"></section>
   </div>
 
@@ -346,7 +350,7 @@
     </div>
   </aside>
 
-  <!-- Модальное окно 1: Карточка тайтла -->
+  <!-- Модальное окно 1: Личная карточка тайтла -->
   <div id="detailsModal" class="modal-backdrop">
     <div class="modal-box modal-box-wide dossier-cinema-box">
       <div class="dossier-sticky-topbar">
@@ -476,7 +480,7 @@
             <div>
               <strong>🎬 Сезоны, Фильмы, OVA, ONA и Спешлы</strong>
               <div style="font-size:11px;color:var(--ink-soft);">
-                Укажите кол-во серий и минут на 1 серию — время конвертируется автоматически.
+                Дату просмотра можно указать полностью (<b>03.04.2026</b>), только месяц и год (<b>04.2026</b>) или просто год (<b>2026</b>). Для анонса укажите <b>0</b> серий.
               </div>
             </div>
             <div style="display:flex;gap:6px;flex-wrap:wrap;">
@@ -541,6 +545,67 @@
   <script src="js/shikimori-api.js?v=13.0"></script>
   <script src="js/fx-controller.js?v=13.0"></script>
   <script src="js/stats-engine.js?v=13.0"></script>
+
+  <!-- Жесткий перехватчик: даже если браузер закешировал старый stats-engine.js, он принудительно заменяется на чистые 3 карточки без гигантского списка "Недавно добавленные"! -->
+  <script>
+    window.StatsEngine = {
+      updateStats(tiers) {
+        const host = document.getElementById("statsRibbon");
+        if (!host || !Array.isArray(tiers)) return;
+        let totalTitles = 0, totalScoreSum = 0, sumEpisodes = 0, sumMovies = 0, sumHours = 0;
+        tiers.forEach(t => {
+          const items = t.items || [];
+          totalTitles += items.length;
+          items.forEach(it => {
+            totalScoreSum += parseFloat(it.score || 0);
+            const m = calcItemMetrics(it);
+            sumEpisodes += m.totalEpisodes;
+            sumMovies += m.totalMovies;
+            sumHours += m.totalHours;
+          });
+        });
+        const avgScore = totalTitles ? (totalScoreSum / totalTitles).toFixed(2) : "0.00";
+        const totalDays = (sumHours / 24).toFixed(1);
+        const titlesStr = typeof formatTitlesCount === "function" ? formatTitlesCount(totalTitles) : (totalTitles + " тайтлов");
+        const epStr = typeof formatEpisodesCount === "function" ? formatEpisodesCount(sumEpisodes) : (sumEpisodes + " серий");
+        const mvStr = typeof formatMoviesCount === "function" ? formatMoviesCount(sumMovies) : (sumMovies + " фильмов");
+
+        host.innerHTML = `
+          <div class="stat-card">
+            <div>
+              <div class="stat-label">Всего просмотрено</div>
+              <div class="stat-val">${totalTitles} <span style="font-size:13px;color:var(--ink-soft);">${titlesStr.replace(/^\d+\s*/, "")}</span></div>
+              <div class="stat-sub">Средний балл: <b style="color:#ffd76a;">★ ${avgScore}</b></div>
+            </div>
+            <span style="font-size:26px;">📚</span>
+          </div>
+          <div class="stat-card" style="padding:10px 12px;">
+            <div class="stat-dual-split">
+              <div class="stat-split-box">
+                <div class="stat-label">🎞 Серии</div>
+                <div class="stat-val" style="color:#ffd76a;font-size:20px;">${sumEpisodes}</div>
+                <div style="font-size:9.5px;color:var(--ink-soft);">${epStr.replace(/^\d+\s*/, "")}</div>
+              </div>
+              <div class="stat-split-box movies-highlight">
+                <div class="stat-label" style="color:#ffd6e7;font-weight:800;">🎬 Фильмы</div>
+                <div class="stat-val" style="color:#ff5e7e;font-size:20px;text-shadow:0 0 12px rgba(255,94,126,0.55);">${sumMovies}</div>
+                <div style="font-size:9.5px;color:#ffaec6;font-weight:700;">${mvStr.replace(/^\d+\s*/, "")}</div>
+              </div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div>
+              <div class="stat-label">Всего времени</div>
+              <div class="stat-val" style="color:#00f5ff;">${formatHours(sumHours)} <span style="font-size:13px;color:var(--ink-soft);">часов</span></div>
+              <div class="stat-sub">⏳ Общее количество дней: <b style="color:#fff;">${totalDays} дн.</b></div>
+            </div>
+            <span style="font-size:26px;">⏱️</span>
+          </div>
+        `;
+      }
+    };
+  </script>
+
   <script src="js/calendar-view.js?v=13.0"></script>
   <script src="js/drag-drop.js?v=13.0"></script>
   <script src="js/modals.js?v=13.0"></script>
