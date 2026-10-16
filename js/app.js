@@ -273,7 +273,6 @@
         <div class="recent-showcase-head">
           <h2 class="recent-showcase-title">
             <span>✨ Недавно добавленные и обновлённые тайтлы</span>
-            <span class="recent-count-pill">Показано последних: ${recentTop.length}</span>
           </h2>
         </div>
 
