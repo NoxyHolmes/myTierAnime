@@ -1,4 +1,4 @@
-/* ═══════════════════ MAIN APPLICATION ORCHESTRATOR (myTierAnime v12.2 CLEAN MUSIC BADGE) ═══════════════════ */
+/* ═══════════════════ MAIN APPLICATION ORCHESTRATOR (myTierAnime v14.0 WITH RECENT SHOWCASE) ═══════════════════ */
 (() => {
   if (typeof window.pluralRu !== "function") {
     window.pluralRu = function (number, one, few, many) {
@@ -217,7 +217,112 @@
     }
   }
 
-  /* Значок музыки убран из названия и перенесён в аккуратный мини-бейдж в верхней части карточки рядом с оценкой */
+  /* ──────── ОТРИСОВКА БЛОКА «НЕДАВНО ДОБАВЛЕННЫЕ И ОБНОВЛЁННЫЕ ТАЙТЛЫ» ПЕРЕД ТИРАМИ ──────── */
+  function renderRecentShowcase() {
+    const recentHost = document.getElementById("recentSection");
+    if (!recentHost || !appData || !Array.isArray(appData.tiers)) return;
+
+    const allEntries = [];
+    appData.tiers.forEach(tier => {
+      (tier.items || []).forEach(item => {
+        const m = calcItemMetrics(item);
+        // Вычисляем последнюю дату просмотра (только среди уже вышедших/просмотренных частей, либо всех)
+        let latestWatchMs = 0;
+        let latestWatchStr = "";
+        (m.seasons || []).forEach(s => {
+          const parsed = typeof parseFlexibleRuDate === "function" ? parseFlexibleRuDate(s.date) : { ms: parseRuDate(s.date), raw: s.date };
+          if (parsed && parsed.ms >= latestWatchMs) {
+            latestWatchMs = parsed.ms;
+            latestWatchStr = parsed.raw || s.date || "";
+          }
+        });
+
+        // Также учитываем timestamp из uid ("anime-177...")
+        const uidTimeMatch = String(item.uid || "").match(/anime-(\d{10,})/);
+        const createdMs = uidTimeMatch ? Number(uidTimeMatch[1]) : 0;
+        const sortKey = Math.max(latestWatchMs, createdMs);
+
+        allEntries.push({
+          item,
+          tier,
+          m,
+          sortKey,
+          latestWatchStr: latestWatchStr || (item.year ? `${item.year} г.` : "Недавно")
+        });
+      });
+    });
+
+    if (allEntries.length === 0) {
+      recentHost.innerHTML = "";
+      recentHost.style.display = "none";
+      return;
+    }
+
+    if (activeView === "calendar") {
+      recentHost.style.display = "none";
+    } else {
+      recentHost.style.display = "block";
+    }
+
+    // Сортируем от самых свежих к более старым и берём топ-10 (ровно 1 ряд сетки)
+    allEntries.sort((a, b) => b.sortKey - a.sortKey);
+    const recentTop = allEntries.slice(0, 10);
+
+    recentHost.innerHTML = `
+      <div class="recent-showcase-box">
+        <div class="recent-showcase-head">
+          <h2 class="recent-showcase-title">
+            <span>✨ Недавно добавленные и обновлённые тайтлы</span>
+            <span class="recent-count-pill">Показано последних: ${recentTop.length}</span>
+          </h2>
+        </div>
+
+        <div class="recent-showcase-grid">
+          ${recentTop.map(entry => {
+            const it = entry.item;
+            const tr = entry.tier;
+            const displayPoster = it.posterInline || it.poster || "https://placehold.co/400x600/16122b/ffd76a?text=myTierAnime";
+            const hasMusic = !!(it.bgmUrl || it.bgmBlobSha);
+            const musicBadge = hasMusic
+              ? `<span title="В карточке играет фоновая музыка" style="position:absolute;top:28px;right:6px;z-index:4;padding:1.5px 5px;border-radius:5px;font-size:8.5px;background:rgba(14,11,28,0.88);border:1px solid rgba(0,245,255,0.45);color:#00f5ff;pointer-events:none;">🎵 OST</span>`
+              : "";
+
+            return `
+              <div class="recent-item-card" data-recent-uid="${esc(it.uid)}" data-recent-tier="${esc(tr.id)}">
+                <div class="recent-poster-frame">
+                  <img class="recent-poster-img card-poster" draggable="false" src="${esc(displayPoster)}" data-raw-path="${esc(it.poster || "")}" data-blob-sha="${esc(it.posterBlobSha || "")}" alt="${esc(it.title)}" loading="lazy"
+                       onerror="this.src='https://placehold.co/400x600/16122b/ffd76a?text=myTierAnime'">
+                  <div class="scrim" style="position:absolute;inset:0;background:linear-gradient(to top,rgba(6,5,14,0.95) 0%,rgba(6,5,14,0.45) 42%,transparent 75%);pointer-events:none;"></div>
+                  <span class="recent-tier-badge">Тир ${esc(tr.id)}</span>
+                  ${it.score ? `<span class="card-score-badge">★ ${esc(it.score)}</span>` : ""}
+                  ${musicBadge}
+
+                  <div class="card-info">
+                    <h3 class="card-title">${esc(it.title)}</h3>
+                    <div class="card-sub">${esc(entry.m.kind)} · ${esc(entry.latestWatchStr)}</div>
+                  </div>
+                </div>
+              </div>
+            `;
+          }).join("")}
+        </div>
+      </div>
+    `;
+
+    // При клике на карточку из блока "Недавно добавленные" открываем её досье
+    recentHost.querySelectorAll("[data-recent-uid]").forEach(card => {
+      card.onclick = () => {
+        const uid = card.dataset.recentUid;
+        const tierId = card.dataset.recentTier;
+        const tier = appData.tiers.find(t => t.id === tierId);
+        const item = tier?.items.find(i => i.uid === uid);
+        if (item && tier && typeof Modals !== "undefined") {
+          Modals.showAnimeDetails(item, tier);
+        }
+      };
+    });
+  }
+
   function cardEl(item, idx, tierId) {
     const m = calcItemMetrics(item);
     const yr = m.latestYear || item.year || "";
@@ -295,6 +400,9 @@
 
     updateFilterClearButtons();
 
+    // Отрисовываем секцию "Недавно добавленные и обновлённые тайтлы" перед тирами
+    renderRecentShowcase();
+
     let grandTotal = 0;
     appData.tiers.forEach(t => grandTotal += (t.items || []).length);
     const q = searchQuery.trim().toLowerCase();
@@ -355,7 +463,7 @@
     }).join("");
 
     if (typeof GitHubSync !== "undefined" && typeof GitHubSync.resolveAssetUrl === "function") {
-      host.querySelectorAll("img.card-poster").forEach(async img => {
+      document.querySelectorAll("img.card-poster").forEach(async img => {
         const curSrc = img.getAttribute("src") || "";
         if (curSrc.startsWith("data:")) return;
         const sha = img.dataset.blobSha;
@@ -498,11 +606,13 @@
   function toggleCalendarView(forceMode) {
     activeView = forceMode || (activeView === "tiers" ? "calendar" : "tiers");
     const tiersEl = document.getElementById("tiersRoot");
+    const recentEl = document.getElementById("recentSection");
     const calEl = document.getElementById("calendarRoot");
     const calBtn = document.getElementById("btnToggleCalendar");
 
     if (activeView === "calendar") {
       tiersEl.style.display = "none";
+      if (recentEl) recentEl.style.display = "none";
       calEl.style.display = "block";
       if (calBtn) {
         calBtn.classList.add("active");
@@ -517,6 +627,7 @@
       }
     } else {
       calEl.style.display = "none";
+      if (recentEl) recentEl.style.display = "block";
       tiersEl.style.display = "flex";
       if (calBtn) {
         calBtn.classList.remove("active");
