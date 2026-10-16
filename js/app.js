@@ -1,4 +1,4 @@
-/* ═══════════════════ MAIN APPLICATION ORCHESTRATOR (myTierAnime v14.0 WITH RECENT SHOWCASE) ═══════════════════ */
+/* ═══════════════════ MAIN APPLICATION ORCHESTRATOR (myTierAnime v15.0 TURBO) ═══════════════════ */
 (() => {
   if (typeof window.pluralRu !== "function") {
     window.pluralRu = function (number, one, few, many) {
@@ -29,6 +29,7 @@
   let studioFilterSearch = "";
   let activeView = "tiers";
   let lastRenderedSignature = "";
+  let searchRafId = 0;
 
   let pendingPosterBlobSha = "";
   let pendingPosterInline = "";
@@ -82,7 +83,8 @@
 
   function computeStateSignature(data) {
     if (!data || !Array.isArray(data.tiers)) return "";
-    return `${data.meta?.revision || 0}_${JSON.stringify(data.tiers).length}_${data.meta?.bgBlobSha || ""}_${data.meta?.bgmVolume ?? 30}`;
+    const tierSummary = data.tiers.map(t => `${t.id}:${(t.items || []).map(i => `${i.uid}_${i.score}_${i.posterBlobSha || ""}_${i.bgmBlobSha || ""}_${(i.seasons || []).length}`).join(",")}`).join("|");
+    return `${data.meta?.revision || 0}_${tierSummary}_${data.meta?.bgBlobSha || ""}_${data.meta?.bgmVolume ?? 30}`;
   }
 
   function readCachedSnapshot() {
@@ -136,8 +138,11 @@
     }
 
     if (!appData) appData = ensureSixTiers(null);
-    lastRenderedSignature = computeStateSignature(appData);
-    render();
+    const newSig = computeStateSignature(appData);
+    if (newSig !== lastRenderedSignature || !cached) {
+      lastRenderedSignature = newSig;
+      render();
+    }
     if (typeof FXController !== "undefined" && typeof FXController.applyGlobalBackground === "function") {
       FXController.applyGlobalBackground(appData.meta || {});
     }
@@ -217,7 +222,6 @@
     }
   }
 
-  /* ──────── ОТРИСОВКА БЛОКА «НЕДАВНО ДОБАВЛЕННЫЕ И ОБНОВЛЁННЫЕ ТАЙТЛЫ» ПЕРЕД ТИРАМИ ──────── */
   function renderRecentShowcase() {
     const recentHost = document.getElementById("recentSection");
     if (!recentHost || !appData || !Array.isArray(appData.tiers)) return;
@@ -226,28 +230,16 @@
     appData.tiers.forEach(tier => {
       (tier.items || []).forEach(item => {
         const m = calcItemMetrics(item);
-        // Вычисляем последнюю дату просмотра (только среди уже вышедших/просмотренных частей, либо всех)
-        let latestWatchMs = 0;
-        let latestWatchStr = "";
-        (m.seasons || []).forEach(s => {
-          const parsed = typeof parseFlexibleRuDate === "function" ? parseFlexibleRuDate(s.date) : { ms: parseRuDate(s.date), raw: s.date };
-          if (parsed && parsed.ms >= latestWatchMs) {
-            latestWatchMs = parsed.ms;
-            latestWatchStr = parsed.raw || s.date || "";
-          }
-        });
-
-        // Также учитываем timestamp из uid ("anime-177...")
         const uidTimeMatch = String(item.uid || "").match(/anime-(\d{10,})/);
         const createdMs = uidTimeMatch ? Number(uidTimeMatch[1]) : 0;
-        const sortKey = Math.max(latestWatchMs, createdMs);
+        const sortKey = Math.max(m.latestMs || 0, createdMs);
 
         allEntries.push({
           item,
           tier,
           m,
           sortKey,
-          latestWatchStr: latestWatchStr || (item.year ? `${item.year} г.` : "Недавно")
+          latestWatchStr: m.latestWatchStr || (item.year ? `${item.year} г.` : "Недавно")
         });
       });
     });
@@ -258,13 +250,8 @@
       return;
     }
 
-    if (activeView === "calendar") {
-      recentHost.style.display = "none";
-    } else {
-      recentHost.style.display = "block";
-    }
+    recentHost.style.display = activeView === "calendar" ? "none" : "block";
 
-    // Сортируем от самых свежих к более старым и берём топ-10 (ровно 1 ряд сетки)
     allEntries.sort((a, b) => b.sortKey - a.sortKey);
     const recentTop = allEntries.slice(0, 10);
 
@@ -289,7 +276,7 @@
             return `
               <div class="recent-item-card" data-recent-uid="${esc(it.uid)}" data-recent-tier="${esc(tr.id)}">
                 <div class="recent-poster-frame">
-                  <img class="recent-poster-img card-poster" draggable="false" src="${esc(displayPoster)}" data-raw-path="${esc(it.poster || "")}" data-blob-sha="${esc(it.posterBlobSha || "")}" alt="${esc(it.title)}" loading="lazy"
+                  <img class="recent-poster-img card-poster" decoding="async" draggable="false" src="${esc(displayPoster)}" data-raw-path="${esc(it.poster || "")}" data-blob-sha="${esc(it.posterBlobSha || "")}" alt="${esc(it.title)}" loading="lazy"
                        onerror="this.src='https://placehold.co/400x600/16122b/ffd76a?text=myTierAnime'">
                   <div class="scrim" style="position:absolute;inset:0;background:linear-gradient(to top,rgba(6,5,14,0.95) 0%,rgba(6,5,14,0.45) 42%,transparent 75%);pointer-events:none;"></div>
                   <span class="recent-tier-badge">Тир ${esc(tr.id)}</span>
@@ -307,19 +294,6 @@
         </div>
       </div>
     `;
-
-    // При клике на карточку из блока "Недавно добавленные" открываем её досье
-    recentHost.querySelectorAll("[data-recent-uid]").forEach(card => {
-      card.onclick = () => {
-        const uid = card.dataset.recentUid;
-        const tierId = card.dataset.recentTier;
-        const tier = appData.tiers.find(t => t.id === tierId);
-        const item = tier?.items.find(i => i.uid === uid);
-        if (item && tier && typeof Modals !== "undefined") {
-          Modals.showAnimeDetails(item, tier);
-        }
-      };
-    });
   }
 
   function cardEl(item, idx, tierId) {
@@ -339,7 +313,7 @@
     return `
       <div class="card-unit" draggable="true" data-uid="${esc(item.uid)}" data-tier-id="${esc(tierId)}">
         <article class="card" data-uid="${esc(item.uid)}" data-tier-id="${esc(tierId)}">
-          <img class="card-poster" draggable="false" src="${esc(displayPosterSrc)}" data-raw-path="${esc(item.poster || "")}" data-blob-sha="${esc(item.posterBlobSha || "")}" alt="${esc(item.title)}" loading="lazy"
+          <img class="card-poster" decoding="async" draggable="false" src="${esc(displayPosterSrc)}" data-raw-path="${esc(item.poster || "")}" data-blob-sha="${esc(item.posterBlobSha || "")}" alt="${esc(item.title)}" loading="lazy"
                onerror="this.src='https://placehold.co/400x600/16122b/ffd76a?text=myTierAnime'">
           <div class="scrim"></div>
           <span class="holo-foil" aria-hidden="true"></span>
@@ -398,8 +372,6 @@
     }
 
     updateFilterClearButtons();
-
-    // Отрисовываем секцию "Недавно добавленные и обновлённые тайтлы" перед тирами
     renderRecentShowcase();
 
     let grandTotal = 0;
@@ -553,31 +525,6 @@
   }
 
   function bindTierInteractions() {
-    document.querySelectorAll("[data-add-to-tier]").forEach(btn => {
-      btn.onclick = () => {
-        if (typeof GitHubSync === "undefined" || !GitHubSync.isOwner()) {
-          showToast("Для добавления войдите как владелец", "#ff3c8c");
-          Modals.openModal("authModal");
-          return;
-        }
-        pendingPosterBlobSha = "";
-        pendingPosterInline = "";
-        pendingBgmBlobSha = "";
-        pendingBgmUrl = "";
-        Modals.openEditorModal(btn.dataset.addToTier, null);
-      };
-    });
-
-    document.querySelectorAll(".card-unit").forEach(unit => {
-      unit.onclick = () => {
-        const uid = unit.dataset.uid;
-        const tierId = unit.dataset.tierId;
-        const tier = appData.tiers.find(t => t.id === tierId);
-        const item = tier?.items.find(i => i.uid === uid);
-        if (item && tier && typeof Modals !== "undefined") Modals.showAnimeDetails(item, tier);
-      };
-    });
-
     if (typeof DragDropEngine !== "undefined" && typeof DragDropEngine.bindCardsAndGrids === "function") {
       DragDropEngine.bindCardsAndGrids((uid, fromTierId, toTierId, targetUid) => {
         if (!GitHubSync.isOwner()) return;
@@ -648,6 +595,19 @@
       });
     }
 
+    /* МГНОВЕННОЕ ДЕЛЕГИРОВАНИЕ КЛИКОВ И ПРЕДЗАГРУЗКА ПРИ НАВЕДЕНИИ МЫШИ */
+    document.addEventListener("pointerover", e => {
+      const cardNode = e.target.closest(".card-unit, .recent-item-card");
+      if (!cardNode || !appData) return;
+      const uid = cardNode.dataset.uid || cardNode.dataset.recentUid;
+      const tierId = cardNode.dataset.tierId || cardNode.dataset.recentTier;
+      const tier = appData.tiers.find(t => t.id === tierId);
+      const item = tier?.items.find(i => i.uid === uid);
+      if (item && typeof GitHubSync.prefetchItemAssets === "function") {
+        GitHubSync.prefetchItemAssets(item);
+      }
+    }, { passive: true });
+
     document.getElementById("btnCloseFxPanel")?.addEventListener("click", () => {
       document.getElementById("fxPanel")?.classList.remove("show");
     });
@@ -673,6 +633,40 @@
     });
 
     document.addEventListener("click", e => {
+      // 1. Клик по кнопке "+ Добавить в тир"
+      const addTierBtn = e.target.closest("[data-add-to-tier]");
+      if (addTierBtn) {
+        if (typeof GitHubSync === "undefined" || !GitHubSync.isOwner()) {
+          showToast("Для добавления войдите как владелец", "#ff3c8c");
+          Modals.openModal("authModal");
+          return;
+        }
+        pendingPosterBlobSha = "";
+        pendingPosterInline = "";
+        pendingBgmBlobSha = "";
+        pendingBgmUrl = "";
+        Modals.openEditorModal(addTierBtn.dataset.addToTier, null);
+        return;
+      }
+
+      // 2. Клик по карточке в блоке "Недавно добавленные" или в тирах
+      const recentCard = e.target.closest("[data-recent-uid]");
+      if (recentCard && appData) {
+        const tier = appData.tiers.find(t => t.id === recentCard.dataset.recentTier);
+        const item = tier?.items.find(i => i.uid === recentCard.dataset.recentUid);
+        if (item && tier) Modals.showAnimeDetails(item, tier);
+        return;
+      }
+
+      const unitCard = e.target.closest(".card-unit");
+      if (unitCard && appData) {
+        const tier = appData.tiers.find(t => t.id === unitCard.dataset.tierId);
+        const item = tier?.items.find(i => i.uid === unitCard.dataset.uid);
+        if (item && tier) Modals.showAnimeDetails(item, tier);
+        return;
+      }
+
+      // 3. Выпадающие списки Жанров и Студий
       const gMenu = document.getElementById("genreDropdownMenu");
       const stMenu = document.getElementById("studioDropdownMenu");
 
@@ -918,9 +912,14 @@
       saveAndAutoSync("Clear global background", true);
     });
 
+    /* Плавный поиск через requestAnimationFrame без лагов при быстрой печати */
     document.getElementById("searchInput")?.addEventListener("input", e => {
       searchQuery = e.target.value;
-      render();
+      if (searchRafId) cancelAnimationFrame(searchRafId);
+      searchRafId = requestAnimationFrame(() => {
+        searchRafId = 0;
+        render();
+      });
     });
 
     document.querySelectorAll("[data-close-modal]").forEach(btn => {
@@ -986,7 +985,7 @@
             showToast("Метаданные заполнены!", "#38ef7d");
           });
         });
-      }, 320);
+      }, 280);
     });
 
     document.getElementById("animeEditorForm")?.addEventListener("submit", async e => {
