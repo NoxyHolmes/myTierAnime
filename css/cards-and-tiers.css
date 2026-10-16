@@ -1,11 +1,9 @@
-/* ═══════════════════ GPU-ACCELERATED RECENT SHOWCASE & TIERS LAYOUT (v15.0) ═══════════════════ */
+/* ═══════════════════ RECENTLY ADDED SHOWCASE & TIERS LAYOUT (RESTORED STABLE v14.1) ═══════════════════ */
 
-/* ──────── БЛОК «НЕДАВНО ДОБАВЛЕННЫЕ И ОБНОВЛЁННЫЕ ТАЙТЛЫ» ПЕРЕД ТИРАМИ ──────── */
 .recent-showcase-wrap {
   max-width: var(--container-width, 1780px);
   margin: 12px auto 6px;
   padding: 0 20px;
-  contain: layout style;
 }
 
 .recent-showcase-box {
@@ -54,7 +52,6 @@
   gap: 5px;
   min-width: 0;
   cursor: pointer;
-  contain: layout style;
 }
 
 .recent-poster-frame {
@@ -66,14 +63,11 @@
   background: #120f24;
   border: 1px solid rgba(255, 255, 255, 0.16);
   box-shadow: 0 8px 20px -6px rgba(0, 0, 0, 0.78);
-  will-change: transform;
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-  transition: transform 0.18s cubic-bezier(.2, .8, .2, 1), border-color 0.22s ease, box-shadow 0.22s ease;
+  transition: transform 0.2s ease, border-color 0.25s ease, box-shadow 0.25s ease;
 }
 
 .recent-item-card:hover .recent-poster-frame {
-  transform: translate3d(0, -3px, 0);
+  transform: translateY(-3px);
   border-color: #00f5ff;
   box-shadow: 0 14px 28px -6px rgba(0, 0, 0, 0.92), 0 0 18px -4px rgba(0, 245, 255, 0.45);
 }
@@ -83,12 +77,11 @@
   height: 100%;
   object-fit: cover;
   display: block;
-  backface-visibility: hidden;
-  transition: transform 0.35s cubic-bezier(.2, .8, .2, 1);
+  transition: transform 0.4s ease;
 }
 
 .recent-item-card:hover .recent-poster-img {
-  transform: scale3d(1.05, 1.05, 1);
+  transform: scale(1.05);
 }
 
 .recent-tier-badge {
@@ -105,7 +98,6 @@
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.65);
 }
 
-/* ──────── ОСНОВНОЙ КОНТЕЙНЕР ТИРОВ ──────── */
 .tiers-container {
   max-width: var(--container-width, 1780px);
   margin: 0 auto;
@@ -125,10 +117,9 @@
   border-radius: var(--tier-radius, 22px);
   box-shadow: 0 20px 50px -12px rgba(0, 0, 0, 0.85), 0 0 40px -18px var(--tg);
   overflow: hidden;
-  contain: layout style;
   -webkit-backdrop-filter: blur(var(--glass-blur, 16px));
   backdrop-filter: blur(var(--glass-blur, 16px));
-  transition: border-color 0.25s ease;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .tier:hover {
@@ -224,7 +215,6 @@
   flex-direction: column;
   gap: 6px;
   min-width: 0;
-  contain: layout style;
 }
 
 .card {
@@ -237,10 +227,8 @@
   box-shadow: 0 8px 20px -6px rgba(0, 0, 0, 0.75);
   cursor: pointer;
   transform-style: preserve-3d;
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
   transform: perspective(800px) rotateX(var(--crx, 0deg)) rotateY(var(--cry, 0deg));
-  transition: transform 0.15s cubic-bezier(.2, .8, .2, 1), box-shadow 0.22s ease, border-color 0.22s ease;
+  transition: transform 0.18s cubic-bezier(.2, .8, .2, 1), box-shadow 0.28s ease, border-color 0.28s ease;
 }
 
 .card:hover {
@@ -254,11 +242,10 @@
   height: 100%;
   object-fit: cover;
   display: block;
-  backface-visibility: hidden;
-  transition: transform 0.38s cubic-bezier(.2, .8, .2, 1);
+  transition: transform 0.45s cubic-bezier(.2, .8, .2, 1);
 }
 .card:hover .card-poster {
-  transform: scale3d(var(--poster-zoom, 1.05), var(--poster-zoom, 1.05), 1);
+  transform: scale(var(--poster-zoom, 1.05));
 }
 
 .card .scrim {
