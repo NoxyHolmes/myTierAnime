@@ -1,4 +1,4 @@
-/* ═══════════════════ MAIN APPLICATION ORCHESTRATOR (myTierAnime v17.1 STABLE) ═══════════════════ */
+/* ═══════════════════ MAIN APPLICATION ORCHESTRATOR (RESTORED STABLE v14.1) ═══════════════════ */
 (() => {
   if (typeof window.pluralRu !== "function") {
     window.pluralRu = function (number, one, few, many) {
@@ -20,7 +20,7 @@
     window.formatMoviesCount = n => `${n} ${window.pluralRu(n, "фильм", "фильма", "фильмов")}`;
   }
 
-  const SNAPSHOT_STORAGE_KEY = "mta_2026_instant_snapshot_v23";
+  const SNAPSHOT_STORAGE_KEY = "mta_2026_instant_snapshot_v14_restored";
   let appData = null;
   let searchQuery = "";
   let selectedGenre = "ALL";
@@ -29,7 +29,6 @@
   let studioFilterSearch = "";
   let activeView = "tiers";
   let lastRenderedSignature = "";
-  let searchRafId = 0;
 
   let pendingPosterBlobSha = "";
   let pendingPosterInline = "";
@@ -83,8 +82,7 @@
 
   function computeStateSignature(data) {
     if (!data || !Array.isArray(data.tiers)) return "";
-    const tierSummary = data.tiers.map(t => `${t.id}:${(t.items || []).length}`).join("|");
-    return `${data.meta?.revision || 0}_${tierSummary}_${data.meta?.bgBlobSha || ""}`;
+    return `${data.meta?.revision || 0}_${JSON.stringify(data.tiers).length}_${data.meta?.bgBlobSha || ""}_${data.meta?.bgmVolume ?? 30}`;
   }
 
   function readCachedSnapshot() {
@@ -102,18 +100,7 @@
     if (!data) return;
     try {
       localStorage.setItem(SNAPSHOT_STORAGE_KEY, JSON.stringify(data));
-    } catch {
-      try {
-        const slimCopy = {
-          meta: { ...data.meta, bgInline: "" },
-          tiers: (data.tiers || []).map(t => ({
-            ...t,
-            items: (t.items || []).map(it => ({ ...it, posterInline: undefined }))
-          }))
-        };
-        localStorage.setItem(SNAPSHOT_STORAGE_KEY, JSON.stringify(slimCopy));
-      } catch {}
-    }
+    } catch {}
   }
 
   async function loadInitialState() {
@@ -128,8 +115,7 @@
       let remoteRaw = null;
       if (typeof GitHubSync !== "undefined" && typeof GitHubSync.fetchFreshTiersFromApi === "function") {
         remoteRaw = await GitHubSync.fetchFreshTiersFromApi(true);
-      }
-      if (!remoteRaw) {
+      } else {
         const res = await fetch(`data/tiers.json?nocache=${Date.now()}`, { cache: "no-store" });
         if (res.ok) remoteRaw = await res.json();
       }
@@ -239,18 +225,15 @@
     appData.tiers.forEach(tier => {
       (tier.items || []).forEach(item => {
         const m = calcItemMetrics(item);
-        let latestWatchMs = m.latestMs || 0;
-        let latestWatchStr = m.latestWatchStr || "";
-
-        if (!latestWatchStr && Array.isArray(m.seasons)) {
-          m.seasons.forEach(s => {
-            const parsed = typeof parseFlexibleRuDate === "function" ? parseFlexibleRuDate(s.date) : { ms: parseRuDate(s.date), raw: s.date };
-            if (parsed && parsed.ms >= latestWatchMs) {
-              latestWatchMs = parsed.ms;
-              latestWatchStr = parsed.raw || s.date || "";
-            }
-          });
-        }
+        let latestWatchMs = 0;
+        let latestWatchStr = "";
+        (m.seasons || []).forEach(s => {
+          const parsed = typeof parseFlexibleRuDate === "function" ? parseFlexibleRuDate(s.date) : { ms: parseRuDate(s.date), raw: s.date };
+          if (parsed && parsed.ms >= latestWatchMs) {
+            latestWatchMs = parsed.ms;
+            latestWatchStr = parsed.raw || s.date || "";
+          }
+        });
 
         const uidTimeMatch = String(item.uid || "").match(/anime-(\d{10,})/);
         const createdMs = uidTimeMatch ? Number(uidTimeMatch[1]) : 0;
@@ -272,7 +255,11 @@
       return;
     }
 
-    recentHost.style.display = activeView === "calendar" ? "none" : "block";
+    if (activeView === "calendar") {
+      recentHost.style.display = "none";
+    } else {
+      recentHost.style.display = "block";
+    }
 
     allEntries.sort((a, b) => b.sortKey - a.sortKey);
     const recentTop = allEntries.slice(0, 10);
@@ -298,15 +285,16 @@
             return `
               <div class="recent-item-card" data-recent-uid="${esc(it.uid)}" data-recent-tier="${esc(tr.id)}">
                 <div class="recent-poster-frame">
-                  <img class="recent-poster-img card-poster" decoding="async" draggable="false" src="${esc(displayPoster)}" data-raw-path="${esc(it.poster || "")}" data-blob-sha="${esc(it.posterBlobSha \vert{}\vert{} "")}" alt="${esc(it.title)}" loading="lazy"
+                  <img class="recent-poster-img card-poster" draggable="false" src="${esc(displayPoster)}" data-raw-path="${esc(it.poster || "")}" data-blob-sha="${esc(it.posterBlobSha || "")}" alt="${esc(it.title)}" loading="lazy"
                        onerror="this.src='https://placehold.co/400x600/16122b/ffd76a?text=myTierAnime'">
                   <div class="scrim" style="position:absolute;inset:0;background:linear-gradient(to top,rgba(6,5,14,0.95) 0%,rgba(6,5,14,0.45) 42%,transparent 75%);pointer-events:none;"></div>
-                  <span class="recent-tier-badge">Тир ${esc(tr.id)}</span>${it.score ? `<span class="card-score-badge">★ ${esc(it.score)}</span>` : ""}
+                  <span class="recent-tier-badge">Тир ${esc(tr.id)}</span>
+                  ${it.score ? `<span class="card-score-badge">★ ${esc(it.score)}</span>` : ""}
                   ${musicBadge}
 
                   <div class="card-info">
                     <h3 class="card-title">${esc(it.title)}</h3>
-                    <div class="card-sub">${esc(entry.m.kind)} ·${esc(entry.latestWatchStr)}</div>
+                    <div class="card-sub">${esc(entry.m.kind)} · ${esc(entry.latestWatchStr)}</div>
                   </div>
                 </div>
               </div>
@@ -315,6 +303,18 @@
         </div>
       </div>
     `;
+
+    recentHost.querySelectorAll("[data-recent-uid]").forEach(card => {
+      card.onclick = () => {
+        const uid = card.dataset.recentUid;
+        const tierId = card.dataset.recentTier;
+        const tier = appData.tiers.find(t => t.id === tierId);
+        const item = tier?.items.find(i => i.uid === uid);
+        if (item && tier && typeof Modals !== "undefined") {
+          Modals.showAnimeDetails(item, tier);
+        }
+      };
+    });
   }
 
   function cardEl(item, idx, tierId) {
@@ -334,7 +334,7 @@
     return `
       <div class="card-unit" draggable="true" data-uid="${esc(item.uid)}" data-tier-id="${esc(tierId)}">
         <article class="card" data-uid="${esc(item.uid)}" data-tier-id="${esc(tierId)}">
-          <img class="card-poster" decoding="async" draggable="false" src="${esc(displayPosterSrc)}" data-raw-path="${esc(item.poster || "")}" data-blob-sha="${esc(item.posterBlobSha || "")}" alt="${esc(item.title)}" loading="lazy"
+          <img class="card-poster" draggable="false" src="${esc(displayPosterSrc)}" data-raw-path="${esc(item.poster || "")}" data-blob-sha="${esc(item.posterBlobSha || "")}" alt="${esc(item.title)}" loading="lazy"
                onerror="this.src='https://placehold.co/400x600/16122b/ffd76a?text=myTierAnime'">
           <div class="scrim"></div>
           <span class="holo-foil" aria-hidden="true"></span>
@@ -546,6 +546,31 @@
   }
 
   function bindTierInteractions() {
+    document.querySelectorAll("[data-add-to-tier]").forEach(btn => {
+      btn.onclick = () => {
+        if (typeof GitHubSync === "undefined" || !GitHubSync.isOwner()) {
+          showToast("Для добавления войдите как владелец", "#ff3c8c");
+          Modals.openModal("authModal");
+          return;
+        }
+        pendingPosterBlobSha = "";
+        pendingPosterInline = "";
+        pendingBgmBlobSha = "";
+        pendingBgmUrl = "";
+        Modals.openEditorModal(btn.dataset.addToTier, null);
+      };
+    });
+
+    document.querySelectorAll(".card-unit").forEach(unit => {
+      unit.onclick = () => {
+        const uid = unit.dataset.uid;
+        const tierId = unit.dataset.tierId;
+        const tier = appData.tiers.find(t => t.id === tierId);
+        const item = tier?.items.find(i => i.uid === uid);
+        if (item && tier && typeof Modals !== "undefined") Modals.showAnimeDetails(item, tier);
+      };
+    });
+
     if (typeof DragDropEngine !== "undefined" && typeof DragDropEngine.bindCardsAndGrids === "function") {
       DragDropEngine.bindCardsAndGrids((uid, fromTierId, toTierId, targetUid) => {
         if (!GitHubSync.isOwner()) return;
@@ -641,37 +666,6 @@
     });
 
     document.addEventListener("click", e => {
-      const addTierBtn = e.target.closest("[data-add-to-tier]");
-      if (addTierBtn) {
-        if (typeof GitHubSync === "undefined" || !GitHubSync.isOwner()) {
-          showToast("Для добавления войдите как владелец", "#ff3c8c");
-          Modals.openModal("authModal");
-          return;
-        }
-        pendingPosterBlobSha = "";
-        pendingPosterInline = "";
-        pendingBgmBlobSha = "";
-        pendingBgmUrl = "";
-        Modals.openEditorModal(addTierBtn.dataset.addToTier, null);
-        return;
-      }
-
-      const recentCard = e.target.closest("[data-recent-uid]");
-      if (recentCard && appData) {
-        const tier = appData.tiers.find(t => t.id === recentCard.dataset.recentTier);
-        const item = tier?.items.find(i => i.uid === recentCard.dataset.recentUid);
-        if (item && tier) Modals.showAnimeDetails(item, tier);
-        return;
-      }
-
-      const unitCard = e.target.closest(".card-unit");
-      if (unitCard && appData) {
-        const tier = appData.tiers.find(t => t.id === unitCard.dataset.tierId);
-        const item = tier?.items.find(i => i.uid === unitCard.dataset.uid);
-        if (item && tier) Modals.showAnimeDetails(item, tier);
-        return;
-      }
-
       const gMenu = document.getElementById("genreDropdownMenu");
       const stMenu = document.getElementById("studioDropdownMenu");
 
@@ -919,11 +913,7 @@
 
     document.getElementById("searchInput")?.addEventListener("input", e => {
       searchQuery = e.target.value;
-      if (searchRafId) cancelAnimationFrame(searchRafId);
-      searchRafId = requestAnimationFrame(() => {
-        searchRafId = 0;
-        render();
-      });
+      render();
     });
 
     document.querySelectorAll("[data-close-modal]").forEach(btn => {
@@ -989,7 +979,7 @@
             showToast("Метаданные заполнены!", "#38ef7d");
           });
         });
-      }, 280);
+      }, 320);
     });
 
     document.getElementById("animeEditorForm")?.addEventListener("submit", async e => {
