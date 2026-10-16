@@ -4,12 +4,12 @@
     "owner": "geraltschwarzenegger-svg",
     "repo": "noxyholmes/myTierAnime",
     "branch": "main",
-    "updatedAt": "2026-10-16T08:42:29.793Z",
+    "updatedAt": "2026-10-16T08:42:41.087Z",
     "activeMode": "emblems-realism",
     "bgImage": "backgrounds/1792058756499____________________________________.png",
     "bgDim": 65,
     "bgBlur": 5,
-    "revision": 75,
+    "revision": 76,
     "bgBlobSha": "1de942c76368b8d317071e794ae55fed35d163ad",
     "bgMime": "image/png",
     "bgmVolume": 10
@@ -610,13 +610,13 @@
               "releaseYear": 2026,
               "episodes": 11,
               "epMinutes": 24,
-              "date": "2026",
+              "date": "29.09.2026",
               "note": ""
             }
           ],
           "watched": [
             {
-              "date": "2026",
+              "date": "29.09.2026",
               "note": "Сезон 1"
             }
           ]
