@@ -1,4 +1,4 @@
-/* ═══════════════════ CORE UTILITIES & FLEXIBLE DATE PARSER (DAY / MONTH+YEAR / YEAR-ONLY) ═══════════════════ */
+/* ═══════════════════ CORE UTILITIES v15.0 (MEMOIZED METRICS & FAST DATE CACHE) ═══════════════════ */
 window.reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 window.tiltPower = 14;
 
@@ -57,6 +57,10 @@ const RU_MONTH_MAP = {
   "июл": 6, "авг": 7, "сен": 8, "окт": 9, "ноя": 10, "дек": 11
 };
 
+/* Кэш распарсенных дат и метрик тайтлов для мгновенного рендера за O(1) */
+const DATE_PARSE_CACHE = new Map();
+const ITEM_METRICS_CACHE = new WeakMap();
+
 function pluralRu(number, one, few, many) {
   const n = Math.abs(number) % 100;
   const n1 = n % 10;
@@ -78,80 +82,81 @@ function formatMoviesCount(n) {
   return `${n} ${pluralRu(n, "фильм", "фильма", "фильмов")}`;
 }
 
+const ESC_MAP = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" };
 function esc(str) {
   if (str === null || str === undefined) return "";
-  return String(str)
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
+  return String(str).replace(/[&<>"]/g, ch => ESC_MAP[ch]);
 }
 
-/* УМНЫЙ ПАРСЕР ГИБКИХ ДАТ:
-   Поддерживает:
-   1) Полную дату: "03.04.2026" или "2026-04-03" -> { precision: "day", year: 2026, month: 3, day: 3, ms }
-   2) Только месяц и год: "04.2026", "4/2026", "Апрель 2026", "2026-04" -> { precision: "month", year: 2026, month: 3, day: null, ms }
-   3) Только год: "2026", "2025 г." -> { precision: "year", year: 2026, month: null, day: null, ms } */
 function parseFlexibleRuDate(str) {
   if (!str && str !== 0) return null;
   const s = String(str).trim();
   if (!s) return null;
 
-  // 1. ДД.ММ.ГГГГ или ДД/ММ/ГГГГ
+  if (DATE_PARSE_CACHE.has(s)) return DATE_PARSE_CACHE.get(s);
+
+  let result = null;
   const fullRu = s.match(/^(\d{1,2})[./-](\d{1,2})[./-](\d{4})$/);
   if (fullRu) {
     const d = +fullRu[1], m = +fullRu[2] - 1, y = +fullRu[3];
     if (m >= 0 && m <= 11 && d >= 1 && d <= 31) {
-      return { precision: "day", year: y, month: m, day: d, ms: new Date(y, m, d).getTime(), raw: s };
+      result = { precision: "day", year: y, month: m, day: d, ms: new Date(y, m, d).getTime(), raw: s };
     }
   }
 
-  // 2. ГГГГ-ММ-ДД (ISO)
-  const fullIso = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
-  if (fullIso) {
-    const y = +fullIso[1], m = +fullIso[2] - 1, d = +fullIso[3];
-    if (m >= 0 && m <= 11 && d >= 1 && d <= 31) {
-      return { precision: "day", year: y, month: m, day: d, ms: new Date(y, m, d).getTime(), raw: s };
+  if (!result) {
+    const fullIso = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+    if (fullIso) {
+      const y = +fullIso[1], m = +fullIso[2] - 1, d = +fullIso[3];
+      if (m >= 0 && m <= 11 && d >= 1 && d <= 31) {
+        result = { precision: "day", year: y, month: m, day: d, ms: new Date(y, m, d).getTime(), raw: s };
+      }
     }
   }
 
-  // 3. ММ.ГГГГ или ММ/ГГГГ или ММ-ГГГГ (Только месяц и год)
-  const monthYr = s.match(/^(\d{1,2})[./-](\d{4})$/);
-  if (monthYr) {
-    const m = +monthYr[1] - 1, y = +monthYr[2];
-    if (m >= 0 && m <= 11) {
-      return { precision: "month", year: y, month: m, day: null, ms: new Date(y, m, 1).getTime(), raw: s };
+  if (!result) {
+    const monthYr = s.match(/^(\d{1,2})[./-](\d{4})$/);
+    if (monthYr) {
+      const m = +monthYr[1] - 1, y = +monthYr[2];
+      if (m >= 0 && m <= 11) {
+        result = { precision: "month", year: y, month: m, day: null, ms: new Date(y, m, 1).getTime(), raw: s };
+      }
     }
   }
 
-  // 4. ГГГГ-ММ или ГГГГ.ММ
-  const yrMonth = s.match(/^(\d{4})[./-](\d{1,2})$/);
-  if (yrMonth) {
-    const y = +yrMonth[1], m = +yrMonth[2] - 1;
-    if (m >= 0 && m <= 11) {
-      return { precision: "month", year: y, month: m, day: null, ms: new Date(y, m, 1).getTime(), raw: s };
+  if (!result) {
+    const yrMonth = s.match(/^(\d{4})[./-](\d{1,2})$/);
+    if (yrMonth) {
+      const y = +yrMonth[1], m = +yrMonth[2] - 1;
+      if (m >= 0 && m <= 11) {
+        result = { precision: "month", year: y, month: m, day: null, ms: new Date(y, m, 1).getTime(), raw: s };
+      }
     }
   }
 
-  // 5. Текстовый месяц и год ("Апрель 2026", "май 2025")
-  const textMonthMatch = s.toLowerCase().match(/([а-яё]{3,})\s*(\d{4})/);
-  if (textMonthMatch) {
-    const prefix = textMonthMatch[1].slice(0, 3);
-    const y = +textMonthMatch[2];
-    if (prefix in RU_MONTH_MAP) {
-      const m = RU_MONTH_MAP[prefix];
-      return { precision: "month", year: y, month: m, day: null, ms: new Date(y, m, 1).getTime(), raw: s };
+  if (!result) {
+    const textMonthMatch = s.toLowerCase().match(/([а-яё]{3,})\s*(\d{4})/);
+    if (textMonthMatch) {
+      const prefix = textMonthMatch[1].slice(0, 3);
+      const y = +textMonthMatch[2];
+      if (prefix in RU_MONTH_MAP) {
+        const m = RU_MONTH_MAP[prefix];
+        result = { precision: "month", year: y, month: m, day: null, ms: new Date(y, m, 1).getTime(), raw: s };
+      }
     }
   }
 
-  // 6. Только год ("2026", "2025 г.")
-  const yearOnly = s.match(/(?:^|\D)(19\d{2}|20\d{2})(?:\D|$)/);
-  if (yearOnly) {
-    const y = +yearOnly[1];
-    return { precision: "year", year: y, month: null, day: null, ms: new Date(y, 0, 1).getTime(), raw: String(y) };
+  if (!result) {
+    const yearOnly = s.match(/(?:^|\D)(19\d{2}|20\d{2})(?:\D|$)/);
+    if (yearOnly) {
+      const y = +yearOnly[1];
+      result = { precision: "year", year: y, month: null, day: null, ms: new Date(y, 0, 1).getTime(), raw: String(y) };
+    }
   }
 
-  return null;
+  if (DATE_PARSE_CACHE.size > 2000) DATE_PARSE_CACHE.clear();
+  DATE_PARSE_CACHE.set(s, result);
+  return result;
 }
 
 function parseRuDate(str) {
@@ -204,15 +209,28 @@ function normSeasons(item) {
   ];
 }
 
+/* Мемоизированный расчёт метрик: если объект item не менялся, возвращает готовый результат за 0 мс */
 function calcItemMetrics(item) {
+  if (!item || typeof item !== "object") {
+    return { seasons: [], kind: "TV Сериал", totalEpisodes: 0, totalMovies: 0, totalMinutes: 0, totalHours: 0, totalDays: 0, latestMs: 0, latestYear: 2026 };
+  }
+
+  const cacheSig = `${item.kind || ""}_${item.year || ""}_${(item.seasons || []).length}_${item.seasons ? item.seasons.map(s => `${s.type}:${s.episodes}:${s.epMinutes}:${s.date}`).join("|") : item.episodes}`;
+  const cached = ITEM_METRICS_CACHE.get(item);
+  if (cached && cached.sig === cacheSig) {
+    return cached.value;
+  }
+
   const seasons = normSeasons(item);
   let totalEpisodes = 0;
   let totalMovies = 0;
   let totalMinutes = 0;
   let latestMs = 0;
   let latestYear = item.year || 2026;
+  let latestWatchStr = "";
 
-  seasons.forEach(s => {
+  for (let i = 0; i < seasons.length; i++) {
+    const s = seasons[i];
     const rawEp = parseInt(s.episodes, 10);
     const eps = isNaN(rawEp) ? 0 : Math.max(0, rawEp);
     const rawMin = parseFloat(s.epMinutes);
@@ -221,25 +239,22 @@ function calcItemMetrics(item) {
     if (eps > 0) {
       const partMinutes = eps * mins;
       totalMinutes += partMinutes;
-
-      if (s.type === "Фильм") {
-        totalMovies += eps;
-      } else {
-        totalEpisodes += eps;
-      }
+      if (s.type === "Фильм") totalMovies += eps;
+      else totalEpisodes += eps;
     }
 
     const parsedDate = parseFlexibleRuDate(s.date);
     if (parsedDate && parsedDate.ms >= latestMs) {
       latestMs = parsedDate.ms;
       latestYear = parsedDate.year;
+      latestWatchStr = parsedDate.raw || s.date || "";
     }
-  });
+  }
 
   const totalHours = totalMinutes / 60;
   const totalDays = totalHours / 24;
 
-  return {
+  const computed = {
     seasons,
     kind: item.kind || seasons[0]?.type || "TV Сериал",
     totalEpisodes,
@@ -248,8 +263,12 @@ function calcItemMetrics(item) {
     totalHours,
     totalDays,
     latestMs,
-    latestYear
+    latestYear,
+    latestWatchStr
   };
+
+  ITEM_METRICS_CACHE.set(item, { sig: cacheSig, value: computed });
+  return computed;
 }
 
 function formatHours(hoursFloat) {
@@ -294,7 +313,7 @@ function showToast(msg, borderCol = "#ffd76a") {
   host.appendChild(el);
   setTimeout(() => {
     el.style.opacity = "0";
-    el.style.transition = "opacity 0.3s";
-    setTimeout(() => el.remove(), 320);
-  }, 3600);
+    el.style.transition = "opacity 0.25s";
+    setTimeout(() => el.remove(), 260);
+  }, 3200);
 }
