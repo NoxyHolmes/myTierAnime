@@ -4,12 +4,12 @@
     "owner": "geraltschwarzenegger-svg",
     "repo": "noxyholmes/myTierAnime",
     "branch": "main",
-    "updatedAt": "2026-10-18T13:13:19.643Z",
+    "updatedAt": "2026-10-18T13:13:26.476Z",
     "activeMode": "emblems-realism",
     "bgImage": "backgrounds/1792058756499____________________________________.png",
     "bgDim": 65,
     "bgBlur": 5,
-    "revision": 115,
+    "revision": 116,
     "bgBlobSha": "1de942c76368b8d317071e794ae55fed35d163ad",
     "bgMime": "image/png",
     "bgmVolume": 10
@@ -68,7 +68,7 @@
               "releaseYear": 2024,
               "episodes": 1,
               "epMinutes": 110,
-              "date": "",
+              "date": "0",
               "note": ""
             }
           ],
@@ -82,7 +82,7 @@
               "note": "Сезон 2 - Восстаньте из тени"
             },
             {
-              "date": "",
+              "date": "0",
               "note": "Фильм 1 - За пределами Системы"
             }
           ]
