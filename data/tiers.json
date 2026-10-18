@@ -4,12 +4,12 @@
     "owner": "geraltschwarzenegger-svg",
     "repo": "noxyholmes/myTierAnime",
     "branch": "main",
-    "updatedAt": "2026-10-18T13:41:52.365Z",
+    "updatedAt": "2026-10-18T13:42:01.872Z",
     "activeMode": "emblems-realism",
     "bgImage": "backgrounds/1792058756499____________________________________.png",
     "bgDim": 65,
     "bgBlur": 5,
-    "revision": 119,
+    "revision": 120,
     "bgBlobSha": "1de942c76368b8d317071e794ae55fed35d163ad",
     "bgMime": "image/png",
     "bgmVolume": 10
@@ -65,8 +65,8 @@
             {
               "title": "Фильм 1 - За пределами Системы",
               "type": "Фильм",
-              "releaseYear": 2027,
-              "episodes": 1,
+              "releaseYear": 2024,
+              "episodes": 0,
               "epMinutes": 110,
               "date": "",
               "note": ""
