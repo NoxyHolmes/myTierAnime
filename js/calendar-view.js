@@ -1,4 +1,4 @@
-/* ═══════════════════ COMPACT SPLIT CALENDAR & CHRONOLOGICAL LIST VIEW (v18.0) ═══════════════════ */
+/* ═══════════════════ COMPACT SPLIT CALENDAR & CHRONOLOGICAL LIST VIEW (v18.6) ═══════════════════ */
 const CalendarView = (() => {
   const MONTHS_NOM = [
     "Январь", "Февраль", "Март", "Апрель", "Май", "Июнь",
@@ -124,7 +124,6 @@ const CalendarView = (() => {
         box-shadow: 0 0 16px -4px rgba(255, 215, 106, 0.4);
       }
 
-      /* ДВУХКОЛОНОЧНЫЙ КОМПАКТНЫЙ КАЛЕНДАРЬ (КАК НА СКРИНШОТАХ) */
       .mta-cal-split-layout {
         display: grid;
         grid-template-columns: 390px minmax(0, 1fr);
@@ -310,7 +309,6 @@ const CalendarView = (() => {
         color: #ffd76a;
       }
 
-      /* ПРАВАЯ КОЛОНКА ПРОСМОТРОВ ВЫБРАННОГО МЕСЯЦА / ДНЯ */
       .mta-cal-right-panel {
         display: flex;
         flex-direction: column;
@@ -414,7 +412,7 @@ const CalendarView = (() => {
     document.head.appendChild(st);
   }
 
-  /* Собираем все записи просмотра и анонсов */
+  /* Собираем все записи. Если у анонса (0 серий) не заполнена дата, но указан Год (например 2026 или 2027), он получает precision="year" и встаёт в список за этот год! */
   function collectAllEntries(tiers) {
     const datedEntries = [];
     const noDateEntries = [];
@@ -427,9 +425,21 @@ const CalendarView = (() => {
         const displayPoster = item.posterInline || item.poster || "https://placehold.co/400x600/16122b/ffd76a?text=myTierAnime";
 
         parts.forEach(part => {
-          const parsed = parseFlexibleRuDate(part.date);
+          let parsed = parseFlexibleRuDate(part.date);
           const isUpcoming = Number(part.episodes) === 0;
           const relYr = part.releaseYear !== undefined && part.releaseYear !== null ? Number(part.releaseYear) : 0;
+
+          // Если дата не указана (или написано "Анонс"), но у сезона/анонса задан конкретный год (например 2026 или 2027 > 0), ставим его как запись с годом!
+          if ((!parsed || !parsed.year) && relYr > 0) {
+            parsed = {
+              precision: "year",
+              year: relYr,
+              month: null,
+              day: null,
+              ms: new Date(relYr, 11, 31, 23, 59, 59).getTime(),
+              raw: String(relYr)
+            };
+          }
 
           if (parsed && parsed.year) {
             uniqueTitlesWithDate.add(item.uid);
@@ -450,9 +460,10 @@ const CalendarView = (() => {
               episodes: part.episodes,
               epMinutes: part.epMinutes,
               partHours: isUpcoming ? 0 : (part.episodes * part.epMinutes) / 60,
+              isUpcoming,
               precision: parsed.precision, // "day" | "month" | "year"
               year: parsed.year,
-              month: parsed.month, // 0..11 или null (если указан только год!)
+              month: parsed.month, // 0..11 или null
               day: parsed.day,     // 1..31 или null
               ms: parsed.ms,
               rawDate: parsed.raw
@@ -474,6 +485,7 @@ const CalendarView = (() => {
               episodes: part.episodes,
               epMinutes: part.epMinutes,
               partHours: isUpcoming ? 0 : (part.episodes * part.epMinutes) / 60,
+              isUpcoming,
               rawDate: isUpcoming ? "Анонс (0 эп.)" : "Без даты"
             });
           }
@@ -499,7 +511,6 @@ const CalendarView = (() => {
 
     const { datedEntries, noDateEntries, titlesWithDateCount, sortedYears } = collectAllEntries(tiers);
 
-    // При первом открытии автоматически переходим к месяцу последнего просмотра
     if (!initializedToLatest && datedEntries.length > 0) {
       const latestWithMonth = datedEntries.find(e => e.month !== null) || datedEntries[0];
       if (latestWithMonth) {
@@ -526,13 +537,13 @@ const CalendarView = (() => {
         (e.partTitle && e.partTitle.toLowerCase().includes(q));
     });
 
-    // 1. Вкладка «Календарь» (компактная двухколоночная сетка + список справа)
+    // 1. Вкладка «Календарь»
     function buildCompactCalendarHtml() {
       const firstDayIndex = (new Date(curYear, curMonth, 1).getDay() + 6) % 7;
       const daysInMonth = new Date(curYear, curMonth + 1, 0).getDate();
 
       const monthEntries = filteredDated.filter(e =>
-        e.year === curYear && (e.month === curMonth || (e.precision === "year" && curMonth === 11))
+        e.year === curYear && e.month === curMonth
       );
 
       const byDay = {};
@@ -568,10 +579,9 @@ const CalendarView = (() => {
         `;
       }
 
-      // Список справа: либо за выбранный день, либо за весь текущий месяц
       const rightEntries = selectedDay !== null
         ? (byDay[selectedDay] || [])
-        : monthEntries.filter(e => e.month === curMonth);
+        : monthEntries;
 
       const paddedDay = selectedDay !== null ? String(selectedDay).padStart(2, "0") : "";
       const paddedMonth = String(curMonth + 1).padStart(2, "0");
@@ -598,7 +608,7 @@ const CalendarView = (() => {
 
             <div class="mta-cal-left-footer">
               <div class="mta-cal-summary-line">
-                ${monthEntries.filter(e => e.month === curMonth).length} записей · ${daysWithAnimeCount} дней с аниме
+                ${monthEntries.length} записей · ${daysWithAnimeCount} дней с аниме
               </div>
               <div class="mta-cal-legend-row">
                 <span class="mta-legend-item"><span class="mta-legend-dot"></span> Есть просмотры</span>
@@ -627,6 +637,9 @@ const CalendarView = (() => {
                 const dateBadge = e.precision === "day"
                   ? `${String(e.day).padStart(2, "0")}.${String(e.month + 1).padStart(2, "0")}.${e.year}`
                   : `${MONTHS_NOM[e.month]}${e.year}`;
+                const timeOrUpcoming = e.isUpcoming
+                  ? `<b style="color:#ffd76a;">⏳ Анонс</b>`
+                  : `⏱ ${formatHours(e.partHours)} ч.`;
                 return `
                   <div class="mta-watch-row" data-uid="${esc(e.uid)}" data-tier="${esc(e.tierId)}">
                     <div class="mta-watch-date">${esc(dateBadge)}</div>
@@ -634,7 +647,7 @@ const CalendarView = (() => {
                     <div class="mta-watch-info">
                       <div class="mta-watch-title">${esc(e.title)}</div>
                       <div class="mta-watch-sub">
-                        ${esc(e.tierName)} · <b style="color:#ffd76a;">${esc(e.partTitle)}</b> (${esc(e.partType)}) · ⏱ ${formatHours(e.partHours)} ч.
+                        ${esc(e.tierName)} · <b style="color:#ffd76a;">${esc(e.partTitle)}</b> (${esc(e.partType)}) ·${timeOrUpcoming}
                       </div>
                     </div>
                     <div class="mta-watch-tier-pill" style="background:${tc.bg};border:1px solid ${tc.border};color:${tc.text};">
@@ -653,19 +666,19 @@ const CalendarView = (() => {
       `;
     }
 
-    // 2. Вкладка «Список» (ТЕКУЩЕЕ ОФОРМЛЕНИЕ СОХРАНЕНО + записи "только с годом" стоят ПОВЕРХ месяцев этого года!)
+    // 2. Вкладка «Список» (годовые блоки стоят между Декабрём своего года и Январём следующего года, без текста "(указан только год)")
     function buildChronologicalListHtml() {
       const groupsMap = new Map();
 
       filteredDated.forEach(e => {
         if (e.precision === "year" || e.month === null) {
-          // monthOrder = 12 ставит блок "Только год" строго ПОВЕРХ Декабря (monthOrder = 11) того же года, то есть между Январём следующего года и Декабрём этого года!
+          // monthOrder = 12 ставит "2026 год" строго между Декабрём 2026 (11) и Январём 2027 (year 2027, monthOrder 0)!
           const key = `${e.year}-YEAR_TOP`;
           if (!groupsMap.has(key)) {
             groupsMap.set(key, {
               year: e.year,
               monthOrder: 12,
-              title: `📌 ${e.year} год (указан только год)`,
+              title: `📌 ${e.year} год`,
               items: []
             });
           }
@@ -712,7 +725,11 @@ const CalendarView = (() => {
                   ${g.items.map(e => {
                     const badgeDate = e.precision === "day"
                       ? `📅 ${e.day} ${MONTHS_GEN[e.month]} ${e.year}`
-                      : (e.precision === "month" ? `🗓 Весь месяц (${MONTHS_NOM[e.month]} ${e.year})` : `📌 ${e.year} год`);
+                      : (e.precision === "month" ? `🗓 ${MONTHS_NOM[e.month]} ${e.year}` : `📌 ${e.year} год`);
+
+                    const statusOrHours = e.isUpcoming
+                      ? `⏳ Анонс`
+                      : `${formatHours(e.partHours)} ч.`;
 
                     return `
                       <div class="month-entry-card" data-uid="${esc(e.uid)}" data-tier="${esc(e.tierId)}">
@@ -725,7 +742,7 @@ const CalendarView = (() => {
                             ${esc(e.title)}
                           </div>
                           <div style="font-size:11.5px;color:#00f5ff;font-weight:600;">
-                            ${esc(e.partTitle)} (${esc(e.partType)}${e.releaseYear ? `, ${esc(e.releaseYear)} г.` : ""}) — ${formatHours(e.partHours)} ч.
+                            ${esc(e.partTitle)} (${esc(e.partType)}${e.releaseYear ? `, ${esc(e.releaseYear)} г.` : ""}) — ${statusOrHours}
                           </div>
                         </div>
                       </div>
@@ -739,7 +756,7 @@ const CalendarView = (() => {
       `;
     }
 
-    // 3. Вкладка «Без даты / Анонсы (0)»
+    // 3. Вкладка «Без даты» (только те записи и анонсы, у которых год = 0 / неизвестен)
     function buildNoDateHtml() {
       if (!filteredNoDate.length) {
         return `<div class="month-block" style="text-align:center;color:var(--ink-soft);">Нет сезонов или анонсов без указанной даты.</div>`;
@@ -747,7 +764,7 @@ const CalendarView = (() => {
       return `
         <div class="month-block">
           <div class="month-block-head">
-            <h3 style="margin:0;font-family:var(--serif);font-size:18px;color:#ffd76a;">⏳ Анонсы и части без даты (${filteredNoDate.length})</h3>
+            <h3 style="margin:0;font-family:var(--serif);font-size:18px;color:#ffd76a;">⏳ Анонсы без известного года и части без даты (${filteredNoDate.length})</h3>
           </div>
           <div class="month-entries-grid">
             ${filteredNoDate.map(e => `
@@ -802,7 +819,6 @@ const CalendarView = (() => {
       </div>
     `;
 
-    // Подгружаем постеры из GitHub, если нет inline-копии
     if (typeof GitHubSync !== "undefined" && typeof GitHubSync.resolveAssetUrl === "function") {
       host.querySelectorAll("img.card-poster").forEach(async img => {
         const curSrc = img.getAttribute("src") || "";
@@ -816,7 +832,6 @@ const CalendarView = (() => {
       });
     }
 
-    // Обработчики переключения вкладок
     host.querySelectorAll("[data-cal-mode]").forEach(btn => {
       btn.onclick = () => {
         mode = btn.dataset.calMode;
@@ -824,7 +839,6 @@ const CalendarView = (() => {
       };
     });
 
-    // Поиск внутри календаря
     const searchInp = document.getElementById("calSearchInput");
     if (searchInp) {
       searchInp.oninput = e => {
@@ -839,7 +853,6 @@ const CalendarView = (() => {
       };
     }
 
-    // Фильтр по году
     const yrSel = document.getElementById("calYearFilterSelect");
     if (yrSel) {
       yrSel.onchange = e => {
@@ -852,7 +865,6 @@ const CalendarView = (() => {
       };
     }
 
-    // Навигация по месяцам
     const prevBtn = document.getElementById("calPrevMonthBtn");
     if (prevBtn) {
       prevBtn.onclick = () => {
@@ -873,7 +885,6 @@ const CalendarView = (() => {
       };
     }
 
-    // Клик по дню в сетке календаря
     host.querySelectorAll("[data-cal-day]").forEach(cell => {
       cell.onclick = () => {
         const d = parseInt(cell.dataset.calDay, 10);
@@ -882,7 +893,6 @@ const CalendarView = (() => {
       };
     });
 
-    // Кнопка «Весь месяц»
     const fullMonthBtn = document.getElementById("calBtnShowFullMonth");
     if (fullMonthBtn) {
       fullMonthBtn.onclick = () => {
@@ -891,7 +901,6 @@ const CalendarView = (() => {
       };
     }
 
-    // Кнопка «Сегодня»
     const todayBtn = document.getElementById("calBtnToday");
     if (todayBtn) {
       todayBtn.onclick = () => {
@@ -904,7 +913,6 @@ const CalendarView = (() => {
       };
     }
 
-    // Кнопка «Последний просмотр»
     const lastWatchBtn = document.getElementById("calBtnLastWatch");
     if (lastWatchBtn) {
       lastWatchBtn.onclick = () => {
@@ -919,7 +927,6 @@ const CalendarView = (() => {
       };
     }
 
-    // Клик по карточке тайтла в правой панели или списке
     host.querySelectorAll("[data-uid]").forEach(el => {
       el.onclick = () => {
         if (typeof onSelectCard === "function") {
