@@ -4,12 +4,12 @@
     "owner": "geraltschwarzenegger-svg",
     "repo": "noxyholmes/myTierAnime",
     "branch": "main",
-    "updatedAt": "2026-10-19T13:27:01.159Z",
+    "updatedAt": "2026-10-19T13:27:13.702Z",
     "activeMode": "emblems-realism",
     "bgImage": "backgrounds/1792058756499____________________________________.png",
     "bgDim": 65,
     "bgBlur": 5,
-    "revision": 171,
+    "revision": 172,
     "bgBlobSha": "1de942c76368b8d317071e794ae55fed35d163ad",
     "bgMime": "image/png",
     "bgmVolume": 10,
@@ -1013,7 +1013,10 @@
           "origTitle": "Classroom of the Elite",
           "year": 2017,
           "studio": "Lerche",
-          "score": 10,
+          "studios": [
+            "Lerche"
+          ],
+          "score": 0,
           "poster": "posters/1792068891680_563082781703827373.jpg",
           "posterBlobSha": "1795ae7238086e063a69eeb8567644450a597115",
           "genres": [
