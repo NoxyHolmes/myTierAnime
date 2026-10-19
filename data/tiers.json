@@ -4,12 +4,12 @@
     "owner": "geraltschwarzenegger-svg",
     "repo": "noxyholmes/myTierAnime",
     "branch": "main",
-    "updatedAt": "2026-10-19T12:56:38.850Z",
+    "updatedAt": "2026-10-19T12:58:36.951Z",
     "activeMode": "emblems-realism",
     "bgImage": "backgrounds/1792058756499____________________________________.png",
     "bgDim": 65,
     "bgBlur": 5,
-    "revision": 139,
+    "revision": 140,
     "bgBlobSha": "1de942c76368b8d317071e794ae55fed35d163ad",
     "bgMime": "image/png",
     "bgmVolume": 10,
@@ -170,9 +170,9 @@
               "title": "Фильм 5 - Область целостности",
               "type": "Фильм",
               "releaseYear": 2028,
-              "episodes": 0,
+              "episodes": 1,
               "epMinutes": 0,
-              "date": "",
+              "date": "2026",
               "note": ""
             }
           ],
@@ -226,7 +226,7 @@
               "note": "Фильм 4 - Безответная бабочка"
             },
             {
-              "date": "",
+              "date": "2026",
               "note": "Фильм 5 - Область целостности"
             }
           ]
