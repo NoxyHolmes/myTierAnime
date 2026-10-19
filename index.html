@@ -14,10 +14,10 @@
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;900&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&family=Montserrat:wght@500;700;800&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
   <link rel="manifest" href="manifest.json">
 
-  <link rel="stylesheet" href="css/tokens.css?v=18.5">
-  <link rel="stylesheet" href="css/realism-3d.css?v=18.5">
-  <link rel="stylesheet" href="css/cards-and-tiers.css?v=18.5">
-  <link rel="stylesheet" href="css/modals-and-panels.css?v=18.5">
+  <link rel="stylesheet" href="css/tokens.css?v=19.0">
+  <link rel="stylesheet" href="css/realism-3d.css?v=19.0">
+  <link rel="stylesheet" href="css/cards-and-tiers.css?v=19.0">
+  <link rel="stylesheet" href="css/modals-and-panels.css?v=19.0">
 </head>
 <body class="emblems-realism letter-style-gold motion-precession fx-tier-motion fx-tilt">
   <div id="globalOwnerBg" class="global-owner-bg" aria-hidden="true">
@@ -42,9 +42,30 @@
         <div class="toolbar-controls">
           <div class="search-input-wrap">
             <span class="search-icon">🔍</span>
-            <input type="search" id="searchInput" class="search-input" placeholder="Поиск тайтла...">
+            <input type="search" id="searchInput" class="search-input" placeholder="Поиск тайтла, типа, студии...">
           </div>
 
+          <!-- Фильтр по типу: Сериалы, Фильмы, OVA, ONA, Спешлы -->
+          <div class="genre-dropdown" id="kindDropdown">
+            <button type="button" class="genre-dropdown-btn" id="kindDropdownBtn" style="border-color:rgba(255,215,106,0.55);box-shadow:0 0 16px -4px rgba(255,215,106,0.35);">
+              <span>📺</span>
+              <span id="kindDropdownLabel">Все типы</span>
+              <span style="font-size:10px;opacity:0.7;">▼</span>
+            </button>
+            <button type="button" id="btnClearKindFilter" class="filter-clear-x" style="display:none;border-color:rgba(255,215,106,0.65);background:rgba(255,215,106,0.2);color:#ffe8a3;" title="Сбросить фильтр типа">✕</button>
+            <div class="genre-dropdown-menu" id="kindDropdownMenu" style="border-color:rgba(255,215,106,0.5);width:230px;">
+              <div class="genre-options-list" id="kindOptionsList">
+                <div class="genre-opt-item active" data-k-val="ALL">📺 Все типы</div>
+                <div class="genre-opt-item" data-k-val="TV Сериал">🎞 TV Сериалы</div>
+                <div class="genre-opt-item" data-k-val="Фильм">🎬 Фильмы</div>
+                <div class="genre-opt-item" data-k-val="OVA">💿 OVA</div>
+                <div class="genre-opt-item" data-k-val="ONA">🌐 ONA</div>
+                <div class="genre-opt-item" data-k-val="Спешл">✨ Спешлы</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Фильтр по жанрам -->
           <div class="genre-dropdown" id="genreDropdown">
             <button type="button" class="genre-dropdown-btn" id="genreDropdownBtn">
               <span>🎭</span>
@@ -60,6 +81,7 @@
             </div>
           </div>
 
+          <!-- Фильтр по студиям -->
           <div class="genre-dropdown" id="studioDropdown">
             <button type="button" class="genre-dropdown-btn" id="studioDropdownBtn" style="border-color:rgba(0,245,255,0.5);box-shadow:0 0 16px -4px rgba(0,245,255,0.35);">
               <span>🎬</span>
@@ -89,10 +111,6 @@
 
           <button type="button" id="btnToggleSettings" class="btn btn-neon-cyan" title="Настройки">
             ⚙️ Настройки
-          </button>
-
-          <button type="button" id="btnExportJson" class="btn owner-only" title="Скачать резервную копию JSON">
-            ⬇ JSON
           </button>
 
           <button type="button" id="btnOwnerAuth" class="btn">
@@ -263,7 +281,6 @@
       <div class="fx-toggles">
         <label class="fx-check-row"><input type="checkbox" id="chkTilt" checked><span>3D-наклон и голография</span></label>
         <label class="fx-check-row"><input type="checkbox" data-toggle="showCardRank" checked><span>Порядковый номер</span></label>
-        <label class="fx-check-row"><input type="checkbox" data-toggle="showCardScore" checked><span>Оценка (★)</span></label>
         <label class="fx-check-row"><input type="checkbox" data-toggle="showCardYear" checked><span>Бейдж года</span></label>
         <label class="fx-check-row"><input type="checkbox" data-toggle="showCardCrown" checked><span>Золотая корона S-тира</span></label>
         <label class="fx-check-row"><input type="checkbox" data-toggle="showUnderMeta" checked><span>Нижняя плашка (серии/часы)</span></label>
@@ -362,18 +379,12 @@
     </div>
   </div>
 
-  <!-- Модальное окно 2: Добавление / Редактирование тайтла -->
+  <!-- Модальное окно 2: Добавление / Редактирование тайтла (без Shikimori и без Личной оценки) -->
   <div id="editorModal" class="modal-backdrop">
     <div class="modal-box modal-box-wide">
       <div class="modal-header">
         <h3 id="editModalTitle">Добавить тайтл</h3>
         <button type="button" class="btn" data-close-modal="editorModal">✕</button>
-      </div>
-
-      <div class="form-group full" style="position:relative;">
-        <label>⚡ Автозаполнение из базы Shikimori / MyAnimeList:</label>
-        <input type="search" id="shikiSearchInput" class="form-control" placeholder="Например: Песнь ночных сов, Фрирен, Oshi no Ko...">
-        <div id="shikiResults" class="shiki-results"></div>
       </div>
 
       <form id="animeEditorForm" novalidate>
@@ -411,16 +422,11 @@
             <input type="text" id="fOrigTitle" class="form-control" placeholder="Romaji / English">
           </div>
 
-          <div class="form-group">
-            <label>Год релиза (необязательно):</label>
+          <div class="form-group full">
+            <label>Год релиза тайтла (необязательно):</label>
             <input type="number" id="fYear" class="form-control" placeholder="2026">
           </div>
-          <div class="form-group">
-            <label>Личная оценка 1–10 (необязательно):</label>
-            <input type="number" step="0.1" min="0" max="10" id="fScore" class="form-control" placeholder="9.0">
-          </div>
 
-          <!-- Блок СТУДИЙ через запятую (с чипами, быстрым поиском и автодобавлением новых студий в общий список) -->
           <div class="form-group full">
             <div style="display:flex;justify-content:space-between;align-items:center;">
               <label>🎬 Студии (можно несколько через запятую — новые автоматически добавляются в общий список):</label>
@@ -463,7 +469,6 @@
             </div>
           </div>
 
-          <!-- Блок ЖАНРОВ через запятую (с чипами и автодобавлением новых жанров в общий список) -->
           <div class="form-group full">
             <div style="display:flex;justify-content:space-between;align-items:center;">
               <label>🎭 Жанры (через запятую — новые автоматически добавляются в общий список):</label>
@@ -543,16 +548,75 @@
 
   <div id="toastContainer"></div>
 
-  <script src="js/utils.js?v=18.5"></script>
-  <script src="js/realism-core.js?v=18.5"></script>
-  <script src="js/realism-engine.js?v=18.5"></script>
-  <script src="js/github-sync.js?v=18.5"></script>
-  <script src="js/shikimori-api.js?v=18.5"></script>
-  <script src="js/fx-controller.js?v=18.5"></script>
-  <script src="js/stats-engine.js?v=18.5"></script>
-  <script src="js/calendar-view.js?v=18.5"></script>
-  <script src="js/drag-drop.js?v=18.5"></script>
-  <script src="js/modals.js?v=18.5"></script>
-  <script src="js/app.js?v=18.5"></script>
+  <script src="js/utils.js?v=19.0"></script>
+  <script src="js/realism-core.js?v=19.0"></script>
+  <script src="js/realism-engine.js?v=19.0"></script>
+  <script src="js/github-sync.js?v=19.0"></script>
+  <script src="js/shikimori-api.js?v=19.0"></script>
+  <script src="js/fx-controller.js?v=19.0"></script>
+  <script src="js/stats-engine.js?v=19.0"></script>
+
+  <!-- Панель статистики без личной оценки -->
+  <script>
+    window.StatsEngine = {
+      updateStats(tiers) {
+        const host = document.getElementById("statsRibbon");
+        if (!host || !Array.isArray(tiers)) return;
+        let totalTitles = 0, sumEpisodes = 0, sumMovies = 0, sumHours = 0;
+        tiers.forEach(t => {
+          const items = t.items || [];
+          totalTitles += items.length;
+          items.forEach(it => {
+            const m = calcItemMetrics(it);
+            sumEpisodes += m.totalEpisodes;
+            sumMovies += m.totalMovies;
+            sumHours += m.totalHours;
+          });
+        });
+        const totalDays = (sumHours / 24).toFixed(1);
+        const titlesStr = typeof formatTitlesCount === "function" ? formatTitlesCount(totalTitles) : (totalTitles + " тайтлов");
+        const epStr = typeof formatEpisodesCount === "function" ? formatEpisodesCount(sumEpisodes) : (sumEpisodes + " серий");
+        const mvStr = typeof formatMoviesCount === "function" ? formatMoviesCount(sumMovies) : (sumMovies + " фильмов");
+
+        host.innerHTML = `
+          <div class="stat-card">
+            <div>
+              <div class="stat-label">Всего просмотрено</div>
+              <div class="stat-val">${totalTitles} <span style="font-size:13px;color:var(--ink-soft);">${titlesStr.replace(/^\d+\s*/, "")}</span></div>
+              <div class="stat-sub">В коллекции S–E тиров</div>
+            </div>
+            <span style="font-size:26px;">📚</span>
+          </div>
+          <div class="stat-card" style="padding:10px 12px;">
+            <div class="stat-dual-split">
+              <div class="stat-split-box">
+                <div class="stat-label">🎞 Серии</div>
+                <div class="stat-val" style="color:#ffd76a;font-size:20px;">${sumEpisodes}</div>
+                <div style="font-size:9.5px;color:var(--ink-soft);">${epStr.replace(/^\d+\s*/, "")}</div>
+              </div>
+              <div class="stat-split-box movies-highlight">
+                <div class="stat-label" style="color:#ffd6e7;font-weight:800;">🎬 Фильмы</div>
+                <div class="stat-val" style="color:#ff5e7e;font-size:20px;text-shadow:0 0 12px rgba(255,94,126,0.55);">${sumMovies}</div>
+                <div style="font-size:9.5px;color:#ffaec6;font-weight:700;">${mvStr.replace(/^\d+\s*/, "")}</div>
+              </div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div>
+              <div class="stat-label">Всего времени</div>
+              <div class="stat-val" style="color:#00f5ff;">${formatHours(sumHours)} <span style="font-size:13px;color:var(--ink-soft);">часов</span></div>
+              <div class="stat-sub">⏳ Общее количество дней: <b style="color:#fff;">${totalDays} дн.</b></div>
+            </div>
+            <span style="font-size:26px;">⏱️</span>
+          </div>
+        `;
+      }
+    };
+  </script>
+
+  <script src="js/calendar-view.js?v=19.0"></script>
+  <script src="js/drag-drop.js?v=19.0"></script>
+  <script src="js/modals.js?v=19.0"></script>
+  <script src="js/app.js?v=19.0"></script>
 </body>
 </html>
