@@ -4,15 +4,17 @@
     "owner": "geraltschwarzenegger-svg",
     "repo": "noxyholmes/myTierAnime",
     "branch": "main",
-    "updatedAt": "2026-10-19T11:11:18.125Z",
+    "updatedAt": "2026-10-19T11:20:53.905Z",
     "activeMode": "emblems-realism",
     "bgImage": "backgrounds/1792058756499____________________________________.png",
     "bgDim": 65,
     "bgBlur": 5,
-    "revision": 128,
+    "revision": 129,
     "bgBlobSha": "1de942c76368b8d317071e794ae55fed35d163ad",
     "bgMime": "image/png",
-    "bgmVolume": 10
+    "bgmVolume": 10,
+    "customGenres": [],
+    "customStudios": []
   },
   "tiers": [
     {
@@ -129,6 +131,9 @@
           "origTitle": "Solo Leveling",
           "year": 2024,
           "studio": "A-1 Pictures",
+          "studios": [
+            "A-1 Pictures"
+          ],
           "score": 0,
           "poster": "posters/1792329102870_58567_shiki.webp",
           "posterBlobSha": "b417a878b47b987eea0991cfaa9f2af8f6ff9079",
@@ -165,7 +170,7 @@
             {
               "title": "Фильм 1 - За пределами Системы",
               "type": "Фильм",
-              "releaseYear": 2027,
+              "releaseYear": 0,
               "episodes": 0,
               "epMinutes": 110,
               "date": "",
