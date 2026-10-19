@@ -4,17 +4,19 @@
     "owner": "geraltschwarzenegger-svg",
     "repo": "noxyholmes/myTierAnime",
     "branch": "main",
-    "updatedAt": "2026-10-19T12:24:18.974Z",
+    "updatedAt": "2026-10-19T12:56:30.208Z",
     "activeMode": "emblems-realism",
     "bgImage": "backgrounds/1792058756499____________________________________.png",
     "bgDim": 65,
     "bgBlur": 5,
-    "revision": 137,
+    "revision": 138,
     "bgBlobSha": "1de942c76368b8d317071e794ae55fed35d163ad",
     "bgMime": "image/png",
     "bgmVolume": 10,
     "customGenres": [],
-    "customStudios": []
+    "customStudios": [
+      "Psyde Kick Studio"
+    ]
   },
   "tiers": [
     {
@@ -24,6 +26,209 @@
       "subtitle": "Лучшие и незабываемые тайтлы на все времена",
       "hue": 45,
       "items": [
+        {
+          "uid": "anime-1792414590041",
+          "kind": "TV Сериал",
+          "title": "Мастера Меча Онлайн",
+          "origTitle": "Sword Art Online",
+          "year": 2012,
+          "studio": "A-1 Pictures, Polygon Pictures, Psyde Kick Studio",
+          "studios": [
+            "A-1 Pictures",
+            "Polygon Pictures",
+            "Psyde Kick Studio"
+          ],
+          "score": 0,
+          "poster": "https://placehold.co/400x600/16122b/ffd76a?text=myTierAnime",
+          "genres": [
+            "Сёнэн",
+            "Драма",
+            "Приключения",
+            "Романтика",
+            "Фэнтези",
+            "Виртуальная реальность",
+            "Экшен",
+            "Сражения на мечах",
+            "Игры",
+            "Фантастика",
+            "Перестрелки",
+            "Военная тематика"
+          ],
+          "comment": "",
+          "seasons": [
+            {
+              "title": "Сезон 1",
+              "type": "TV Сериал",
+              "releaseYear": 2012,
+              "episodes": 25,
+              "epMinutes": 24,
+              "date": "12.2025",
+              "note": ""
+            },
+            {
+              "title": "Фильм 1 - Прогрессив - Ария в беззвёздной ночи",
+              "type": "Фильм",
+              "releaseYear": 2021,
+              "episodes": 1,
+              "epMinutes": 95,
+              "date": "12.2025",
+              "note": ""
+            },
+            {
+              "title": "Фильм 2 - Прогрессив - Скерцо глубокой ночи",
+              "type": "Фильм",
+              "releaseYear": 2022,
+              "episodes": 1,
+              "epMinutes": 100,
+              "date": "12.2025",
+              "note": ""
+            },
+            {
+              "title": "Спешл - Дополнительное издание",
+              "type": "Спешл",
+              "releaseYear": 2013,
+              "episodes": 1,
+              "epMinutes": 100,
+              "date": "12.2025",
+              "note": ""
+            },
+            {
+              "title": "Сезон 2",
+              "type": "TV Сериал",
+              "releaseYear": 2014,
+              "episodes": 24,
+              "epMinutes": 24,
+              "date": "12.2025",
+              "note": ""
+            },
+            {
+              "title": "Сезон 1 - Альтернативная «Призрачная пуля»",
+              "type": "TV Сериал",
+              "releaseYear": 2018,
+              "episodes": 12,
+              "epMinutes": 24,
+              "date": "12.2025",
+              "note": ""
+            },
+            {
+              "title": "Фильм 3 - Порядковый ранг",
+              "type": "Фильм",
+              "releaseYear": 2017,
+              "episodes": 1,
+              "epMinutes": 120,
+              "date": "12.2025",
+              "note": ""
+            },
+            {
+              "title": "Сезон 3 - Алисизация",
+              "type": "TV Сериал",
+              "releaseYear": 2018,
+              "episodes": 24,
+              "epMinutes": 24,
+              "date": "12.2025",
+              "note": ""
+            },
+            {
+              "title": "Сезон 3 - Алисизация - Война в Подмирье",
+              "type": "TV Сериал",
+              "releaseYear": 2019,
+              "episodes": 12,
+              "epMinutes": 24,
+              "date": "12.2025",
+              "note": ""
+            },
+            {
+              "title": "Сезон 3 - Алисизация - Война в Подмирье 2",
+              "type": "TV Сериал",
+              "releaseYear": 2020,
+              "episodes": 11,
+              "epMinutes": 24,
+              "date": "12.2025",
+              "note": ""
+            },
+            {
+              "title": "Сезон 2 - Альтернативная «Призрачная пуля» 2",
+              "type": "TV Сериал",
+              "releaseYear": 2025,
+              "episodes": 12,
+              "epMinutes": 24,
+              "date": "12.2025",
+              "note": ""
+            },
+            {
+              "title": "Фильм 4 - Безответная бабочка",
+              "type": "Фильм",
+              "releaseYear": 2026,
+              "episodes": 1,
+              "epMinutes": 115,
+              "date": "2026",
+              "note": ""
+            },
+            {
+              "title": "Фильм 5 - Область целостности",
+              "type": "Фильм",
+              "releaseYear": 2028,
+              "episodes": 0,
+              "epMinutes": 0,
+              "date": "",
+              "note": ""
+            }
+          ],
+          "watched": [
+            {
+              "date": "12.2025",
+              "note": "Сезон 1"
+            },
+            {
+              "date": "12.2025",
+              "note": "Фильм 1 - Прогрессив - Ария в беззвёздной ночи"
+            },
+            {
+              "date": "12.2025",
+              "note": "Фильм 2 - Прогрессив - Скерцо глубокой ночи"
+            },
+            {
+              "date": "12.2025",
+              "note": "Спешл - Дополнительное издание"
+            },
+            {
+              "date": "12.2025",
+              "note": "Сезон 2"
+            },
+            {
+              "date": "12.2025",
+              "note": "Сезон 1 - Альтернативная «Призрачная пуля»"
+            },
+            {
+              "date": "12.2025",
+              "note": "Фильм 3 - Порядковый ранг"
+            },
+            {
+              "date": "12.2025",
+              "note": "Сезон 3 - Алисизация"
+            },
+            {
+              "date": "12.2025",
+              "note": "Сезон 3 - Алисизация - Война в Подмирье"
+            },
+            {
+              "date": "12.2025",
+              "note": "Сезон 3 - Алисизация - Война в Подмирье 2"
+            },
+            {
+              "date": "12.2025",
+              "note": "Сезон 2 - Альтернативная «Призрачная пуля» 2"
+            },
+            {
+              "date": "2026",
+              "note": "Фильм 4 - Безответная бабочка"
+            },
+            {
+              "date": "",
+              "note": "Фильм 5 - Область целостности"
+            }
+          ]
+        },
         {
           "uid": "anime-1792412658855",
           "kind": "TV Сериал",
