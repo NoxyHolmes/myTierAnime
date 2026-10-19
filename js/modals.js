@@ -1,4 +1,4 @@
-/* ═══════════════════ MODALS: MULTI-STUDIO CHIPS, TBA YEAR 0 & DOSSIER (v18.5) ═══════════════════ */
+/* ═══════════════════ MODALS: FULLSCREEN POSTER LIGHTBOX & DOSSIER (v19.0) ═══════════════════ */
 const Modals = (() => {
   let deleteHandler = null;
 
@@ -100,6 +100,12 @@ const Modals = (() => {
         border: 2px solid rgba(255, 215, 106, 0.65) !important;
         box-shadow: 0 18px 45px rgba(0, 0, 0, 0.9), 0 0 28px -6px rgba(255, 215, 106, 0.4) !important;
         background: #120f24 !important;
+        cursor: zoom-in !important;
+        transition: transform 0.22s ease, border-color 0.22s ease !important;
+      }
+      .dossier-poster-large:hover {
+        transform: scale(1.02) !important;
+        border-color: #00f5ff !important;
       }
       .dossier-poster-large img {
         width: 100% !important;
@@ -107,18 +113,60 @@ const Modals = (() => {
         object-fit: cover !important;
         display: block !important;
       }
-      .dossier-score-orb {
+      .dossier-zoom-hint {
         position: absolute !important;
-        bottom: 12px !important;
-        right: 12px !important;
-        background: linear-gradient(135deg, #ffd76a, #ff5e7e) !important;
-        color: #090614 !important;
-        font-weight: 900 !important;
-        font-size: 15px !important;
-        padding: 5px 12px !important;
+        bottom: 10px !important;
+        right: 10px !important;
+        background: rgba(10, 8, 22, 0.85) !important;
+        border: 1px solid rgba(0, 245, 255, 0.45) !important;
+        color: #b8fbff !important;
+        font-size: 11px !important;
+        font-weight: 700 !important;
+        padding: 4px 10px !important;
         border-radius: 999px !important;
-        box-shadow: 0 4px 14px rgba(0,0,0,0.85) !important;
+        pointer-events: none !important;
+        opacity: 0.9 !important;
       }
+
+      /* ПОЛНОЭКРАННЫЙ LIGHTBOX ПО КЛИКУ НА ОБЛОЖКУ */
+      .mta-poster-lightbox {
+        position: fixed !important;
+        inset: 0 !important;
+        z-index: 99999 !important;
+        background: rgba(4, 3, 10, 0.92) !important;
+        -webkit-backdrop-filter: blur(18px) !important;
+        backdrop-filter: blur(18px) !important;
+        display: none !important;
+        align-items: center !important;
+        justify-content: center !important;
+        padding: 24px !important;
+        cursor: zoom-out !important;
+        animation: mtaFadeIn 0.18s ease !important;
+      }
+      .mta-poster-lightbox.open {
+        display: flex !important;
+      }
+      .mta-poster-lightbox img {
+        max-width: 92vw !important;
+        max-height: 92vh !important;
+        width: auto !important;
+        height: auto !important;
+        object-fit: contain !important;
+        border-radius: 16px !important;
+        border: 2px solid rgba(255, 215, 106, 0.75) !important;
+        box-shadow: 0 25px 80px rgba(0, 0, 0, 0.95), 0 0 45px -8px rgba(0, 245, 255, 0.4) !important;
+        transform: scale(0.96);
+        animation: mtaZoomIn 0.2s cubic-bezier(.2, .8, .2, 1) forwards !important;
+      }
+      @keyframes mtaFadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+      }
+      @keyframes mtaZoomIn {
+        from { transform: scale(0.92); }
+        to { transform: scale(1); }
+      }
+
       .dossier-right-info-col {
         position: relative !important;
         z-index: 5 !important;
@@ -358,13 +406,43 @@ const Modals = (() => {
     document.head.appendChild(st);
   }
 
+  /* Создаёт и переключает полноэкранный просмотр обложки по клику */
+  function togglePosterLightbox(imgSrc, altText = "") {
+    let lb = document.getElementById("mtaPosterLightbox");
+    if (!lb) {
+      lb = document.createElement("div");
+      lb.id = "mtaPosterLightbox";
+      lb.className = "mta-poster-lightbox";
+      lb.title = "Нажмите в любое место, чтобы вернуть обложку в исходное состояние";
+      lb.innerHTML = `<img id="mtaPosterLightboxImg" src="" alt="">`;
+      lb.addEventListener("click", () => {
+        lb.classList.remove("open");
+      });
+      document.body.appendChild(lb);
+    }
+
+    if (lb.classList.contains("open")) {
+      lb.classList.remove("open");
+    } else if (imgSrc) {
+      const imgEl = document.getElementById("mtaPosterLightboxImg");
+      if (imgEl) {
+        imgEl.src = imgSrc;
+        imgEl.alt = altText;
+      }
+      lb.classList.add("open");
+    }
+  }
+
   function openModal(id) {
     ensureDossierStyles();
     document.getElementById(id)?.classList.add("open");
   }
 
   function closeModal(id) {
-    if (id === "detailsModal") stopActiveBgm();
+    if (id === "detailsModal") {
+      stopActiveBgm();
+      document.getElementById("mtaPosterLightbox")?.classList.remove("open");
+    }
     document.getElementById(id)?.classList.remove("open");
   }
 
@@ -381,7 +459,6 @@ const Modals = (() => {
     } catch {}
   }
 
-  /* Чипы для ЖАНРОВ (разделение по запятой) */
   function syncEditorGenreChips() {
     const inp = document.getElementById("fGenres");
     const box = document.getElementById("editorGenreChips");
@@ -410,7 +487,6 @@ const Modals = (() => {
     });
   }
 
-  /* Чипы для СТУДИЙ (разделение по запятой — точно как у жанров!) */
   function syncEditorStudioChips() {
     const inp = document.getElementById("fStudio");
     const box = document.getElementById("editorStudioChips");
@@ -536,10 +612,10 @@ const Modals = (() => {
         <div class="dossier-hero-scrim"></div>
 
         <aside class="dossier-left-poster-col">
-          <div class="dossier-poster-large">
+          <div class="dossier-poster-large" id="dossierPosterFrame" title="Нажмите, чтобы открыть обложку в полный размер">
             <img id="dossierMainPosterImg" src="${esc(displayPoster)}" alt="${esc(item.title)}"
                  onerror="this.src='https://placehold.co/400x600/16122b/ffd76a?text=myTierAnime'">
-            ${item.score ? `<span class="dossier-score-orb">★ ${esc(item.score)}</span>` : ""}
+            <span class="dossier-zoom-hint">🔍 На весь экран</span>
           </div>
         </aside>
 
@@ -598,6 +674,15 @@ const Modals = (() => {
         </div>
       </div>
     `;
+
+    // Клик на обложку открывает полноэкранный просмотр, повторный клик закрывает
+    const posterFrame = document.getElementById("dossierPosterFrame");
+    const posterImgEl = document.getElementById("dossierMainPosterImg");
+    if (posterFrame && posterImgEl) {
+      posterFrame.onclick = () => {
+        togglePosterLightbox(posterImgEl.src, item.title);
+      };
+    }
 
     body.querySelectorAll("[data-s-filter]").forEach(btn => {
       btn.addEventListener("click", () => {
@@ -846,8 +931,6 @@ const Modals = (() => {
           : (existingItem.studio || ""))
       : "";
     document.getElementById("fStudio").value = existingStudiosStr;
-
-    document.getElementById("fScore").value = existingItem ? existingItem.score ?? "" : "";
 
     const posterInp = document.getElementById("fPoster");
     posterInp.value = existingItem ? existingItem.poster || "" : "";
