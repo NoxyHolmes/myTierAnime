@@ -1,4 +1,4 @@
-/* ═══════════════════ MAIN APPLICATION ORCHESTRATOR (v18.5 MULTI-STUDIO & AUTO-LEARN LISTS) ═══════════════════ */
+/* ═══════════════════ MAIN APPLICATION ORCHESTRATOR (v19.0 EXACT RECENT ORDER & TIER METRICS) ═══════════════════ */
 (() => {
   if (typeof window.pluralRu !== "function") {
     window.pluralRu = function (number, one, few, many) {
@@ -26,6 +26,7 @@
 
   let appData = null;
   let searchQuery = "";
+  let selectedKind = "ALL";
   let selectedGenre = "ALL";
   let genreFilterSearch = "";
   let selectedStudio = "ALL";
@@ -57,7 +58,6 @@
     E: { name: "Плохие", subtitle: "Разочарования и брошенные тайтлы" }
   };
 
-  /* Вспомогательная функция: извлекает массив студий из тайтла (разделяя по запятой) */
   function extractItemStudios(item) {
     if (!item) return [];
     const rawList = Array.isArray(item.studios) && item.studios.length
@@ -66,7 +66,6 @@
     return rawList.map(s => String(s).trim()).filter(Boolean);
   }
 
-  /* Регистрирует новые жанры и студии в глобальном списке (и в meta для синхронизации с GitHub) */
   function registerCustomGenresAndStudios(genresArr = [], studiosArr = []) {
     let savedGenres = [];
     let savedStudios = [];
@@ -291,33 +290,44 @@
     }
   }
 
+  /* ──────── ИСПРАВЛЕННАЯ СОРТИРОВКА «НЕДАВНО ДОБАВЛЕННЫЕ И ОБНОВЛЁННЫЕ ТАЙТЛЫ» ────────
+     Сортировка идёт СТРОГО по реальному времени добавления/обновления тайтла на сайте
+     (item.updatedAt или timestamp из item.uid "anime-177..."), а НЕ по 31 декабря года сезона!
+     Поэтому любой только что добавленный или отредактированный тайтл ВСЕГДА стоит №1 (первым слева)! */
   function renderRecentShowcase() {
     const recentHost = document.getElementById("recentSection");
     if (!recentHost || !appData || !Array.isArray(appData.tiers)) return;
 
     const allEntries = [];
     appData.tiers.forEach(tier => {
-      (tier.items || []).forEach(item => {
+      (tier.items || []).forEach((item, idxInTier) => {
         const m = calcItemMetrics(item);
+
+        // Находим текстовую подпись последней даты просмотра для отображения на карточке
         let latestWatchMs = 0;
         let latestWatchStr = "";
         (m.seasons || []).forEach(s => {
-          const parsed = typeof parseFlexibleRuDate === "function" ? parseFlexibleRuDate(s.date) : { ms: parseRuDate(s.date), raw: s.date };
+          const parsed = typeof parseFlexibleRuDate === "function" ? parseFlexibleRuDate(s.date) : null;
           if (parsed && parsed.ms >= latestWatchMs) {
             latestWatchMs = parsed.ms;
             latestWatchStr = parsed.raw || s.date || "";
           }
         });
 
+        // Вычисляем реальное время добавления/обновления тайтла:
+        // 1) item.updatedAt (ставится в момент создания или редактирования)
+        // 2) числовой timestamp внутри uid ("anime-177...")
         const uidTimeMatch = String(item.uid || "").match(/anime-(\d{10,})/);
         const createdMs = uidTimeMatch ? Number(uidTimeMatch[1]) : 0;
-        const sortKey = Math.max(latestWatchMs, createdMs);
+        const updatedMs = Number(item.updatedAt || 0);
+        const realActionTimestamp = Math.max(updatedMs, createdMs);
 
         allEntries.push({
           item,
           tier,
           m,
-          sortKey,
+          realActionTimestamp,
+          idxInTier,
           latestWatchStr: latestWatchStr || (item.year ? `${item.year} г.` : "Недавно")
         });
       });
@@ -329,13 +339,16 @@
       return;
     }
 
-    if (activeView === "calendar") {
-      recentHost.style.display = "none";
-    } else {
-      recentHost.style.display = "block";
-    }
+    recentHost.style.display = activeView === "calendar" ? "none" : "block";
 
-    allEntries.sort((a, b) => b.sortKey - a.sortKey);
+    // Сортируем от самого последнего добавленного/обновлённого к более старым
+    allEntries.sort((a, b) => {
+      if (b.realActionTimestamp !== a.realActionTimestamp) {
+        return b.realActionTimestamp - a.realActionTimestamp;
+      }
+      return a.idxInTier - b.idxInTier;
+    });
+
     const recentTop = allEntries.slice(0, 10);
 
     recentHost.innerHTML = `
@@ -353,7 +366,7 @@
             const displayPoster = it.posterInline || it.poster || "https://placehold.co/400x600/16122b/ffd76a?text=myTierAnime";
             const hasMusic = !!(it.bgmUrl || it.bgmBlobSha);
             const musicBadge = hasMusic
-              ? `<span title="В карточке играет фоновая музыка" style="position:absolute;top:28px;right:6px;z-index:4;padding:1.5px 5px;border-radius:5px;font-size:8.5px;background:rgba(14,11,28,0.88);border:1px solid rgba(0,245,255,0.45);color:#00f5ff;pointer-events:none;">🎵 OST</span>`
+              ? `<span title="В карточке играет фоновая музыка" style="position:absolute;top:6px;right:6px;z-index:4;padding:1.5px 5px;border-radius:5px;font-size:8.5px;background:rgba(14,11,28,0.88);border:1px solid rgba(0,245,255,0.45);color:#00f5ff;pointer-events:none;">🎵 OST</span>`
               : "";
 
             return `
@@ -363,7 +376,6 @@
                        onerror="this.src='https://placehold.co/400x600/16122b/ffd76a?text=myTierAnime'">
                   <div class="scrim" style="position:absolute;inset:0;background:linear-gradient(to top,rgba(6,5,14,0.95) 0%,rgba(6,5,14,0.45) 42%,transparent 75%);pointer-events:none;"></div>
                   <span class="recent-tier-badge">Тир ${esc(tr.id)}</span>
-                  ${it.score ? `<span class="card-score-badge">★ ${esc(it.score)}</span>` : ""}
                   ${musicBadge}
 
                   <div class="card-info">
@@ -402,7 +414,7 @@
 
     const hasMusic = !!(item.bgmUrl || item.bgmBlobSha);
     const musicCornerBadge = hasMusic
-      ? `<span title="В карточке играет фоновая музыка" style="position:absolute;top:28px;right:6px;z-index:4;padding:1.5px 5px;border-radius:5px;font-size:8.5px;background:rgba(14,11,28,0.88);border:1px solid rgba(0,245,255,0.45);color:#00f5ff;pointer-events:none;">🎵 OST</span>`
+      ? `<span title="В карточке играет фоновая музыка" style="position:absolute;top:6px;right:6px;z-index:4;padding:1.5px 5px;border-radius:5px;font-size:8.5px;background:rgba(14,11,28,0.88);border:1px solid rgba(0,245,255,0.45);color:#00f5ff;pointer-events:none;">🎵 OST</span>`
       : "";
 
     const studiosList = extractItemStudios(item);
@@ -418,7 +430,6 @@
           ${tierId === "S" ? floralFrame() + `<span class="card-coronet" aria-hidden="true">${royalCrown("card" + item.uid)}</span>` : ""}
           <span class="rank">${idx + 1}</span>
           ${yearBadgeHtml}
-          ${item.score ? `<span class="card-score-badge">★ ${esc(item.score)}</span>` : ""}
           ${musicCornerBadge}
 
           <div class="card-info">
@@ -455,8 +466,10 @@
   }
 
   function updateFilterClearButtons() {
+    const kClear = document.getElementById("btnClearKindFilter");
     const gClear = document.getElementById("btnClearGenreFilter");
     const stClear = document.getElementById("btnClearStudioFilter");
+    if (kClear) kClear.style.display = selectedKind === "ALL" ? "none" : "inline-flex";
     if (gClear) gClear.style.display = selectedGenre === "ALL" ? "none" : "inline-flex";
     if (stClear) stClear.style.display = selectedStudio === "ALL" ? "none" : "inline-flex";
   }
@@ -477,21 +490,52 @@
     const q = searchQuery.trim().toLowerCase();
 
     host.innerHTML = appData.tiers.map((tier, tierIdx) => {
-      const filteredItems = (tier.items || []).filter(it => {
+      const allTierItems = tier.items || [];
+
+      /* Вычисляем статистику конкретного тира: количество серий, фильмов, часов и дней */
+      let tierEpisodes = 0;
+      let tierMovies = 0;
+      let tierHours = 0;
+      allTierItems.forEach(it => {
+        const m = calcItemMetrics(it);
+        tierEpisodes += m.totalEpisodes;
+        tierMovies += m.totalMovies;
+        tierHours += m.totalHours;
+      });
+      const tierDays = (tierHours / 24).toFixed(1);
+
+      const filteredItems = allTierItems.filter(it => {
         const itStudios = extractItemStudios(it);
+        const m = calcItemMetrics(it);
+        const seasonTypes = (m.seasons || []).map(s => (s.type || "").toLowerCase());
+        const mainKindLower = String(m.kind || it.kind || "").toLowerCase();
+
+        // Поиск по названию, оригинальному названию, студии, жанрам и типу (сериал, фильм, ova, ona, спешл)
         const matchText = !q ||
           (it.title && it.title.toLowerCase().includes(q)) ||
           (it.origTitle && it.origTitle.toLowerCase().includes(q)) ||
-          itStudios.some(s => s.toLowerCase().includes(q));
+          mainKindLower.includes(q) ||
+          seasonTypes.some(t => t.includes(q)) ||
+          itStudios.some(s => s.toLowerCase().includes(q)) ||
+          (it.genres || []).some(g => g.toLowerCase().includes(q));
+
+        // Фильтр по типу (TV Сериал, Фильм, OVA, ONA, Спешл)
+        const matchKind = selectedKind === "ALL" ||
+          (m.kind && m.kind.toLowerCase() === selectedKind.toLowerCase()) ||
+          (m.seasons || []).some(s => (s.type || "").toLowerCase() === selectedKind.toLowerCase());
+
         const matchGenre = selectedGenre === "ALL" || (it.genres || []).some(g => g.toLowerCase() === selectedGenre.toLowerCase());
         const matchStudio = selectedStudio === "ALL" ||
           itStudios.some(s => s.toLowerCase() === selectedStudio.toLowerCase());
-        return matchText && matchGenre && matchStudio;
+
+        return matchText && matchKind && matchGenre && matchStudio;
       });
 
-      const tierCount = (tier.items || []).length;
+      const tierCount = allTierItems.length;
       const tierPercent = grandTotal > 0 ? Math.round((tierCount / grandTotal) * 100) : 0;
       const titlesStr = window.formatTitlesCount(tierCount);
+      const epStr = window.formatEpisodesCount(tierEpisodes);
+      const mvStr = window.formatMoviesCount(tierMovies);
 
       const badgeBodyHtml = `
         <span class="seal-index">ТИР <b>${esc(tier.id)}</b></span>
@@ -514,9 +558,15 @@
           <div class="tier-content">
             <header class="tier-header-bar">
               <div class="tier-title-group">
-                <h2>
-                  ${esc(tier.name)}
+                <h2 style="flex-wrap:wrap;row-gap:6px;">
+                  <span>${esc(tier.name)}</span>
                   <span class="tier-count-pill">${tierCount} ${titlesStr.replace(/^\d+\s*/, "")} (${tierPercent}%)</span>
+                  <span class="tier-count-pill" style="border-color:rgba(255,215,106,0.45);color:#ffe8a3;background:rgba(255,215,106,0.1);">
+                    🎞 ${epStr}${tierMovies > 0 ? ` + 🎬 ${mvStr}` : ""}
+                  </span>
+                  <span class="tier-count-pill" style="border-color:rgba(0,245,255,0.45);color:#b8fbff;background:rgba(0,245,255,0.1);">
+                    ⏱ ${formatHours(tierHours)} ч. (${tierDays} дн.)
+                  </span>
                 </h2>
                 <div class="tier-meta-sub">${esc(tier.subtitle || "")}</div>
               </div>
@@ -565,7 +615,6 @@
     }
   }
 
-  /* Собирает все стандартные + сохранённые в localStorage + сохранённые в meta + встречающиеся в тайтлах ЖАНРЫ */
   function getSortedAllGenres() {
     let localCustom = [];
     try { localCustom = JSON.parse(localStorage.getItem(CUSTOM_GENRES_KEY) || "[]"); } catch {}
@@ -586,7 +635,6 @@
     return [...map.values()].sort((a, b) => a.localeCompare(b, "ru"));
   }
 
-  /* Собирает все стандартные + сохранённые в localStorage + сохранённые в meta + встречающиеся в тайтлах СТУДИИ (разбивая по запятой!) */
   function getSortedAllStudios() {
     let localCustom = [];
     try { localCustom = JSON.parse(localStorage.getItem(CUSTOM_STUDIOS_KEY) || "[]"); } catch {}
@@ -777,11 +825,35 @@
     });
 
     document.addEventListener("click", e => {
+      const kMenu = document.getElementById("kindDropdownMenu");
       const gMenu = document.getElementById("genreDropdownMenu");
       const stMenu = document.getElementById("studioDropdownMenu");
 
+      // Выпадающее меню фильтра по типу (TV Сериал, Фильм, OVA, ONA, Спешл)
+      if (e.target.closest("#kindDropdownBtn")) {
+        e.preventDefault();
+        gMenu?.classList.remove("open");
+        stMenu?.classList.remove("open");
+        kMenu?.classList.toggle("open");
+        return;
+      }
+
+      const kOpt = e.target.closest("[data-k-val]");
+      if (kOpt) {
+        selectedKind = kOpt.dataset.kVal;
+        const lbl = document.getElementById("kindDropdownLabel");
+        if (lbl) lbl.textContent = selectedKind === "ALL" ? "Все типы" : selectedKind;
+        document.querySelectorAll("#kindOptionsList .genre-opt-item").forEach(el => {
+          el.classList.toggle("active", el === kOpt);
+        });
+        kMenu?.classList.remove("open");
+        render();
+        return;
+      }
+
       if (e.target.closest("#genreDropdownBtn")) {
         e.preventDefault();
+        kMenu?.classList.remove("open");
         stMenu?.classList.remove("open");
         gMenu?.classList.toggle("open");
         if (gMenu?.classList.contains("open")) {
@@ -802,6 +874,7 @@
 
       if (e.target.closest("#studioDropdownBtn")) {
         e.preventDefault();
+        kMenu?.classList.remove("open");
         gMenu?.classList.remove("open");
         stMenu?.classList.toggle("open");
         if (stMenu?.classList.contains("open")) {
@@ -820,6 +893,7 @@
         return;
       }
 
+      if (!e.target.closest("#kindDropdown")) kMenu?.classList.remove("open");
       if (!e.target.closest("#genreDropdown")) gMenu?.classList.remove("open");
       if (!e.target.closest("#studioDropdown")) stMenu?.classList.remove("open");
     });
@@ -832,6 +906,17 @@
     document.getElementById("studioSearchInput")?.addEventListener("input", e => {
       studioFilterSearch = e.target.value;
       populateStudioDropdown();
+    });
+
+    document.getElementById("btnClearKindFilter")?.addEventListener("click", e => {
+      e.stopPropagation();
+      selectedKind = "ALL";
+      const lbl = document.getElementById("kindDropdownLabel");
+      if (lbl) lbl.textContent = "Все типы";
+      document.querySelectorAll("#kindOptionsList .genre-opt-item").forEach(el => {
+        el.classList.toggle("active", el.dataset.kVal === "ALL");
+      });
+      render();
     });
 
     document.getElementById("btnClearGenreFilter")?.addEventListener("click", e => {
@@ -850,7 +935,6 @@
       render();
     });
 
-    /* Очистка и интерактивные чипы для СТУДИЙ (через запятую) */
     document.getElementById("btnClearEditorStudio")?.addEventListener("click", () => {
       const stInp = document.getElementById("fStudio");
       if (stInp) stInp.value = "";
@@ -887,7 +971,6 @@
       pendingPosterInline = "";
     });
 
-    /* Очистка и интерактивные чипы для ЖАНРОВ (через запятую) */
     document.getElementById("btnClearAllEditorGenres")?.addEventListener("click", () => {
       const gInp = document.getElementById("fGenres");
       if (gInp) gInp.value = "";
@@ -1061,65 +1144,6 @@
       btn.addEventListener("click", () => Modals.addSeasonRow(btn.dataset.addPart));
     });
 
-    const shikiInput = document.getElementById("shikiSearchInput");
-    const shikiBox = document.getElementById("shikiResults");
-    let debounceTimer = 0;
-    shikiInput?.addEventListener("input", () => {
-      clearTimeout(debounceTimer);
-      const q = shikiInput.value.trim();
-      if (q.length < 2) {
-        shikiBox.classList.remove("show");
-        return;
-      }
-      debounceTimer = setTimeout(async () => {
-        const results = await AnimeSearchAPI.searchAnime(q);
-        if (!results.length) {
-          shikiBox.classList.remove("show");
-          return;
-        }
-        shikiBox.innerHTML = results.map((r, i) => `
-          <div class="shiki-item" data-idx="${i}">
-            <img src="${esc(r.poster)}" alt="">
-            <div>
-              <div style="font-size:12.5px;font-weight:700;color:#fff;">${esc(r.title)}</div>
-              <div style="font-size:11px;color:var(--ink-soft);">${esc(r.kind)} · ${esc(r.year)} · ${r.episodes} эп. · ★ ${esc(r.score)}</div>
-            </div>
-          </div>
-        `).join("");
-        shikiBox.classList.add("show");
-
-        shikiBox.querySelectorAll(".shiki-item").forEach(el => {
-          el.addEventListener("click", () => {
-            const picked = results[+el.dataset.idx];
-            document.getElementById("fTitle").value = picked.title;
-            document.getElementById("fOrigTitle").value = picked.origTitle;
-            document.getElementById("fKind").value = picked.kind;
-            document.getElementById("fYear").value = picked.year;
-            document.getElementById("fScore").value = picked.score;
-            const posterInp = document.getElementById("fPoster");
-            posterInp.value = picked.poster;
-            posterInp.dataset.existingBlobSha = "";
-            pendingPosterBlobSha = "";
-            pendingPosterInline = "";
-            document.getElementById("fStudio").value = picked.studio;
-            document.getElementById("fGenres").value = (picked.genres || []).join(", ");
-            if (typeof Modals.syncEditorGenreChips === "function") Modals.syncEditorGenreChips();
-            if (typeof Modals.syncEditorStudioChips === "function") Modals.syncEditorStudioChips();
-
-            const firstRow = document.querySelector("#seasonsEditorList .season-row");
-            if (firstRow) {
-              firstRow.querySelector(".s-type").value = picked.kind;
-              firstRow.querySelector(".s-eps").value = picked.episodes;
-              firstRow.querySelector(".s-mins").value = picked.epMinutes;
-              Modals.recalculateSeasonsPreview();
-            }
-            shikiBox.classList.remove("show");
-            showToast("Метаданные заполнены!", "#38ef7d");
-          });
-        });
-      }, 320);
-    });
-
     document.getElementById("animeEditorForm")?.addEventListener("submit", async e => {
       e.preventDefault();
       if (!GitHubSync.isOwner()) {
@@ -1139,7 +1163,8 @@
         return;
       }
 
-      const uid = document.getElementById("fUid").value || ("anime-" + Date.now());
+      const nowMs = Date.now();
+      const uid = document.getElementById("fUid").value || ("anime-" + nowMs);
       const targetTierId = document.getElementById("fTier").value;
       const seasons = Modals.readSeasonsFromEditor();
       const posterInp = document.getElementById("fPoster");
@@ -1164,10 +1189,8 @@
       const finalBgmUrl = pendingBgmUrl || bgmUrlInp?.value.trim() || existingBgmUrl || undefined;
       const finalBgmSha = pendingBgmBlobSha || bgmUrlInp?.dataset.existingBlobSha || existingBgmSha || undefined;
 
-      const parsedScore = parseFloat(document.getElementById("fScore").value);
       const parsedYear = parseInt(document.getElementById("fYear").value, 10);
 
-      /* Разбираем несколько студий и жанров через запятую и автоматически добавляем новые в общий список! */
       const studiosArr = document.getElementById("fStudio").value
         .split(",")
         .map(s => s.trim())
@@ -1181,13 +1204,13 @@
 
       const newItem = {
         uid,
+        updatedAt: nowMs, // Строгая фиксация времени добавления/обновления для 1-го места в "Недавно добавленные"!
         kind: document.getElementById("fKind").value,
         title: ruTitle,
         origTitle: document.getElementById("fOrigTitle").value.trim(),
         year: isNaN(parsedYear) ? "" : parsedYear,
         studio: studiosArr.join(", "),
         studios: studiosArr,
-        score: isNaN(parsedScore) ? 0 : parsedScore,
         poster: rawPosterVal,
         posterBlobSha: finalBlobSha,
         posterInline: pendingPosterInline || existingInline || undefined,
@@ -1265,15 +1288,6 @@
         updateOwnerBadge(null);
         showToast("Неверный токен GitHub!", "#ff3c8c");
       }
-    });
-
-    document.getElementById("btnExportJson")?.addEventListener("click", () => {
-      const blob = new Blob([JSON.stringify(appData, null, 2)], { type: "application/json" });
-      const a = document.createElement("a");
-      a.href = URL.createObjectURL(blob);
-      a.download = `myTierAnime-backup.json`;
-      a.click();
-      showToast("JSON-база экспортирована");
     });
   }
 
