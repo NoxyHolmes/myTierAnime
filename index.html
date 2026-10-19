@@ -14,10 +14,10 @@
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;900&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&family=Montserrat:wght@500;700;800&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
   <link rel="manifest" href="manifest.json">
 
-  <link rel="stylesheet" href="css/tokens.css?v=17.0">
-  <link rel="stylesheet" href="css/realism-3d.css?v=17.0">
-  <link rel="stylesheet" href="css/cards-and-tiers.css?v=17.0">
-  <link rel="stylesheet" href="css/modals-and-panels.css?v=17.0">
+  <link rel="stylesheet" href="css/tokens.css?v=18.5">
+  <link rel="stylesheet" href="css/realism-3d.css?v=18.5">
+  <link rel="stylesheet" href="css/cards-and-tiers.css?v=18.5">
+  <link rel="stylesheet" href="css/modals-and-panels.css?v=18.5">
 </head>
 <body class="emblems-realism letter-style-gold motion-precession fx-tier-motion fx-tilt">
   <div id="globalOwnerBg" class="global-owner-bg" aria-hidden="true">
@@ -420,12 +420,20 @@
             <input type="number" step="0.1" min="0" max="10" id="fScore" class="form-control" placeholder="9.0">
           </div>
 
+          <!-- Блок СТУДИЙ через запятую (с чипами, быстрым поиском и автодобавлением новых студий в общий список) -->
           <div class="form-group full">
-            <label>🎬 Студия (необязательно — выберите из списка или введите):</label>
-            <div class="input-with-clear">
-              <input type="text" id="fStudio" list="studioPresetList" class="form-control" placeholder="Madhouse, MAPPA, Liden Films...">
-              <button type="button" id="btnClearEditorStudio" class="input-clear-btn" title="Очистить студию">✕</button>
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <label>🎬 Студии (можно несколько через запятую — новые автоматически добавляются в общий список):</label>
+              <button type="button" id="btnClearEditorStudio" class="btn btn-sm" style="padding:2px 8px;font-size:10.5px;">✕ Очистить студии</button>
             </div>
+            <div class="editor-genre-bar">
+              <input type="search" id="editorStudioSearch" class="form-control" placeholder="🔎 Быстрый фильтр списка студий...">
+              <select id="studioQuickPicker" class="form-control">
+                <option value="">+ Нажмите, чтобы добавить студию...</option>
+              </select>
+            </div>
+            <div id="editorStudioChips" class="editor-chips-wrap"></div>
+            <input type="text" id="fStudio" list="studioPresetList" class="form-control" placeholder="Введите одну или несколько студий через запятую (например: MAPPA, Madhouse)..." style="margin-top:4px;">
             <datalist id="studioPresetList"></datalist>
           </div>
 
@@ -455,9 +463,10 @@
             </div>
           </div>
 
+          <!-- Блок ЖАНРОВ через запятую (с чипами и автодобавлением новых жанров в общий список) -->
           <div class="form-group full">
             <div style="display:flex;justify-content:space-between;align-items:center;">
-              <label>🎭 Жанры (необязательно — удаляйте лишние нажатием на ✕):</label>
+              <label>🎭 Жанры (через запятую — новые автоматически добавляются в общий список):</label>
               <button type="button" id="btnClearAllEditorGenres" class="btn btn-sm" style="padding:2px 8px;font-size:10.5px;">✕ Очистить все жанры</button>
             </div>
             <div class="editor-genre-bar">
@@ -467,7 +476,7 @@
               </select>
             </div>
             <div id="editorGenreChips" class="editor-chips-wrap"></div>
-            <input type="text" id="fGenres" class="form-control" placeholder="Или введите через запятую..." style="margin-top:4px;">
+            <input type="text" id="fGenres" class="form-control" placeholder="Или введите новые жанры через запятую..." style="margin-top:4px;">
           </div>
         </div>
 
@@ -476,7 +485,7 @@
             <div>
               <strong>🎬 Сезоны, Фильмы, OVA, ONA и Спешлы</strong>
               <div style="font-size:11px;color:var(--ink-soft);">
-                Дату просмотра можно указать полностью (<b>03.04.2026</b>), только месяц и год (<b>04.2026</b>) или просто год (<b>2026</b>). Для анонса укажите <b>0</b> серий.
+                Дату просмотра можно указать полностью (<b>03.04.2026</b>), только месяц и год (<b>04.2026</b>) или просто год (<b>2026</b>). Для анонса без известного года укажите <b>0</b> в поле года и <b>0</b> серий.
               </div>
             </div>
             <div style="display:flex;gap:6px;flex-wrap:wrap;">
@@ -534,17 +543,16 @@
 
   <div id="toastContainer"></div>
 
-  <!-- Полный набор модулей проекта с защитой от кэша -->
-  <script src="js/utils.js?v=17.0"></script>
-  <script src="js/realism-core.js?v=17.0"></script>
-  <script src="js/realism-engine.js?v=17.0"></script>
-  <script src="js/github-sync.js?v=17.0"></script>
-  <script src="js/shikimori-api.js?v=17.0"></script>
-  <script src="js/fx-controller.js?v=17.0"></script>
-  <script src="js/stats-engine.js?v=17.0"></script>
-  <script src="js/calendar-view.js?v=17.0"></script>
-  <script src="js/drag-drop.js?v=17.0"></script>
-  <script src="js/modals.js?v=17.0"></script>
-  <script src="js/app.js?v=17.0"></script>
+  <script src="js/utils.js?v=18.5"></script>
+  <script src="js/realism-core.js?v=18.5"></script>
+  <script src="js/realism-engine.js?v=18.5"></script>
+  <script src="js/github-sync.js?v=18.5"></script>
+  <script src="js/shikimori-api.js?v=18.5"></script>
+  <script src="js/fx-controller.js?v=18.5"></script>
+  <script src="js/stats-engine.js?v=18.5"></script>
+  <script src="js/calendar-view.js?v=18.5"></script>
+  <script src="js/drag-drop.js?v=18.5"></script>
+  <script src="js/modals.js?v=18.5"></script>
+  <script src="js/app.js?v=18.5"></script>
 </body>
 </html>
