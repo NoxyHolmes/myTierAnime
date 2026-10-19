@@ -4,12 +4,12 @@
     "owner": "geraltschwarzenegger-svg",
     "repo": "noxyholmes/myTierAnime",
     "branch": "main",
-    "updatedAt": "2026-10-19T20:09:24.439Z",
+    "updatedAt": "2026-10-19T20:11:18.981Z",
     "activeMode": "emblems-realism",
     "bgImage": "backgrounds/1792058756499____________________________________.png",
     "bgDim": 65,
     "bgBlur": 5,
-    "revision": 213,
+    "revision": 214,
     "bgBlobSha": "1de942c76368b8d317071e794ae55fed35d163ad",
     "bgMime": "image/png",
     "bgmVolume": 10,
@@ -1767,6 +1767,42 @@
       "subtitle": "Яркие и очень качественные работы",
       "hue": 185,
       "items": [
+        {
+          "uid": "anime-1792440678893",
+          "kind": "TV Сериал",
+          "title": "С нынешними детективами ничего не поделаешь",
+          "origTitle": "Mattaku Saikin no Tantei to Kitara",
+          "year": 2025,
+          "studio": "Liden Films",
+          "studios": [
+            "Liden Films"
+          ],
+          "score": 0,
+          "poster": "https://placehold.co/400x600/16122b/ffd76a?text=myTierAnime",
+          "genres": [
+            "Сэйнэн",
+            "Детектив",
+            "Комедия"
+          ],
+          "comment": "",
+          "seasons": [
+            {
+              "title": "Сезон 1",
+              "type": "TV Сериал",
+              "releaseYear": 2026,
+              "episodes": 12,
+              "epMinutes": 24,
+              "date": "19.07.2026",
+              "note": ""
+            }
+          ],
+          "watched": [
+            {
+              "date": "19.07.2026",
+              "note": "Сезон 1"
+            }
+          ]
+        },
         {
           "uid": "anime-1792327665709",
           "kind": "TV Сериал",
