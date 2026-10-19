@@ -1,4 +1,4 @@
-/* ═══════════════════ CORE UTILITIES (RESTORED STABLE v14.1) ═══════════════════ */
+/* ═══════════════════ CORE UTILITIES (v18.0 TBA YEAR 0 SUPPORT) ═══════════════════ */
 window.reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 window.tiltPower = 14;
 
@@ -87,7 +87,6 @@ function esc(str) {
     .replace(/"/g, "&quot;");
 }
 
-/* Возвращённая функция 3D-наклона карточек и эмблем */
 function tiltToward(el, e, vars, maxDeg = 14) {
   if (!el || !e) return;
   const rect = el.getBoundingClientRect();
@@ -99,9 +98,9 @@ function tiltToward(el, e, vars, maxDeg = 14) {
 }
 
 function parseFlexibleRuDate(str) {
-  if (!str && str !== 0) return null;
+  if (str === null || str === undefined) return null;
   const s = String(str).trim();
-  if (!s) return null;
+  if (!s || s === "0" || s === "—" || s.toLowerCase() === "анонс") return null;
 
   const fullRu = s.match(/^(\d{1,2})[./-](\d{1,2})[./-](\d{4})$/);
   if (fullRu) {
@@ -148,7 +147,7 @@ function parseFlexibleRuDate(str) {
   const yearOnly = s.match(/(?:^|\D)(19\d{2}|20\d{2})(?:\D|$)/);
   if (yearOnly) {
     const y = +yearOnly[1];
-    return { precision: "year", year: y, month: null, day: null, ms: new Date(y, 0, 1).getTime(), raw: String(y) };
+    return { precision: "year", year: y, month: null, day: null, ms: new Date(y, 11, 31, 23, 59, 59).getTime(), raw: String(y) };
   }
 
   return null;
@@ -166,22 +165,33 @@ function normWatched(w) {
   return [];
 }
 
+/* Учитывает releaseYear = 0 (для анонсов без известного года), не заменяя его на год самого тайтла! */
 function normSeasons(item) {
   if (!item) return [];
-  const baseYear = item.year || 2026;
+  const baseYear = item.year !== undefined && item.year !== "" ? Number(item.year) : 2026;
   if (Array.isArray(item.seasons) && item.seasons.length > 0) {
     return item.seasons.map((s, idx) => {
       const parsedEp = parseInt(s.episodes, 10);
       const eps = isNaN(parsedEp) ? 1 : Math.max(0, parsedEp);
       const parsedMin = parseFloat(s.epMinutes);
       const epMin = isNaN(parsedMin) ? (s.type === "Фильм" ? 110 : 24) : Math.max(0, parsedMin);
+
+      let relYr = baseYear;
+      if (s.releaseYear !== undefined && s.releaseYear !== null && String(s.releaseYear).trim() !== "") {
+        const parsedYr = parseInt(s.releaseYear, 10);
+        if (!isNaN(parsedYr)) relYr = Math.max(0, parsedYr);
+      } else if (eps === 0) {
+        relYr = 0;
+      }
+
+      const rawDate = s.date !== undefined && s.date !== null ? String(s.date).trim() : "";
       return {
         title: s.title || `Сезон ${idx + 1}`,
         type: s.type || item.kind || "TV Сериал",
-        releaseYear: s.releaseYear || baseYear,
+        releaseYear: relYr,
         episodes: eps,
         epMinutes: epMin,
-        date: s.date !== undefined && s.date !== null ? String(s.date).trim() : "",
+        date: rawDate === "0" ? "" : rawDate,
         note: s.note || ""
       };
     });
@@ -210,7 +220,8 @@ function calcItemMetrics(item) {
   let totalMovies = 0;
   let totalMinutes = 0;
   let latestMs = 0;
-  let latestYear = item?.year || 2026;
+  let latestYear = item?.year || "";
+  let latestWatchStr = "";
 
   seasons.forEach(s => {
     const rawEp = parseInt(s.episodes, 10);
@@ -229,6 +240,7 @@ function calcItemMetrics(item) {
     if (parsedDate && parsedDate.ms >= latestMs) {
       latestMs = parsedDate.ms;
       latestYear = parsedDate.year;
+      latestWatchStr = parsedDate.raw || s.date || "";
     }
   });
 
@@ -244,7 +256,8 @@ function calcItemMetrics(item) {
     totalHours,
     totalDays,
     latestMs,
-    latestYear
+    latestYear,
+    latestWatchStr
   };
 }
 
