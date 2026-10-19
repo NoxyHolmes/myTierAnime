@@ -4,12 +4,12 @@
     "owner": "geraltschwarzenegger-svg",
     "repo": "noxyholmes/myTierAnime",
     "branch": "main",
-    "updatedAt": "2026-10-19T11:07:34.026Z",
+    "updatedAt": "2026-10-19T11:11:18.125Z",
     "activeMode": "emblems-realism",
     "bgImage": "backgrounds/1792058756499____________________________________.png",
     "bgDim": 65,
     "bgBlur": 5,
-    "revision": 127,
+    "revision": 128,
     "bgBlobSha": "1de942c76368b8d317071e794ae55fed35d163ad",
     "bgMime": "image/png",
     "bgmVolume": 10
@@ -883,7 +883,7 @@
               "releaseYear": 2022,
               "episodes": 13,
               "epMinutes": 24,
-              "date": "15.10.2026",
+              "date": "2022",
               "note": ""
             },
             {
@@ -892,7 +892,7 @@
               "releaseYear": 2024,
               "episodes": 13,
               "epMinutes": 24,
-              "date": "15.10.2026",
+              "date": "2024",
               "note": ""
             },
             {
@@ -920,11 +920,11 @@
               "note": "Сезон 1"
             },
             {
-              "date": "15.10.2026",
+              "date": "2022",
               "note": "Сезон 2"
             },
             {
-              "date": "15.10.2026",
+              "date": "2024",
               "note": "Сезон 3"
             },
             {
