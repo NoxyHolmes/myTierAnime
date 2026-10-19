@@ -4,12 +4,12 @@
     "owner": "geraltschwarzenegger-svg",
     "repo": "noxyholmes/myTierAnime",
     "branch": "main",
-    "updatedAt": "2026-10-19T12:59:42.648Z",
+    "updatedAt": "2026-10-19T12:59:48.822Z",
     "activeMode": "emblems-realism",
     "bgImage": "backgrounds/1792058756499____________________________________.png",
     "bgDim": 65,
     "bgBlur": 5,
-    "revision": 156,
+    "revision": 158,
     "bgBlobSha": "1de942c76368b8d317071e794ae55fed35d163ad",
     "bgMime": "image/png",
     "bgmVolume": 10,
@@ -1304,6 +1304,49 @@
           ]
         },
         {
+          "uid": "anime-1792068339564",
+          "kind": "TV Сериал",
+          "title": "Тетрадь Смерти",
+          "origTitle": "Death Note",
+          "year": 2006,
+          "studio": "Madhouse",
+          "score": 8,
+          "poster": "posters/1792068330380_w1500_52740958.png",
+          "posterBlobSha": "1736f657f23b7e3888ad3387e701d5c5f20f2c16",
+          "bgmUrl": "audio/1792100101795_opening_1_-_Tetrad_smerti_60143255.mp3",
+          "bgmBlobSha": "db2ce2f008f8f6d67f3b4a92b4d4411c8aae1948",
+          "genres": [
+            "Сёнэн",
+            "Детектив",
+            "Драма",
+            "Мистика",
+            "Триллер",
+            "Альтернативная реальность",
+            "Божества",
+            "Полицейские",
+            "Психология",
+            "Сверхъестественное"
+          ],
+          "comment": "",
+          "seasons": [
+            {
+              "title": "Сезон 1",
+              "type": "TV Сериал",
+              "releaseYear": 2006,
+              "episodes": 37,
+              "epMinutes": 24,
+              "date": "12.07.2026",
+              "note": ""
+            }
+          ],
+          "watched": [
+            {
+              "date": "12.07.2026",
+              "note": "Сезон 1"
+            }
+          ]
+        },
+        {
           "uid": "anime-1792329167992",
           "kind": "TV Сериал",
           "title": "Поднятие уровня в одиночку",
@@ -1567,49 +1610,6 @@
           "watched": [
             {
               "date": "18.09.2026",
-              "note": "Сезон 1"
-            }
-          ]
-        },
-        {
-          "uid": "anime-1792068339564",
-          "kind": "TV Сериал",
-          "title": "Тетрадь Смерти",
-          "origTitle": "Death Note",
-          "year": 2006,
-          "studio": "Madhouse",
-          "score": 8,
-          "poster": "posters/1792068330380_w1500_52740958.png",
-          "posterBlobSha": "1736f657f23b7e3888ad3387e701d5c5f20f2c16",
-          "bgmUrl": "audio/1792100101795_opening_1_-_Tetrad_smerti_60143255.mp3",
-          "bgmBlobSha": "db2ce2f008f8f6d67f3b4a92b4d4411c8aae1948",
-          "genres": [
-            "Сёнэн",
-            "Детектив",
-            "Драма",
-            "Мистика",
-            "Триллер",
-            "Альтернативная реальность",
-            "Божества",
-            "Полицейские",
-            "Психология",
-            "Сверхъестественное"
-          ],
-          "comment": "",
-          "seasons": [
-            {
-              "title": "Сезон 1",
-              "type": "TV Сериал",
-              "releaseYear": 2006,
-              "episodes": 37,
-              "epMinutes": 24,
-              "date": "12.07.2026",
-              "note": ""
-            }
-          ],
-          "watched": [
-            {
-              "date": "12.07.2026",
               "note": "Сезон 1"
             }
           ]
