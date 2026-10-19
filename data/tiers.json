@@ -4,12 +4,12 @@
     "owner": "geraltschwarzenegger-svg",
     "repo": "noxyholmes/myTierAnime",
     "branch": "main",
-    "updatedAt": "2026-10-19T12:59:27.051Z",
+    "updatedAt": "2026-10-19T12:59:35.563Z",
     "activeMode": "emblems-realism",
     "bgImage": "backgrounds/1792058756499____________________________________.png",
     "bgDim": 65,
     "bgBlur": 5,
-    "revision": 152,
+    "revision": 154,
     "bgBlobSha": "1de942c76368b8d317071e794ae55fed35d163ad",
     "bgMime": "image/png",
     "bgmVolume": 10,
@@ -1123,6 +1123,95 @@
           ]
         },
         {
+          "uid": "anime-apothecary-2023",
+          "kind": "TV Сериал",
+          "title": "Монолог фармацевта",
+          "origTitle": "Kusuriya no Hitorigoto",
+          "year": 2023,
+          "studio": "OLM / TOHO animation",
+          "score": 9,
+          "poster": "posters/1792063847049_1920x__3_.webp",
+          "posterBlobSha": "f0889a22b42dfccd04c8732000302d5613a912b4",
+          "genres": [
+            "Сэйнэн",
+            "Детектив",
+            "Драма",
+            "Комедия",
+            "Исторический",
+            "Романтика"
+          ],
+          "comment": "",
+          "seasons": [
+            {
+              "title": "Сезон 1",
+              "type": "TV Сериал",
+              "releaseYear": 2023,
+              "episodes": 24,
+              "epMinutes": 24,
+              "date": "01.04.2026",
+              "note": ""
+            },
+            {
+              "title": "Сезон 2",
+              "type": "TV Сериал",
+              "releaseYear": 2025,
+              "episodes": 24,
+              "epMinutes": 24,
+              "date": "03.04.2026",
+              "note": ""
+            },
+            {
+              "title": "Сезон 3 | Часть 1",
+              "type": "TV Сериал",
+              "releaseYear": 2026,
+              "episodes": 0,
+              "epMinutes": 24,
+              "date": "",
+              "note": ""
+            },
+            {
+              "title": "Фильм - Сокровище покойной наложницы",
+              "type": "Фильм",
+              "releaseYear": 2026,
+              "episodes": 0,
+              "epMinutes": 110,
+              "date": "",
+              "note": ""
+            },
+            {
+              "title": "Сезон 3 | Часть 2",
+              "type": "TV Сериал",
+              "releaseYear": 2027,
+              "episodes": 0,
+              "epMinutes": 24,
+              "date": "",
+              "note": ""
+            }
+          ],
+          "watched": [
+            {
+              "date": "01.04.2026",
+              "note": "Сезон 1"
+            },
+            {
+              "date": "03.04.2026",
+              "note": "Сезон 2"
+            },
+            {
+              "date": "",
+              "note": "Сезон 3 | Часть 1"
+            },
+            {
+              "date": "",
+              "note": "Фильм - Сокровище покойной наложницы"
+            },
+            {
+              "date": "",
+              "note": "Сезон 3 | Часть 2"
+            }
+          ]
+        },
+        {
           "uid": "anime-1792083888148",
           "kind": "TV Сериал",
           "title": "Вайолет Эвергарден",
@@ -1442,95 +1531,6 @@
             {
               "date": "18.09.2026",
               "note": "Сезон 1"
-            }
-          ]
-        },
-        {
-          "uid": "anime-apothecary-2023",
-          "kind": "TV Сериал",
-          "title": "Монолог фармацевта",
-          "origTitle": "Kusuriya no Hitorigoto",
-          "year": 2023,
-          "studio": "OLM / TOHO animation",
-          "score": 9,
-          "poster": "posters/1792063847049_1920x__3_.webp",
-          "posterBlobSha": "f0889a22b42dfccd04c8732000302d5613a912b4",
-          "genres": [
-            "Сэйнэн",
-            "Детектив",
-            "Драма",
-            "Комедия",
-            "Исторический",
-            "Романтика"
-          ],
-          "comment": "",
-          "seasons": [
-            {
-              "title": "Сезон 1",
-              "type": "TV Сериал",
-              "releaseYear": 2023,
-              "episodes": 24,
-              "epMinutes": 24,
-              "date": "01.04.2026",
-              "note": ""
-            },
-            {
-              "title": "Сезон 2",
-              "type": "TV Сериал",
-              "releaseYear": 2025,
-              "episodes": 24,
-              "epMinutes": 24,
-              "date": "03.04.2026",
-              "note": ""
-            },
-            {
-              "title": "Сезон 3 | Часть 1",
-              "type": "TV Сериал",
-              "releaseYear": 2026,
-              "episodes": 0,
-              "epMinutes": 24,
-              "date": "",
-              "note": ""
-            },
-            {
-              "title": "Фильм - Сокровище покойной наложницы",
-              "type": "Фильм",
-              "releaseYear": 2026,
-              "episodes": 0,
-              "epMinutes": 110,
-              "date": "",
-              "note": ""
-            },
-            {
-              "title": "Сезон 3 | Часть 2",
-              "type": "TV Сериал",
-              "releaseYear": 2027,
-              "episodes": 0,
-              "epMinutes": 24,
-              "date": "",
-              "note": ""
-            }
-          ],
-          "watched": [
-            {
-              "date": "01.04.2026",
-              "note": "Сезон 1"
-            },
-            {
-              "date": "03.04.2026",
-              "note": "Сезон 2"
-            },
-            {
-              "date": "",
-              "note": "Сезон 3 | Часть 1"
-            },
-            {
-              "date": "",
-              "note": "Фильм - Сокровище покойной наложницы"
-            },
-            {
-              "date": "",
-              "note": "Сезон 3 | Часть 2"
             }
           ]
         },
