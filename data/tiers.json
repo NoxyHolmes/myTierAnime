@@ -4,12 +4,12 @@
     "owner": "geraltschwarzenegger-svg",
     "repo": "noxyholmes/myTierAnime",
     "branch": "main",
-    "updatedAt": "2026-10-19T12:05:14.323Z",
+    "updatedAt": "2026-10-19T12:05:48.809Z",
     "activeMode": "emblems-realism",
     "bgImage": "backgrounds/1792058756499____________________________________.png",
     "bgDim": 65,
     "bgBlur": 5,
-    "revision": 133,
+    "revision": 134,
     "bgBlobSha": "1de942c76368b8d317071e794ae55fed35d163ad",
     "bgMime": "image/png",
     "bgmVolume": 10,
@@ -1529,7 +1529,16 @@
               "note": "Сезон 2"
             }
           ]
-        },
+        }
+      ]
+    },
+    {
+      "id": "B",
+      "rank": 3,
+      "name": "Хорошие",
+      "subtitle": "Достойные внимания и атмосферные тайтлы",
+      "hue": 275,
+      "items": [
         {
           "uid": "anime-1792083167512",
           "kind": "TV Сериал",
@@ -1537,6 +1546,9 @@
           "origTitle": "The Angel Next Door Spoils Me Rotten",
           "year": 2023,
           "studio": "Project No.9",
+          "studios": [
+            "Project No.9"
+          ],
           "score": 8,
           "poster": "posters/1792083158922_9099834.jpg",
           "posterBlobSha": "ba816d49a718aecd7dc10a36aaf00a4c8c2d053e",
@@ -1592,16 +1604,7 @@
               "note": "Сезон 2"
             }
           ]
-        }
-      ]
-    },
-    {
-      "id": "B",
-      "rank": 3,
-      "name": "Хорошие",
-      "subtitle": "Достойные внимания и атмосферные тайтлы",
-      "hue": 275,
-      "items": [
+        },
         {
           "uid": "anime-1792411489672",
           "kind": "TV Сериал",
