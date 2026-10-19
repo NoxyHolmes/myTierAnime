@@ -1,4 +1,4 @@
-/* ═══════════════════ MAIN APPLICATION ORCHESTRATOR (RESTORED STABLE v14.1) ═══════════════════ */
+/* ═══════════════════ MAIN APPLICATION ORCHESTRATOR (v18.5 MULTI-STUDIO & AUTO-LEARN LISTS) ═══════════════════ */
 (() => {
   if (typeof window.pluralRu !== "function") {
     window.pluralRu = function (number, one, few, many) {
@@ -21,6 +21,9 @@
   }
 
   const SNAPSHOT_STORAGE_KEY = "mta_2026_instant_snapshot_v14_restored";
+  const CUSTOM_GENRES_KEY   = "mta_2026_custom_genres";
+  const CUSTOM_STUDIOS_KEY  = "mta_2026_custom_studios";
+
   let appData = null;
   let searchQuery = "";
   let selectedGenre = "ALL";
@@ -54,10 +57,70 @@
     E: { name: "Плохие", subtitle: "Разочарования и брошенные тайтлы" }
   };
 
+  /* Вспомогательная функция: извлекает массив студий из тайтла (разделяя по запятой) */
+  function extractItemStudios(item) {
+    if (!item) return [];
+    const rawList = Array.isArray(item.studios) && item.studios.length
+      ? item.studios
+      : String(item.studio || "").split(",");
+    return rawList.map(s => String(s).trim()).filter(Boolean);
+  }
+
+  /* Регистрирует новые жанры и студии в глобальном списке (и в meta для синхронизации с GitHub) */
+  function registerCustomGenresAndStudios(genresArr = [], studiosArr = []) {
+    let savedGenres = [];
+    let savedStudios = [];
+    try { savedGenres = JSON.parse(localStorage.getItem(CUSTOM_GENRES_KEY) || "[]"); } catch {}
+    try { savedStudios = JSON.parse(localStorage.getItem(CUSTOM_STUDIOS_KEY) || "[]"); } catch {}
+
+    const gSet = new Set([
+      ...(window.ALL_ANIME_GENRES || []),
+      ...savedGenres,
+      ...(appData?.meta?.customGenres || [])
+    ]);
+    const stSet = new Set([
+      ...(window.ALL_ANIME_STUDIOS || []),
+      ...savedStudios,
+      ...(appData?.meta?.customStudios || [])
+    ]);
+
+    const gLowerMap = new Map([...gSet].map(x => [x.toLowerCase(), x]));
+    const stLowerMap = new Map([...stSet].map(x => [x.toLowerCase(), x]));
+
+    genresArr.forEach(g => {
+      const clean = String(g).trim();
+      if (clean && !gLowerMap.has(clean.toLowerCase())) {
+        gSet.add(clean);
+        savedGenres.push(clean);
+        gLowerMap.set(clean.toLowerCase(), clean);
+      }
+    });
+
+    studiosArr.forEach(st => {
+      const clean = String(st).trim();
+      if (clean && !stLowerMap.has(clean.toLowerCase())) {
+        stSet.add(clean);
+        savedStudios.push(clean);
+        stLowerMap.set(clean.toLowerCase(), clean);
+      }
+    });
+
+    window.ALL_ANIME_GENRES = [...gSet];
+    window.ALL_ANIME_STUDIOS = [...stSet];
+
+    try { localStorage.setItem(CUSTOM_GENRES_KEY, JSON.stringify([...new Set(savedGenres)])); } catch {}
+    try { localStorage.setItem(CUSTOM_STUDIOS_KEY, JSON.stringify([...new Set(savedStudios)])); } catch {}
+
+    if (appData && appData.meta) {
+      appData.meta.customGenres = [...new Set([...(appData.meta.customGenres || []), ...savedGenres])];
+      appData.meta.customStudios = [...new Set([...(appData.meta.customStudios || []), ...savedStudios])];
+    }
+  }
+
   function ensureSixTiers(data) {
     if (!data || !Array.isArray(data.tiers) || data.tiers.length === 0) {
       return {
-        meta: { title: "myTierAnime", bgImage: "", bgBlobSha: "", bgInline: "", bgDim: 55, bgBlur: 0, bgmVolume: 30, revision: 1 },
+        meta: { title: "myTierAnime", bgImage: "", bgBlobSha: "", bgInline: "", bgDim: 55, bgBlur: 0, bgmVolume: 30, revision: 1, customGenres: [], customStudios: [] },
         tiers: JSON.parse(JSON.stringify(EMPTY_TIERS_SKELETON))
       };
     }
@@ -100,7 +163,18 @@
     if (!data) return;
     try {
       localStorage.setItem(SNAPSHOT_STORAGE_KEY, JSON.stringify(data));
-    } catch {}
+    } catch {
+      try {
+        const slimCopy = {
+          meta: { ...data.meta, bgInline: "" },
+          tiers: (data.tiers || []).map(t => ({
+            ...t,
+            items: (t.items || []).map(it => ({ ...it, posterInline: undefined }))
+          }))
+        };
+        localStorage.setItem(SNAPSHOT_STORAGE_KEY, JSON.stringify(slimCopy));
+      } catch {}
+    }
   }
 
   async function loadInitialState() {
@@ -331,6 +405,9 @@
       ? `<span title="В карточке играет фоновая музыка" style="position:absolute;top:28px;right:6px;z-index:4;padding:1.5px 5px;border-radius:5px;font-size:8.5px;background:rgba(14,11,28,0.88);border:1px solid rgba(0,245,255,0.45);color:#00f5ff;pointer-events:none;">🎵 OST</span>`
       : "";
 
+    const studiosList = extractItemStudios(item);
+    const studiosDisplay = studiosList.join(", ");
+
     return `
       <div class="card-unit" draggable="true" data-uid="${esc(item.uid)}" data-tier-id="${esc(tierId)}">
         <article class="card" data-uid="${esc(item.uid)}" data-tier-id="${esc(tierId)}">
@@ -346,7 +423,7 @@
 
           <div class="card-info">
             <h3 class="card-title">${esc(item.title)}</h3>
-            <div class="card-sub">${esc(item.year || "")}${item.studio ? ` · ${esc(item.studio)}` : ""}</div>
+            <div class="card-sub">${esc(item.year || "")}${studiosDisplay ? ` · ${esc(studiosDisplay)}` : ""}</div>
           </div>
         </article>
 
@@ -401,13 +478,14 @@
 
     host.innerHTML = appData.tiers.map((tier, tierIdx) => {
       const filteredItems = (tier.items || []).filter(it => {
+        const itStudios = extractItemStudios(it);
         const matchText = !q ||
           (it.title && it.title.toLowerCase().includes(q)) ||
           (it.origTitle && it.origTitle.toLowerCase().includes(q)) ||
-          (it.studio && it.studio.toLowerCase().includes(q));
+          itStudios.some(s => s.toLowerCase().includes(q));
         const matchGenre = selectedGenre === "ALL" || (it.genres || []).some(g => g.toLowerCase() === selectedGenre.toLowerCase());
         const matchStudio = selectedStudio === "ALL" ||
-          (it.studio && it.studio.toLowerCase().includes(selectedStudio.toLowerCase()));
+          itStudios.some(s => s.toLowerCase() === selectedStudio.toLowerCase());
         return matchText && matchGenre && matchStudio;
       });
 
@@ -487,22 +565,48 @@
     }
   }
 
+  /* Собирает все стандартные + сохранённые в localStorage + сохранённые в meta + встречающиеся в тайтлах ЖАНРЫ */
   function getSortedAllGenres() {
-    const set = new Set(window.ALL_ANIME_GENRES || []);
+    let localCustom = [];
+    try { localCustom = JSON.parse(localStorage.getItem(CUSTOM_GENRES_KEY) || "[]"); } catch {}
+
+    const map = new Map();
+    const addG = g => {
+      const clean = String(g || "").trim();
+      if (clean && !map.has(clean.toLowerCase())) map.set(clean.toLowerCase(), clean);
+    };
+
+    (window.ALL_ANIME_GENRES || []).forEach(addG);
+    localCustom.forEach(addG);
+    (appData?.meta?.customGenres || []).forEach(addG);
     appData?.tiers?.forEach(t => {
-      (t.items || []).forEach(it => (it.genres || []).forEach(g => set.add(g)));
+      (t.items || []).forEach(it => (it.genres || []).forEach(addG));
     });
-    return [...set].sort((a, b) => a.localeCompare(b, "ru"));
+
+    return [...map.values()].sort((a, b) => a.localeCompare(b, "ru"));
   }
 
+  /* Собирает все стандартные + сохранённые в localStorage + сохранённые в meta + встречающиеся в тайтлах СТУДИИ (разбивая по запятой!) */
   function getSortedAllStudios() {
-    const set = new Set(window.ALL_ANIME_STUDIOS || []);
+    let localCustom = [];
+    try { localCustom = JSON.parse(localStorage.getItem(CUSTOM_STUDIOS_KEY) || "[]"); } catch {}
+
+    const map = new Map();
+    const addSt = st => {
+      const clean = String(st || "").trim();
+      if (clean && !map.has(clean.toLowerCase())) map.set(clean.toLowerCase(), clean);
+    };
+
+    (window.ALL_ANIME_STUDIOS || []).forEach(addSt);
+    localCustom.forEach(addSt);
+    (appData?.meta?.customStudios || []).forEach(addSt);
     appData?.tiers?.forEach(t => {
       (t.items || []).forEach(it => {
-        if (it.studio && it.studio.trim()) set.add(it.studio.trim());
+        extractItemStudios(it).forEach(addSt);
       });
     });
-    return [...set].sort((a, b) => a.localeCompare(b, "en"));
+
+    return [...map.values()].sort((a, b) => a.localeCompare(b, "en"));
   }
 
   function populateGenreDropdowns(editorSearchTerm = "") {
@@ -526,14 +630,14 @@
     }
   }
 
-  function populateStudioDropdown() {
+  function populateStudioDropdown(editorSearchTerm = "") {
     const listEl = document.getElementById("studioOptionsList");
     const datalist = document.getElementById("studioPresetList");
+    const studioPicker = document.getElementById("studioQuickPicker");
     const sortedStudios = getSortedAllStudios();
 
-    if (datalist && !datalist.dataset.populated) {
+    if (datalist) {
       datalist.innerHTML = sortedStudios.map(s => `<option value="${esc(s)}"></option>`).join("");
-      datalist.dataset.populated = "1";
     }
 
     if (listEl) {
@@ -542,6 +646,13 @@
       listEl.innerHTML =
         `<div class="genre-opt-item ${selectedStudio === "ALL" ? "active" : ""}" data-st-val="ALL">🎬 Все студии (${sortedStudios.length})</div>` +
         matching.map(s => `<div class="genre-opt-item ${selectedStudio === s ? "active" : ""}" data-st-val="${esc(s)}">${esc(s)}</div>`).join("");
+    }
+
+    if (studioPicker) {
+      const eq = editorSearchTerm.trim().toLowerCase();
+      const matchingEditor = sortedStudios.filter(s => !eq || s.toLowerCase().includes(eq));
+      studioPicker.innerHTML = `<option value="">+ Выбрать студию (${matchingEditor.length})...</option>` +
+        matchingEditor.map(s => `<option value="${esc(s)}">${esc(s)}</option>`).join("");
     }
   }
 
@@ -739,9 +850,34 @@
       render();
     });
 
+    /* Очистка и интерактивные чипы для СТУДИЙ (через запятую) */
     document.getElementById("btnClearEditorStudio")?.addEventListener("click", () => {
       const stInp = document.getElementById("fStudio");
-      if (stInp) { stInp.value = ""; stInp.focus(); }
+      if (stInp) stInp.value = "";
+      if (typeof Modals.syncEditorStudioChips === "function") Modals.syncEditorStudioChips();
+    });
+
+    document.getElementById("fStudio")?.addEventListener("input", () => {
+      if (typeof Modals.syncEditorStudioChips === "function") Modals.syncEditorStudioChips();
+    });
+
+    const editorStSearch = document.getElementById("editorStudioSearch");
+    editorStSearch?.addEventListener("input", () => {
+      populateStudioDropdown(editorStSearch.value);
+    });
+
+    const studioPicker = document.getElementById("studioQuickPicker");
+    studioPicker?.addEventListener("change", () => {
+      const val = studioPicker.value;
+      if (!val) return;
+      const inp = document.getElementById("fStudio");
+      const currentList = inp.value.split(",").map(s => s.trim()).filter(Boolean);
+      if (!currentList.some(s => s.toLowerCase() === val.toLowerCase())) {
+        currentList.push(val);
+        inp.value = currentList.join(", ");
+      }
+      studioPicker.value = "";
+      if (typeof Modals.syncEditorStudioChips === "function") Modals.syncEditorStudioChips();
     });
 
     document.getElementById("btnClearEditorPoster")?.addEventListener("click", () => {
@@ -751,6 +887,7 @@
       pendingPosterInline = "";
     });
 
+    /* Очистка и интерактивные чипы для ЖАНРОВ (через запятую) */
     document.getElementById("btnClearAllEditorGenres")?.addEventListener("click", () => {
       const gInp = document.getElementById("fGenres");
       if (gInp) gInp.value = "";
@@ -772,7 +909,7 @@
       if (!val) return;
       const inp = document.getElementById("fGenres");
       const currentList = inp.value.split(",").map(s => s.trim()).filter(Boolean);
-      if (!currentList.includes(val)) {
+      if (!currentList.some(g => g.toLowerCase() === val.toLowerCase())) {
         currentList.push(val);
         inp.value = currentList.join(", ");
       }
@@ -967,6 +1104,7 @@
             document.getElementById("fStudio").value = picked.studio;
             document.getElementById("fGenres").value = (picked.genres || []).join(", ");
             if (typeof Modals.syncEditorGenreChips === "function") Modals.syncEditorGenreChips();
+            if (typeof Modals.syncEditorStudioChips === "function") Modals.syncEditorStudioChips();
 
             const firstRow = document.querySelector("#seasonsEditorList .season-row");
             if (firstRow) {
@@ -1029,20 +1167,33 @@
       const parsedScore = parseFloat(document.getElementById("fScore").value);
       const parsedYear = parseInt(document.getElementById("fYear").value, 10);
 
+      /* Разбираем несколько студий и жанров через запятую и автоматически добавляем новые в общий список! */
+      const studiosArr = document.getElementById("fStudio").value
+        .split(",")
+        .map(s => s.trim())
+        .filter(Boolean);
+      const genresArr = document.getElementById("fGenres").value
+        .split(",")
+        .map(s => s.trim())
+        .filter(Boolean);
+
+      registerCustomGenresAndStudios(genresArr, studiosArr);
+
       const newItem = {
         uid,
         kind: document.getElementById("fKind").value,
         title: ruTitle,
         origTitle: document.getElementById("fOrigTitle").value.trim(),
         year: isNaN(parsedYear) ? "" : parsedYear,
-        studio: document.getElementById("fStudio").value.trim(),
+        studio: studiosArr.join(", "),
+        studios: studiosArr,
         score: isNaN(parsedScore) ? 0 : parsedScore,
         poster: rawPosterVal,
         posterBlobSha: finalBlobSha,
         posterInline: pendingPosterInline || existingInline || undefined,
         bgmUrl: finalBgmUrl,
         bgmBlobSha: finalBgmSha,
-        genres: document.getElementById("fGenres").value.split(",").map(s => s.trim()).filter(Boolean),
+        genres: genresArr,
         comment: document.getElementById("fComment").value.trim(),
         seasons,
         watched: seasons.map(s => ({ date: s.date, note: s.title }))
