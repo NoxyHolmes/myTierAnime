@@ -1,4 +1,4 @@
-/* ═══════════════════ MODALS: TBA YEAR 0 SUPPORT & DOSSIER (v18.0) ═══════════════════ */
+/* ═══════════════════ MODALS: MULTI-STUDIO CHIPS, TBA YEAR 0 & DOSSIER (v18.5) ═══════════════════ */
 const Modals = (() => {
   let deleteHandler = null;
 
@@ -381,6 +381,7 @@ const Modals = (() => {
     } catch {}
   }
 
+  /* Чипы для ЖАНРОВ (разделение по запятой) */
   function syncEditorGenreChips() {
     const inp = document.getElementById("fGenres");
     const box = document.getElementById("editorGenreChips");
@@ -405,6 +406,35 @@ const Modals = (() => {
         const updated = genres.filter((_, i) => i !== removeIdx);
         inp.value = updated.join(", ");
         syncEditorGenreChips();
+      });
+    });
+  }
+
+  /* Чипы для СТУДИЙ (разделение по запятой — точно как у жанров!) */
+  function syncEditorStudioChips() {
+    const inp = document.getElementById("fStudio");
+    const box = document.getElementById("editorStudioChips");
+    if (!inp || !box) return;
+
+    const studios = inp.value.split(",").map(s => s.trim()).filter(Boolean);
+    if (!studios.length) {
+      box.innerHTML = `<span style="font-size:11px;color:var(--ink-soft);">Студии не выбраны (можно указать несколько через запятую)</span>`;
+      return;
+    }
+
+    box.innerHTML = studios.map((stName, idx) => `
+      <span class="editor-chip" style="background:rgba(255,215,106,0.15);border-color:rgba(255,215,106,0.5);color:#ffe8a3;">
+        <span>🎬 ${esc(stName)}</span>
+        <button type="button" class="editor-chip-x" data-remove-studio-idx="${idx}" title="Удалить студию «${esc(stName)}»">✕</button>
+      </span>
+    `).join("");
+
+    box.querySelectorAll("[data-remove-studio-idx]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const removeIdx = +btn.dataset.removeStudioIdx;
+        const updated = studios.filter((_, i) => i !== removeIdx);
+        inp.value = updated.join(", ");
+        syncEditorStudioChips();
       });
     });
   }
@@ -441,7 +471,6 @@ const Modals = (() => {
         const isUpcoming = Number(s.episodes) === 0;
         const partHours = isUpcoming ? "0" : formatHours((s.episodes * s.epMinutes) / 60);
 
-        /* Если у сезона/фильма указан год 0, НЕ подставляем год самого тайтла — выводим "Анонс" */
         const hasReleaseYear = s.releaseYear !== undefined && s.releaseYear !== null && Number(s.releaseYear) > 0;
         const yearBadgeText = hasReleaseYear ? `${esc(s.releaseYear)} г.` : "Анонс";
 
@@ -496,6 +525,10 @@ const Modals = (() => {
     }
 
     const hasComment = item.comment && item.comment.trim().length > 0;
+    const studiosArr = Array.isArray(item.studios) && item.studios.length
+      ? item.studios
+      : String(item.studio || "").split(",").map(s => s.trim()).filter(Boolean);
+    const studiosLabel = studiosArr.length > 1 ? "Студии" : "Студия";
 
     body.innerHTML = `
       <div class="dossier-split-layout">
@@ -516,7 +549,7 @@ const Modals = (() => {
             <div class="dossier-title-orig">
               ${esc(item.origTitle || "")}
               ${item.year ? ` · <b>${esc(item.year)} г.</b>` : ""}
-              ${item.studio ? ` · Студия: <b style="color:#ffd76a;">${esc(item.studio)}</b>` : ""}
+              ${studiosArr.length ? ` · ${studiosLabel}: <b style="color:#ffd76a;">${esc(studiosArr.join(", "))}</b>` : ""}
             </div>
 
             <div class="dossier-metrics-row">
@@ -659,7 +692,6 @@ const Modals = (() => {
     }
   }
 
-  /* В поле Год сезона/фильма теперь min="0": можно ставить 0 для анонсов без известного года! */
   function createSeasonRowElement(part = {}) {
     const row = document.createElement("div");
     row.className = "season-row";
@@ -758,7 +790,6 @@ const Modals = (() => {
     }
   }
 
-  /* При чтении сезонов из формы: если введено 0 в год или дату — сохраняется строго 0 и пустая дата (без подстановки года тайтла!) */
   function readSeasonsFromEditor() {
     const rows = [...document.querySelectorAll("#seasonsEditorList .season-row")];
     const fallbackYr = parseInt(document.getElementById("fYear")?.value, 10) || 2026;
@@ -808,7 +839,14 @@ const Modals = (() => {
     document.getElementById("fTitle").value = existingItem ? existingItem.title : "";
     document.getElementById("fOrigTitle").value = existingItem ? existingItem.origTitle || "" : "";
     document.getElementById("fYear").value = existingItem ? existingItem.year || "" : "";
-    document.getElementById("fStudio").value = existingItem ? existingItem.studio || "" : "";
+
+    const existingStudiosStr = existingItem
+      ? (Array.isArray(existingItem.studios) && existingItem.studios.length
+          ? existingItem.studios.join(", ")
+          : (existingItem.studio || ""))
+      : "";
+    document.getElementById("fStudio").value = existingStudiosStr;
+
     document.getElementById("fScore").value = existingItem ? existingItem.score ?? "" : "";
 
     const posterInp = document.getElementById("fPoster");
@@ -835,6 +873,7 @@ const Modals = (() => {
     document.getElementById("fComment").value = existingItem ? existingItem.comment || "" : "";
 
     syncEditorGenreChips();
+    syncEditorStudioChips();
 
     const listHost = document.getElementById("seasonsEditorList");
     listHost.innerHTML = "";
@@ -875,6 +914,7 @@ const Modals = (() => {
     closeModal,
     setDeleteHandler,
     syncEditorGenreChips,
+    syncEditorStudioChips,
     showAnimeDetails,
     openEditorModal,
     addSeasonRow,
