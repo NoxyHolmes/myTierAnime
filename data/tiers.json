@@ -4,12 +4,12 @@
     "owner": "geraltschwarzenegger-svg",
     "repo": "noxyholmes/myTierAnime",
     "branch": "main",
-    "updatedAt": "2026-10-19T11:20:53.905Z",
+    "updatedAt": "2026-10-19T11:22:21.051Z",
     "activeMode": "emblems-realism",
     "bgImage": "backgrounds/1792058756499____________________________________.png",
     "bgDim": 65,
     "bgBlur": 5,
-    "revision": 129,
+    "revision": 130,
     "bgBlobSha": "1de942c76368b8d317071e794ae55fed35d163ad",
     "bgMime": "image/png",
     "bgmVolume": 10,
@@ -1356,6 +1356,9 @@
           "origTitle": "Akane-banashi",
           "year": 2026,
           "studio": "Zexcs",
+          "studios": [
+            "Zexcs"
+          ],
           "score": 10,
           "poster": "posters/1792068420517_276307.jpg",
           "posterBlobSha": "c1f92f450af0367321079bd3930da9255e04224e",
@@ -1374,7 +1377,7 @@
               "releaseYear": 2026,
               "episodes": 12,
               "epMinutes": 24,
-              "date": "15.10.2026",
+              "date": "14.07.2026",
               "note": ""
             },
             {
@@ -1389,7 +1392,7 @@
           ],
           "watched": [
             {
-              "date": "15.10.2026",
+              "date": "14.07.2026",
               "note": "Сезон 1"
             },
             {
