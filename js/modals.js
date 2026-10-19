@@ -1,4 +1,4 @@
-/* ═══════════════════ MODALS: SELF-HEALING DOSSIER STYLES & SINGLETON BGM PLAYER ═══════════════════ */
+/* ═══════════════════ MODALS: TBA YEAR 0 SUPPORT & DOSSIER (v18.0) ═══════════════════ */
 const Modals = (() => {
   let deleteHandler = null;
 
@@ -7,7 +7,6 @@ const Modals = (() => {
   bgmPlayer.preload = "auto";
   let bgmSessionId = 0;
 
-  /* Гарантированная инжекция стилей карточки: защищает от обрезки или кэширования CSS в любом браузере */
   function ensureDossierStyles() {
     if (document.getElementById("dossierSelfContainedStyles")) return;
     const st = document.createElement("style");
@@ -227,7 +226,6 @@ const Modals = (() => {
         border-color: #00f5ff !important;
         color: #ffffff !important;
       }
-      /* СИНХРОННАЯ ТАБЛИЧНАЯ СЕТКА СЕЗОНОВ: все столбцы (Тип/Год, Объём, 1 серия, Время, Дата) двигаются синхронно и стоят ровно друг под другом! */
       .dossier-seasons-vertical-list {
         display: grid !important;
         grid-template-columns: minmax(220px, 1fr) max-content max-content max-content max-content max-content !important;
@@ -295,7 +293,6 @@ const Modals = (() => {
         color: #cbc4eb !important;
         opacity: 0.9 !important;
       }
-      /* Тип тайтла и год выпуска стоят строго ДРУГ ПОД ДРУГОМ и видны полностью без обрезания */
       .dsb-col-typeyear {
         display: flex !important;
         flex-direction: column !important;
@@ -443,7 +440,16 @@ const Modals = (() => {
       return filtered.map((s, idx) => {
         const isUpcoming = Number(s.episodes) === 0;
         const partHours = isUpcoming ? "0" : formatHours((s.episodes * s.epMinutes) / 60);
-        const relYr = s.releaseYear || item.year || "2026";
+
+        /* Если у сезона/фильма указан год 0, НЕ подставляем год самого тайтла — выводим "Анонс" */
+        const hasReleaseYear = s.releaseYear !== undefined && s.releaseYear !== null && Number(s.releaseYear) > 0;
+        const yearBadgeText = hasReleaseYear ? `${esc(s.releaseYear)} г.` : "Анонс";
+
+        const rawDateStr = s.date ? String(s.date).trim() : "";
+        const displayDateStr = (rawDateStr && rawDateStr !== "0")
+          ? rawDateStr
+          : (isUpcoming ? "Анонс" : "—");
+
         const volumeText = isUpcoming
           ? `<span class="s-chip-upcoming">⏳ Анонс (0 ${s.type === "Фильм" ? "ф." : "эп."})</span>`
           : `<b class="s-chip-vol">${s.type === "Фильм" ? formatMoviesCount(s.episodes) : formatEpisodesCount(s.episodes)}</b>`;
@@ -462,7 +468,7 @@ const Modals = (() => {
 
             <div class="dsb-col-typeyear">
               <span class="cum-kind">${esc(s.type)}</span>
-              <span class="dsc-year">${esc(relYr)} г.</span>
+              <span class="dsc-year">${yearBadgeText}</span>
             </div>
 
             <div class="dsb-col-stat">
@@ -482,7 +488,7 @@ const Modals = (() => {
 
             <div class="dsb-col-stat">
               <span class="dsc-lbl">Дата:</span>
-              <b>${esc(s.date || (isUpcoming ? "Анонс" : "—"))}</b>
+              <b>${esc(displayDateStr)}</b>
             </div>
           </div>
         `;
@@ -653,17 +659,27 @@ const Modals = (() => {
     }
   }
 
+  /* В поле Год сезона/фильма теперь min="0": можно ставить 0 для анонсов без известного года! */
   function createSeasonRowElement(part = {}) {
     const row = document.createElement("div");
     row.className = "season-row";
     const type = part.type || "TV Сериал";
     const defaultMin = type === "Фильм" ? 110 : 24;
-    const defaultYear = part.releaseYear || document.getElementById("fYear")?.value || 2026;
+
+    let relYrVal = 2026;
+    if (part.releaseYear !== undefined && part.releaseYear !== null && String(part.releaseYear).trim() !== "") {
+      const parsedYr = parseInt(part.releaseYear, 10);
+      relYrVal = isNaN(parsedYr) ? 0 : Math.max(0, parsedYr);
+    } else {
+      const fYearVal = parseInt(document.getElementById("fYear")?.value, 10);
+      relYrVal = isNaN(fYearVal) ? 2026 : fYearVal;
+    }
+
     const parsedEp = parseInt(part.episodes, 10);
     const eps = isNaN(parsedEp) ? (type === "Фильм" ? 1 : 12) : Math.max(0, parsedEp);
     const parsedMin = parseFloat(part.epMinutes);
     const mins = isNaN(parsedMin) ? defaultMin : Math.max(0, parsedMin);
-    const dateStr = part.date !== undefined ? part.date : new Date().toLocaleDateString("ru-RU");
+    const dateStr = part.date !== undefined ? part.date : (eps === 0 ? "" : new Date().toLocaleDateString("ru-RU"));
     const noteStr = part.note || "";
 
     row.innerHTML = `
@@ -671,10 +687,10 @@ const Modals = (() => {
       <select class="form-control s-type">
         ${["TV Сериал", "Фильм", "OVA", "ONA", "Спешл"].map(t => `<option value="${t}" ${t === type ? "selected" : ""}>${t}</option>`).join("")}
       </select>
-      <input type="number" min="1960" max="2040" class="form-control s-rel-year" title="Год выпуска этого сезона/фильма" placeholder="Год" value="${esc(defaultYear)}">
+      <input type="number" min="0" max="2050" class="form-control s-rel-year" title="Год выпуска этого сезона/фильма (0 = год ещё неизвестен / анонс)" placeholder="Год (0=Анонс)" value="${esc(relYrVal)}">
       <input type="number" min="0" class="form-control s-eps" title="Кол-во серий или фильмов (0 = ожидается / анонс)" value="${eps}">
       <input type="number" min="0" step="0.5" class="form-control s-mins" title="Длительность 1 серии (мин)" value="${mins}">
-      <input type="text" class="form-control s-date" placeholder="ДД.ММ.ГГГГ, ММ.ГГГГ или Год" value="${esc(dateStr)}">
+      <input type="text" class="form-control s-date" placeholder="ДД.ММ.ГГГГ, ММ.ГГГГ, Год или 0" value="${esc(dateStr)}">
       <input type="text" class="form-control s-note" placeholder="Заметка" value="${esc(noteStr)}">
       <span class="s-calc">0 ч.</span>
       <button type="button" class="btn btn-sm s-remove" title="Удалить часть">✕</button>
@@ -742,6 +758,7 @@ const Modals = (() => {
     }
   }
 
+  /* При чтении сезонов из формы: если введено 0 в год или дату — сохраняется строго 0 и пустая дата (без подстановки года тайтла!) */
   function readSeasonsFromEditor() {
     const rows = [...document.querySelectorAll("#seasonsEditorList .season-row")];
     const fallbackYr = parseInt(document.getElementById("fYear")?.value, 10) || 2026;
@@ -750,14 +767,26 @@ const Modals = (() => {
       const ep = isNaN(rawEp) ? 0 : Math.max(0, rawEp);
       const rawMn = parseFloat(r.querySelector(".s-mins").value);
       const mn = isNaN(rawMn) ? 24 : Math.max(0, rawMn);
-      const relYr = parseInt(r.querySelector(".s-rel-year")?.value, 10) || fallbackYr;
+
+      const rawYrStr = (r.querySelector(".s-rel-year")?.value ?? "").trim();
+      let relYr = fallbackYr;
+      if (rawYrStr === "0" || rawYrStr === "") {
+        relYr = 0;
+      } else {
+        const parsedYr = parseInt(rawYrStr, 10);
+        relYr = isNaN(parsedYr) ? (ep === 0 ? 0 : fallbackYr) : Math.max(0, parsedYr);
+      }
+
+      const rawDateVal = r.querySelector(".s-date").value.trim();
+      const cleanDate = rawDateVal === "0" ? "" : rawDateVal;
+
       return {
         title: r.querySelector(".s-title").value.trim() || `Часть ${i + 1}`,
         type: r.querySelector(".s-type").value,
         releaseYear: relYr,
         episodes: ep,
         epMinutes: mn,
-        date: r.querySelector(".s-date").value.trim(),
+        date: cleanDate,
         note: r.querySelector(".s-note")?.value.trim() || ""
       };
     });
