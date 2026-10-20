@@ -1,4 +1,4 @@
-/* ═══════════════════ MODALS: FULLSCREEN POSTER LIGHTBOX & DOSSIER (v19.0) ═══════════════════ */
+/* ═══════════════════ MODALS: 3-SPACE AUTO-COMMA, FULLSCREEN LIGHTBOX & DOSSIER (v20.0) ═══════════════════ */
 const Modals = (() => {
   let deleteHandler = null;
 
@@ -128,7 +128,6 @@ const Modals = (() => {
         opacity: 0.9 !important;
       }
 
-      /* ПОЛНОЭКРАННЫЙ LIGHTBOX ПО КЛИКУ НА ОБЛОЖКУ */
       .mta-poster-lightbox {
         position: fixed !important;
         inset: 0 !important;
@@ -406,7 +405,6 @@ const Modals = (() => {
     document.head.appendChild(st);
   }
 
-  /* Создаёт и переключает полноэкранный просмотр обложки по клику */
   function togglePosterLightbox(imgSrc, altText = "") {
     let lb = document.getElementById("mtaPosterLightbox");
     if (!lb) {
@@ -459,10 +457,17 @@ const Modals = (() => {
     } catch {}
   }
 
+  /* Автозамена 3+ пробелов на ", " и синхронизация чипов ЖАНРОВ */
   function syncEditorGenreChips() {
     const inp = document.getElementById("fGenres");
     const box = document.getElementById("editorGenreChips");
     if (!inp || !box) return;
+
+    if (/ {3,}/.test(inp.value)) {
+      const pos = inp.selectionStart;
+      inp.value = inp.value.replace(/ {3,}/g, ", ");
+      try { inp.setSelectionRange(pos, pos); } catch {}
+    }
 
     const genres = inp.value.split(",").map(s => s.trim()).filter(Boolean);
     if (!genres.length) {
@@ -487,14 +492,21 @@ const Modals = (() => {
     });
   }
 
+  /* Автозамена 3+ пробелов на ", " и синхронизация чипов СТУДИЙ */
   function syncEditorStudioChips() {
     const inp = document.getElementById("fStudio");
     const box = document.getElementById("editorStudioChips");
     if (!inp || !box) return;
 
+    if (/ {3,}/.test(inp.value)) {
+      const pos = inp.selectionStart;
+      inp.value = inp.value.replace(/ {3,}/g, ", ");
+      try { inp.setSelectionRange(pos, pos); } catch {}
+    }
+
     const studios = inp.value.split(",").map(s => s.trim()).filter(Boolean);
     if (!studios.length) {
-      box.innerHTML = `<span style="font-size:11px;color:var(--ink-soft);">Студии не выбраны (можно указать несколько через запятую)</span>`;
+      box.innerHTML = `<span style="font-size:11px;color:var(--ink-soft);">Студии не выбраны (можно указать несколько через запятую или 3 пробела)</span>`;
       return;
     }
 
@@ -675,7 +687,6 @@ const Modals = (() => {
       </div>
     `;
 
-    // Клик на обложку открывает полноэкранный просмотр, повторный клик закрывает
     const posterFrame = document.getElementById("dossierPosterFrame");
     const posterImgEl = document.getElementById("dossierMainPosterImg");
     if (posterFrame && posterImgEl) {
