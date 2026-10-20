@@ -4,12 +4,12 @@
     "owner": "geraltschwarzenegger-svg",
     "repo": "noxyholmes/myTierAnime",
     "branch": "main",
-    "updatedAt": "2026-10-20T09:09:38.989Z",
+    "updatedAt": "2026-10-20T09:09:44.035Z",
     "activeMode": "emblems-realism",
     "bgImage": "backgrounds/1792058756499____________________________________.png",
     "bgDim": 65,
     "bgBlur": 5,
-    "revision": 260,
+    "revision": 262,
     "bgBlobSha": "1de942c76368b8d317071e794ae55fed35d163ad",
     "bgMime": "image/png",
     "bgmVolume": 10,
@@ -3080,6 +3080,75 @@
       "hue": 148,
       "items": [
         {
+          "uid": "anime-1792138032725",
+          "kind": "TV Сериал",
+          "title": "Боруто: Новое Поколение",
+          "origTitle": "Boruto",
+          "year": 2017,
+          "studio": "Pierrot (Studio Pierrot)",
+          "studios": [
+            "Pierrot (Studio Pierrot)"
+          ],
+          "score": 0,
+          "poster": "posters/1792137851830_w1500_3593890.jpg",
+          "posterBlobSha": "d140ae0108cf5f0fa7fc8e711ae840d1883bdd1d",
+          "genres": [
+            "Сёнэн",
+            "Приключения",
+            "Фэнтези",
+            "Экшен",
+            "Боевые искусства",
+            "Ниндзя",
+            "Суперспособности",
+            "Пародия",
+            "Комедия"
+          ],
+          "comment": "",
+          "seasons": [
+            {
+              "title": "Сезон 1",
+              "type": "TV Сериал",
+              "releaseYear": 2017,
+              "episodes": 293,
+              "epMinutes": 24,
+              "date": "26.03.2023",
+              "note": ""
+            },
+            {
+              "title": "Фильм 1 - Фильм Наруто",
+              "type": "Фильм",
+              "releaseYear": 2015,
+              "episodes": 1,
+              "epMinutes": 95,
+              "date": "2015",
+              "note": ""
+            },
+            {
+              "title": "Спешл - День, когда Наруто стал хокагэ",
+              "type": "Спешл",
+              "releaseYear": 2016,
+              "episodes": 1,
+              "epMinutes": 10,
+              "date": "2016",
+              "note": ""
+            }
+          ],
+          "watched": [
+            {
+              "date": "26.03.2023",
+              "note": "Сезон 1"
+            },
+            {
+              "date": "2015",
+              "note": "Фильм 1 - Фильм Наруто"
+            },
+            {
+              "date": "2016",
+              "note": "Спешл - День, когда Наруто стал хокагэ"
+            }
+          ]
+        },
+        {
           "uid": "anime-1792487361040",
           "updatedAt": 1792487378944,
           "kind": "ONA",
@@ -3158,75 +3227,6 @@
             {
               "date": "2015",
               "note": "Сезон 4 - Книга 4. Равновесие"
-            }
-          ]
-        },
-        {
-          "uid": "anime-1792138032725",
-          "kind": "TV Сериал",
-          "title": "Боруто: Новое Поколение",
-          "origTitle": "Boruto",
-          "year": 2017,
-          "studio": "Pierrot (Studio Pierrot)",
-          "studios": [
-            "Pierrot (Studio Pierrot)"
-          ],
-          "score": 0,
-          "poster": "posters/1792137851830_w1500_3593890.jpg",
-          "posterBlobSha": "d140ae0108cf5f0fa7fc8e711ae840d1883bdd1d",
-          "genres": [
-            "Сёнэн",
-            "Приключения",
-            "Фэнтези",
-            "Экшен",
-            "Боевые искусства",
-            "Ниндзя",
-            "Суперспособности",
-            "Пародия",
-            "Комедия"
-          ],
-          "comment": "",
-          "seasons": [
-            {
-              "title": "Сезон 1",
-              "type": "TV Сериал",
-              "releaseYear": 2017,
-              "episodes": 293,
-              "epMinutes": 24,
-              "date": "26.03.2023",
-              "note": ""
-            },
-            {
-              "title": "Фильм 1 - Фильм Наруто",
-              "type": "Фильм",
-              "releaseYear": 2015,
-              "episodes": 1,
-              "epMinutes": 95,
-              "date": "2015",
-              "note": ""
-            },
-            {
-              "title": "Спешл - День, когда Наруто стал хокагэ",
-              "type": "Спешл",
-              "releaseYear": 2016,
-              "episodes": 1,
-              "epMinutes": 10,
-              "date": "2016",
-              "note": ""
-            }
-          ],
-          "watched": [
-            {
-              "date": "26.03.2023",
-              "note": "Сезон 1"
-            },
-            {
-              "date": "2015",
-              "note": "Фильм 1 - Фильм Наруто"
-            },
-            {
-              "date": "2016",
-              "note": "Спешл - День, когда Наруто стал хокагэ"
             }
           ]
         },
