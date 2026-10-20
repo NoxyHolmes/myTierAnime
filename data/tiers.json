@@ -4,12 +4,12 @@
     "owner": "geraltschwarzenegger-svg",
     "repo": "noxyholmes/myTierAnime",
     "branch": "main",
-    "updatedAt": "2026-10-20T08:37:03.446Z",
+    "updatedAt": "2026-10-20T08:37:08.570Z",
     "activeMode": "emblems-realism",
     "bgImage": "backgrounds/1792058756499____________________________________.png",
     "bgDim": 65,
     "bgBlur": 5,
-    "revision": 238,
+    "revision": 240,
     "bgBlobSha": "1de942c76368b8d317071e794ae55fed35d163ad",
     "bgMime": "image/png",
     "bgmVolume": 10,
@@ -1834,6 +1834,86 @@
       "hue": 185,
       "items": [
         {
+          "uid": "anime-1792327665709",
+          "kind": "TV Сериал",
+          "title": "Корзинка фруктов",
+          "origTitle": "Fruits Basket",
+          "year": 2019,
+          "studio": "TMS Entertainment",
+          "score": 0,
+          "poster": "posters/1792327572105_468518091690524385.jpg",
+          "posterBlobSha": "8201e0534a29e67d06672c8dc6a98ca31963ce56",
+          "genres": [
+            "Бисёнэн",
+            "Сёдзё",
+            "Драма",
+            "Комедия",
+            "Романтика",
+            "Фэнтези",
+            "Повседневность",
+            "Школьная жизнь",
+            "Гарем (для девочек)",
+            "Сверхъестественное"
+          ],
+          "comment": "",
+          "seasons": [
+            {
+              "title": "Сезон 1",
+              "type": "TV Сериал",
+              "releaseYear": 2019,
+              "episodes": 25,
+              "epMinutes": 24,
+              "date": "02.2026",
+              "note": ""
+            },
+            {
+              "title": "Сезон 2",
+              "type": "TV Сериал",
+              "releaseYear": 2020,
+              "episodes": 25,
+              "epMinutes": 24,
+              "date": "02.2026",
+              "note": ""
+            },
+            {
+              "title": "Сезон 3",
+              "type": "TV Сериал",
+              "releaseYear": 2021,
+              "episodes": 13,
+              "epMinutes": 24,
+              "date": "02.2026",
+              "note": ""
+            },
+            {
+              "title": "Фильм  - Прелюдия",
+              "type": "Фильм",
+              "releaseYear": 2022,
+              "episodes": 1,
+              "epMinutes": 85,
+              "date": "02.2026",
+              "note": ""
+            }
+          ],
+          "watched": [
+            {
+              "date": "02.2026",
+              "note": "Сезон 1"
+            },
+            {
+              "date": "02.2026",
+              "note": "Сезон 2"
+            },
+            {
+              "date": "02.2026",
+              "note": "Сезон 3"
+            },
+            {
+              "date": "02.2026",
+              "note": "Фильм  - Прелюдия"
+            }
+          ]
+        },
+        {
           "uid": "anime-1792485411548",
           "updatedAt": 1792485418040,
           "kind": "TV Сериал",
@@ -1923,86 +2003,6 @@
             {
               "date": "10.08.2026",
               "note": "Сезон 3"
-            }
-          ]
-        },
-        {
-          "uid": "anime-1792327665709",
-          "kind": "TV Сериал",
-          "title": "Корзинка фруктов",
-          "origTitle": "Fruits Basket",
-          "year": 2019,
-          "studio": "TMS Entertainment",
-          "score": 0,
-          "poster": "posters/1792327572105_468518091690524385.jpg",
-          "posterBlobSha": "8201e0534a29e67d06672c8dc6a98ca31963ce56",
-          "genres": [
-            "Бисёнэн",
-            "Сёдзё",
-            "Драма",
-            "Комедия",
-            "Романтика",
-            "Фэнтези",
-            "Повседневность",
-            "Школьная жизнь",
-            "Гарем (для девочек)",
-            "Сверхъестественное"
-          ],
-          "comment": "",
-          "seasons": [
-            {
-              "title": "Сезон 1",
-              "type": "TV Сериал",
-              "releaseYear": 2019,
-              "episodes": 25,
-              "epMinutes": 24,
-              "date": "02.2026",
-              "note": ""
-            },
-            {
-              "title": "Сезон 2",
-              "type": "TV Сериал",
-              "releaseYear": 2020,
-              "episodes": 25,
-              "epMinutes": 24,
-              "date": "02.2026",
-              "note": ""
-            },
-            {
-              "title": "Сезон 3",
-              "type": "TV Сериал",
-              "releaseYear": 2021,
-              "episodes": 13,
-              "epMinutes": 24,
-              "date": "02.2026",
-              "note": ""
-            },
-            {
-              "title": "Фильм  - Прелюдия",
-              "type": "Фильм",
-              "releaseYear": 2022,
-              "episodes": 1,
-              "epMinutes": 85,
-              "date": "02.2026",
-              "note": ""
-            }
-          ],
-          "watched": [
-            {
-              "date": "02.2026",
-              "note": "Сезон 1"
-            },
-            {
-              "date": "02.2026",
-              "note": "Сезон 2"
-            },
-            {
-              "date": "02.2026",
-              "note": "Сезон 3"
-            },
-            {
-              "date": "02.2026",
-              "note": "Фильм  - Прелюдия"
             }
           ]
         },
