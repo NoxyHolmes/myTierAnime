@@ -4,12 +4,12 @@
     "owner": "geraltschwarzenegger-svg",
     "repo": "noxyholmes/myTierAnime",
     "branch": "main",
-    "updatedAt": "2026-10-20T20:20:16.941Z",
+    "updatedAt": "2026-10-20T20:23:07.897Z",
     "activeMode": "emblems-realism",
     "bgImage": "backgrounds/1792058756499____________________________________.png",
     "bgDim": 65,
     "bgBlur": 5,
-    "revision": 376,
+    "revision": 377,
     "bgBlobSha": "1de942c76368b8d317071e794ae55fed35d163ad",
     "bgMime": "image/png",
     "bgmVolume": 10,
@@ -529,6 +529,7 @@
         },
         {
           "uid": "anime-1792412658855",
+          "updatedAt": 1792527787786,
           "kind": "TV Сериал",
           "title": "Атака титанов",
           "origTitle": "Attack on Titan",
@@ -538,7 +539,6 @@
             "Wit Studio",
             "MAPPA"
           ],
-          "score": 0,
           "poster": "posters/1792411816641_3840x__3_.webp",
           "posterBlobSha": "e9dbb7b3be26af9b889c4fc125804b944b5ef14c",
           "genres": [
@@ -565,7 +565,7 @@
               "releaseYear": 2013,
               "episodes": 25,
               "epMinutes": 24,
-              "date": "04.2026",
+              "date": "26.04.2026",
               "note": ""
             },
             {
@@ -574,7 +574,7 @@
               "releaseYear": 2013,
               "episodes": 3,
               "epMinutes": 24,
-              "date": "04.2026",
+              "date": "26.04.2026",
               "note": ""
             },
             {
@@ -583,7 +583,7 @@
               "releaseYear": 2017,
               "episodes": 12,
               "epMinutes": 24,
-              "date": "04.2026",
+              "date": "27.04.2026",
               "note": ""
             },
             {
@@ -592,7 +592,7 @@
               "releaseYear": 2018,
               "episodes": 12,
               "epMinutes": 24,
-              "date": "04.2026",
+              "date": "27.04.2026",
               "note": ""
             },
             {
@@ -601,7 +601,7 @@
               "releaseYear": 2019,
               "episodes": 10,
               "epMinutes": 24,
-              "date": "04.2026",
+              "date": "28.04.2026",
               "note": ""
             },
             {
@@ -610,7 +610,7 @@
               "releaseYear": 2020,
               "episodes": 16,
               "epMinutes": 24,
-              "date": "04.2026",
+              "date": "28.04.2026",
               "note": ""
             },
             {
@@ -619,7 +619,7 @@
               "releaseYear": 2022,
               "episodes": 12,
               "epMinutes": 24,
-              "date": "04.2026",
+              "date": "29.04.2026",
               "note": ""
             },
             {
@@ -628,7 +628,7 @@
               "releaseYear": 2023,
               "episodes": 2,
               "epMinutes": 72.5,
-              "date": "04.2026",
+              "date": "29.04.2026",
               "note": ""
             },
             {
@@ -637,7 +637,7 @@
               "releaseYear": 2014,
               "episodes": 2,
               "epMinutes": 25,
-              "date": "04.2026",
+              "date": "30.04.2026",
               "note": ""
             },
             {
@@ -646,49 +646,49 @@
               "releaseYear": 2017,
               "episodes": 3,
               "epMinutes": 24,
-              "date": "04.2026",
+              "date": "30.04.2026",
               "note": ""
             }
           ],
           "watched": [
             {
-              "date": "04.2026",
+              "date": "26.04.2026",
               "note": "Сезон 1"
             },
             {
-              "date": "04.2026",
+              "date": "26.04.2026",
               "note": "OVA 1 - Дневник Илзе"
             },
             {
-              "date": "04.2026",
+              "date": "27.04.2026",
               "note": "Сезон 2"
             },
             {
-              "date": "04.2026",
+              "date": "27.04.2026",
               "note": "Сезон 3 | Часть 1"
             },
             {
-              "date": "04.2026",
+              "date": "28.04.2026",
               "note": "Сезон 3 | Часть 2"
             },
             {
-              "date": "04.2026",
+              "date": "28.04.2026",
               "note": "Сезон 4 | Часть 1 - Финал"
             },
             {
-              "date": "04.2026",
+              "date": "29.04.2026",
               "note": "Сезон 4 | Часть 2 - Финал"
             },
             {
-              "date": "04.2026",
+              "date": "29.04.2026",
               "note": "Спешл - Заключительная глава"
             },
             {
-              "date": "04.2026",
+              "date": "30.04.2026",
               "note": "OVA 2 - Выбор без сожалений"
             },
             {
-              "date": "04.2026",
+              "date": "30.04.2026",
               "note": "OVA 3 - Потерянные девушки"
             }
           ]
