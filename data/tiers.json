@@ -4,12 +4,12 @@
     "owner": "geraltschwarzenegger-svg",
     "repo": "noxyholmes/myTierAnime",
     "branch": "main",
-    "updatedAt": "2026-10-20T15:03:14.498Z",
+    "updatedAt": "2026-10-20T15:03:22.250Z",
     "activeMode": "emblems-realism",
     "bgImage": "backgrounds/1792058756499____________________________________.png",
     "bgDim": 65,
     "bgBlur": 5,
-    "revision": 322,
+    "revision": 324,
     "bgBlobSha": "1de942c76368b8d317071e794ae55fed35d163ad",
     "bgMime": "image/png",
     "bgmVolume": 10,
@@ -42,6 +42,72 @@
       "subtitle": "Лучшие и незабываемые тайтлы на все времена",
       "hue": 45,
       "items": [
+        {
+          "uid": "anime-1792141229581",
+          "kind": "TV Сериал",
+          "title": "Чёрный клевер",
+          "origTitle": "Black Clover",
+          "year": 2017,
+          "studio": "Studio Pierrot",
+          "score": 0,
+          "poster": "posters/1792141107244_5e580b28609271950b6bc550fb16f392.jpg",
+          "posterBlobSha": "8c057640f28101c5f2346e3335603c8eb104f826",
+          "genres": [
+            "Сёнэн",
+            "Комедия",
+            "Приключения",
+            "Фэнтези",
+            "Магия",
+            "Эльфы",
+            "Экшен",
+            "Суперспособности",
+            "Целый фэнтези мир"
+          ],
+          "comment": "",
+          "seasons": [
+            {
+              "title": "Сезон 1",
+              "type": "TV Сериал",
+              "releaseYear": 2016,
+              "episodes": 170,
+              "epMinutes": 24,
+              "date": "11.2025",
+              "note": ""
+            },
+            {
+              "title": "Фильм - Меч короля магов",
+              "type": "Фильм",
+              "releaseYear": 2023,
+              "episodes": 1,
+              "epMinutes": 110,
+              "date": "11.2025",
+              "note": ""
+            },
+            {
+              "title": "Сезон 2",
+              "type": "TV Сериал",
+              "releaseYear": 2026,
+              "episodes": 24,
+              "epMinutes": 24,
+              "date": "",
+              "note": ""
+            }
+          ],
+          "watched": [
+            {
+              "date": "11.2025",
+              "note": "Сезон 1"
+            },
+            {
+              "date": "11.2025",
+              "note": "Фильм - Меч короля магов"
+            },
+            {
+              "date": "",
+              "note": "Сезон 2"
+            }
+          ]
+        },
         {
           "uid": "anime-1792136866864",
           "kind": "TV Сериал",
@@ -245,72 +311,6 @@
             },
             {
               "date": "23.03.2017",
-              "note": "Сезон 2"
-            }
-          ]
-        },
-        {
-          "uid": "anime-1792141229581",
-          "kind": "TV Сериал",
-          "title": "Чёрный клевер",
-          "origTitle": "Black Clover",
-          "year": 2017,
-          "studio": "Studio Pierrot",
-          "score": 0,
-          "poster": "posters/1792141107244_5e580b28609271950b6bc550fb16f392.jpg",
-          "posterBlobSha": "8c057640f28101c5f2346e3335603c8eb104f826",
-          "genres": [
-            "Сёнэн",
-            "Комедия",
-            "Приключения",
-            "Фэнтези",
-            "Магия",
-            "Эльфы",
-            "Экшен",
-            "Суперспособности",
-            "Целый фэнтези мир"
-          ],
-          "comment": "",
-          "seasons": [
-            {
-              "title": "Сезон 1",
-              "type": "TV Сериал",
-              "releaseYear": 2016,
-              "episodes": 170,
-              "epMinutes": 24,
-              "date": "11.2025",
-              "note": ""
-            },
-            {
-              "title": "Фильм - Меч короля магов",
-              "type": "Фильм",
-              "releaseYear": 2023,
-              "episodes": 1,
-              "epMinutes": 110,
-              "date": "11.2025",
-              "note": ""
-            },
-            {
-              "title": "Сезон 2",
-              "type": "TV Сериал",
-              "releaseYear": 2026,
-              "episodes": 24,
-              "epMinutes": 24,
-              "date": "",
-              "note": ""
-            }
-          ],
-          "watched": [
-            {
-              "date": "11.2025",
-              "note": "Сезон 1"
-            },
-            {
-              "date": "11.2025",
-              "note": "Фильм - Меч короля магов"
-            },
-            {
-              "date": "",
               "note": "Сезон 2"
             }
           ]
