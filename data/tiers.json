@@ -4,12 +4,12 @@
     "owner": "geraltschwarzenegger-svg",
     "repo": "noxyholmes/myTierAnime",
     "branch": "main",
-    "updatedAt": "2026-10-20T13:58:16.345Z",
+    "updatedAt": "2026-10-20T13:58:25.403Z",
     "activeMode": "emblems-realism",
     "bgImage": "backgrounds/1792058756499____________________________________.png",
     "bgDim": 65,
     "bgBlur": 5,
-    "revision": 305,
+    "revision": 307,
     "bgBlobSha": "1de942c76368b8d317071e794ae55fed35d163ad",
     "bgMime": "image/png",
     "bgmVolume": 10,
@@ -1834,45 +1834,6 @@
           ]
         },
         {
-          "uid": "anime-1792082880572",
-          "kind": "ONA",
-          "title": "Освободите эту ведьму",
-          "origTitle": "Release that Witch",
-          "year": 2026,
-          "studio": "Thundray",
-          "studios": [
-            "Thundray"
-          ],
-          "score": 0,
-          "poster": "posters/1792082871684_12836133.webp",
-          "posterBlobSha": "3249dbc4776d7245ce75ed1cdd6f573a64467b03",
-          "genres": [
-            "Романтика",
-            "Фэнтези",
-            "Экшен",
-            "Не японское",
-            "Исэкай"
-          ],
-          "comment": "",
-          "seasons": [
-            {
-              "title": "Сезон 1",
-              "type": "TV Сериал",
-              "releaseYear": 2026,
-              "episodes": 8,
-              "epMinutes": 24,
-              "date": "08.09.2026",
-              "note": ""
-            }
-          ],
-          "watched": [
-            {
-              "date": "08.09.2026",
-              "note": "Сезон 1"
-            }
-          ]
-        },
-        {
           "uid": "anime-1792141693836",
           "kind": "Фильм",
           "title": "Унесенные призраками",
@@ -1960,6 +1921,45 @@
       "subtitle": "Яркие и очень качественные работы",
       "hue": 185,
       "items": [
+        {
+          "uid": "anime-1792082880572",
+          "updatedAt": 1792504703462,
+          "kind": "ONA",
+          "title": "Освободите эту ведьму",
+          "origTitle": "Release that Witch",
+          "year": 2026,
+          "studio": "Thundray",
+          "studios": [
+            "Thundray"
+          ],
+          "poster": "posters/1792082871684_12836133.webp",
+          "posterBlobSha": "3249dbc4776d7245ce75ed1cdd6f573a64467b03",
+          "genres": [
+            "Романтика",
+            "Фэнтези",
+            "Экшен",
+            "Не японское",
+            "Исэкай"
+          ],
+          "comment": "",
+          "seasons": [
+            {
+              "title": "Сезон 1",
+              "type": "TV Сериал",
+              "releaseYear": 2026,
+              "episodes": 8,
+              "epMinutes": 24,
+              "date": "08.09.2026",
+              "note": ""
+            }
+          ],
+          "watched": [
+            {
+              "date": "08.09.2026",
+              "note": "Сезон 1"
+            }
+          ]
+        },
         {
           "uid": "anime-1792440354818",
           "updatedAt": 1792504696272,
