@@ -4,12 +4,12 @@
     "owner": "geraltschwarzenegger-svg",
     "repo": "noxyholmes/myTierAnime",
     "branch": "main",
-    "updatedAt": "2026-10-20T19:51:57.637Z",
+    "updatedAt": "2026-10-20T19:52:27.924Z",
     "activeMode": "emblems-realism",
     "bgImage": "backgrounds/1792058756499____________________________________.png",
     "bgDim": 65,
     "bgBlur": 5,
-    "revision": 358,
+    "revision": 359,
     "bgBlobSha": "1de942c76368b8d317071e794ae55fed35d163ad",
     "bgMime": "image/png",
     "bgmVolume": 10,
@@ -4173,7 +4173,7 @@
         },
         {
           "uid": "anime-1792525794356",
-          "updatedAt": 1792525794356,
+          "updatedAt": 1792525947828,
           "kind": "TV Сериал",
           "title": "Связь сердец",
           "origTitle": "Kokoro Connect",
@@ -4203,27 +4203,27 @@
               "releaseYear": 2012,
               "episodes": 13,
               "epMinutes": 24,
-              "date": "2026",
+              "date": "03.06.2026",
               "note": ""
             },
             {
-              "title": "Спешл 2",
+              "title": "Спешл 1 - По случайному пути",
               "type": "Спешл",
               "releaseYear": 2012,
               "episodes": 4,
               "epMinutes": 27,
-              "date": "2012",
+              "date": "03.06.2026",
               "note": ""
             }
           ],
           "watched": [
             {
-              "date": "2026",
+              "date": "03.06.2026",
               "note": "Сезон 1"
             },
             {
-              "date": "2012",
-              "note": "Спешл 2"
+              "date": "03.06.2026",
+              "note": "Спешл 1 - По случайному пути"
             }
           ]
         },
