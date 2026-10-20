@@ -4,12 +4,12 @@
     "owner": "geraltschwarzenegger-svg",
     "repo": "noxyholmes/myTierAnime",
     "branch": "main",
-    "updatedAt": "2026-10-20T09:03:16.864Z",
+    "updatedAt": "2026-10-20T09:03:34.680Z",
     "activeMode": "emblems-realism",
     "bgImage": "backgrounds/1792058756499____________________________________.png",
     "bgDim": 65,
     "bgBlur": 5,
-    "revision": 257,
+    "revision": 258,
     "bgBlobSha": "1de942c76368b8d317071e794ae55fed35d163ad",
     "bgMime": "image/png",
     "bgmVolume": 10,
@@ -807,7 +807,7 @@
         },
         {
           "uid": "anime-1792486914510",
-          "updatedAt": 1792486996827,
+          "updatedAt": 1792487014647,
           "kind": "ONA",
           "title": "Аватар: Легенда об Аанге",
           "origTitle": "Avatar: The Last Airbender",
@@ -841,7 +841,7 @@
           "seasons": [
             {
               "title": "Сезон 1 - Книга 1. Вода",
-              "type": "TV Сериал",
+              "type": "ONA",
               "releaseYear": 2005,
               "episodes": 20,
               "epMinutes": 24,
@@ -850,7 +850,7 @@
             },
             {
               "title": "Сезон 2 - Книга 2. Земля",
-              "type": "TV Сериал",
+              "type": "ONA",
               "releaseYear": 2006,
               "episodes": 20,
               "epMinutes": 24,
@@ -859,7 +859,7 @@
             },
             {
               "title": "Сезон 3 - Книга 3. Огонь",
-              "type": "TV Сериал",
+              "type": "ONA",
               "releaseYear": 2007,
               "episodes": 21,
               "epMinutes": 24,
