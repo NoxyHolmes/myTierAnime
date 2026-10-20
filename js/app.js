@@ -1,4 +1,4 @@
-/* ═══════════════════ MAIN APPLICATION ORCHESTRATOR (v19.0 EXACT RECENT ORDER & TIER METRICS) ═══════════════════ */
+/* ═══════════════════ MAIN APPLICATION ORCHESTRATOR (v20.0 TIME-SORTED TIERS & LATEST WATCH SHOWCASE) ═══════════════════ */
 (() => {
   if (typeof window.pluralRu !== "function") {
     window.pluralRu = function (number, one, few, many) {
@@ -62,8 +62,28 @@
     if (!item) return [];
     const rawList = Array.isArray(item.studios) && item.studios.length
       ? item.studios
-      : String(item.studio || "").split(",");
+      : String(item.studio || "").replace(/ {3,}/g, ", ").split(",");
     return rawList.map(s => String(s).trim()).filter(Boolean);
+  }
+
+  /* АВТОМАТИЧЕСКАЯ СОРТИРОВКА ТАЙТЛОВ В КАЖДОМ ТИРЕ ПО ВРЕМЕНИ (ОТ БОЛЬШЕГО К МЕНЬШЕМУ, СЛЕВА НАПРАВО) */
+  function sortAllTiersByTimeDesc(dataObj) {
+    if (!dataObj || !Array.isArray(dataObj.tiers)) return;
+    dataObj.tiers.forEach(tier => {
+      if (Array.isArray(tier.items) && tier.items.length > 1) {
+        tier.items.sort((a, b) => {
+          const ma = calcItemMetrics(a);
+          const mb = calcItemMetrics(b);
+          if (mb.totalMinutes !== ma.totalMinutes) {
+            return mb.totalMinutes - ma.totalMinutes;
+          }
+          if (mb.totalEpisodes !== ma.totalEpisodes) {
+            return mb.totalEpisodes - ma.totalEpisodes;
+          }
+          return String(a.title || "").localeCompare(String(b.title || ""), "ru");
+        });
+      }
+    });
   }
 
   function registerCustomGenresAndStudios(genresArr = [], studiosArr = []) {
@@ -139,6 +159,7 @@
         t.subtitle = CLEAN_TITLES_MAP[t.id].subtitle;
       }
     });
+    sortAllTiersByTimeDesc(data);
     return data;
   }
 
@@ -249,6 +270,7 @@
 
   async function saveAndAutoSync(reason = "Sync via myTierAnime", showSuccessToast = false) {
     if (!appData) return;
+    sortAllTiersByTimeDesc(appData);
     appData.meta = appData.meta || {};
     appData.meta.revision = Number(appData.meta.revision || 1) + 1;
     appData.meta.updatedAt = new Date().toISOString();
@@ -290,44 +312,58 @@
     }
   }
 
-  /* ──────── ИСПРАВЛЕННАЯ СОРТИРОВКА «НЕДАВНО ДОБАВЛЕННЫЕ И ОБНОВЛЁННЫЕ ТАЙТЛЫ» ────────
-     Сортировка идёт СТРОГО по реальному времени добавления/обновления тайтла на сайте
-     (item.updatedAt или timestamp из item.uid "anime-177..."), а НЕ по 31 декабря года сезона!
-     Поэтому любой только что добавленный или отредактированный тайтл ВСЕГДА стоит №1 (первым слева)! */
+  /* ──────── СОРТИРОВКА «НЕДАВНО ДОБАВЛЕННЫЕ И ОБНОВЛЁННЫЕ ТАЙТЛЫ» СТРОГО ПО ДАТЕ ПОСЛЕДНЕГО ПРОСМОТРА ────────
+     Вычисляется самая свежая дата реально просмотренного сезона/фильма (episodes > 0).
+     Если у сезона указан только год (например 2026), для сортировки берётся 1 января этого года,
+     чтобы он НЕ перебивал сегодняшние полные даты (например 20.10.2026)! */
   function renderRecentShowcase() {
     const recentHost = document.getElementById("recentSection");
     if (!recentHost || !appData || !Array.isArray(appData.tiers)) return;
 
     const allEntries = [];
     appData.tiers.forEach(tier => {
-      (tier.items || []).forEach((item, idxInTier) => {
+      (tier.items || []).forEach(item => {
         const m = calcItemMetrics(item);
 
-        // Находим текстовую подпись последней даты просмотра для отображения на карточке
-        let latestWatchMs = 0;
+        let latestWatchedMs = 0;
         let latestWatchStr = "";
+
         (m.seasons || []).forEach(s => {
+          const eps = parseInt(s.episodes, 10) || 0;
+          if (eps <= 0) return; // Пропускаем будущие анонсы (0 серий), учитываем только реально просмотренные части!
+
           const parsed = typeof parseFlexibleRuDate === "function" ? parseFlexibleRuDate(s.date) : null;
-          if (parsed && parsed.ms >= latestWatchMs) {
-            latestWatchMs = parsed.ms;
+          if (!parsed) return;
+
+          // Точное время просмотра:
+          // - Для полной даты (ДД.ММ.ГГГГ): точный день
+          // - Для месяца (ММ.ГГГГ): 1-е число этого месяца
+          // - Для одного только года (ГГГГ): 1 января этого года (чтобы "2026" не перебивал сегодняшнюю дату 20.10.2026!)
+          let watchMs = 0;
+          if (parsed.precision === "day") {
+            watchMs = new Date(parsed.year, parsed.month, parsed.day, 12, 0, 0).getTime();
+          } else if (parsed.precision === "month") {
+            watchMs = new Date(parsed.year, parsed.month, 1, 0, 0, 0).getTime();
+          } else if (parsed.precision === "year") {
+            watchMs = new Date(parsed.year, 0, 1, 0, 0, 0).getTime();
+          }
+
+          if (watchMs >= latestWatchedMs) {
+            latestWatchedMs = watchMs;
             latestWatchStr = parsed.raw || s.date || "";
           }
         });
 
-        // Вычисляем реальное время добавления/обновления тайтла:
-        // 1) item.updatedAt (ставится в момент создания или редактирования)
-        // 2) числовой timestamp внутри uid ("anime-177...")
         const uidTimeMatch = String(item.uid || "").match(/anime-(\d{10,})/);
         const createdMs = uidTimeMatch ? Number(uidTimeMatch[1]) : 0;
-        const updatedMs = Number(item.updatedAt || 0);
-        const realActionTimestamp = Math.max(updatedMs, createdMs);
+        const actionTieBreaker = Math.max(Number(item.updatedAt || 0), createdMs);
 
         allEntries.push({
           item,
           tier,
           m,
-          realActionTimestamp,
-          idxInTier,
+          latestWatchedMs,
+          actionTieBreaker,
           latestWatchStr: latestWatchStr || (item.year ? `${item.year} г.` : "Недавно")
         });
       });
@@ -341,12 +377,12 @@
 
     recentHost.style.display = activeView === "calendar" ? "none" : "block";
 
-    // Сортируем от самого последнего добавленного/обновлённого к более старым
+    // Сортируем строго по самой свежей дате просмотра (от новой к старой); при равной дате — по времени последнего обновления
     allEntries.sort((a, b) => {
-      if (b.realActionTimestamp !== a.realActionTimestamp) {
-        return b.realActionTimestamp - a.realActionTimestamp;
+      if (b.latestWatchedMs !== a.latestWatchedMs) {
+        return b.latestWatchedMs - a.latestWatchedMs;
       }
-      return a.idxInTier - b.idxInTier;
+      return b.actionTieBreaker - a.actionTieBreaker;
     });
 
     const recentTop = allEntries.slice(0, 10);
@@ -478,6 +514,9 @@
     const host = document.getElementById("tiersRoot");
     if (!host || !appData || !Array.isArray(appData.tiers)) return;
 
+    // Перед каждой отрисовкой гарантируем, что внутри каждого тира тайтлы отсортированы от большего времени к меньшему (слева направо)
+    sortAllTiersByTimeDesc(appData);
+
     if (typeof FXController !== "undefined" && typeof FXController.applyGlobalBackground === "function") {
       FXController.applyGlobalBackground(appData.meta || {});
     }
@@ -492,7 +531,6 @@
     host.innerHTML = appData.tiers.map((tier, tierIdx) => {
       const allTierItems = tier.items || [];
 
-      /* Вычисляем статистику конкретного тира: количество серий, фильмов, часов и дней */
       let tierEpisodes = 0;
       let tierMovies = 0;
       let tierHours = 0;
@@ -510,7 +548,6 @@
         const seasonTypes = (m.seasons || []).map(s => (s.type || "").toLowerCase());
         const mainKindLower = String(m.kind || it.kind || "").toLowerCase();
 
-        // Поиск по названию, оригинальному названию, студии, жанрам и типу (сериал, фильм, ova, ona, спешл)
         const matchText = !q ||
           (it.title && it.title.toLowerCase().includes(q)) ||
           (it.origTitle && it.origTitle.toLowerCase().includes(q)) ||
@@ -519,7 +556,6 @@
           itStudios.some(s => s.toLowerCase().includes(q)) ||
           (it.genres || []).some(g => g.toLowerCase().includes(q));
 
-        // Фильтр по типу (TV Сериал, Фильм, OVA, ONA, Спешл)
         const matchKind = selectedKind === "ALL" ||
           (m.kind && m.kind.toLowerCase() === selectedKind.toLowerCase()) ||
           (m.seasons || []).some(s => (s.type || "").toLowerCase() === selectedKind.toLowerCase());
@@ -730,8 +766,9 @@
       };
     });
 
+    /* При перетаскивании карточки в другой тир она автоматически встаёт на своё место по времени! */
     if (typeof DragDropEngine !== "undefined" && typeof DragDropEngine.bindCardsAndGrids === "function") {
-      DragDropEngine.bindCardsAndGrids((uid, fromTierId, toTierId, targetUid) => {
+      DragDropEngine.bindCardsAndGrids((uid, fromTierId, toTierId) => {
         if (!GitHubSync.isOwner()) return;
         const fromTier = appData.tiers.find(t => t.id === fromTierId);
         const toTier = appData.tiers.find(t => t.id === toTierId);
@@ -740,16 +777,12 @@
         if (idx === -1) return;
         const [moved] = fromTier.items.splice(idx, 1);
 
-        if (targetUid) {
-          const destIdx = toTier.items.findIndex(i => i.uid === targetUid);
-          if (destIdx !== -1) toTier.items.splice(destIdx, 0, moved);
-          else toTier.items.push(moved);
-        } else {
-          toTier.items.push(moved);
-        }
+        toTier.items.push(moved);
+        sortAllTiersByTimeDesc(appData);
+
         render();
         saveAndAutoSync(`Move ${moved.title} to ${toTierId}`, false);
-        showToast(`«${moved.title}» перемещён в тир ${toTierId}`, "#00f5ff");
+        showToast(`«${moved.title}» перемещён в тир ${toTierId} (отсортировано по времени)`, "#00f5ff");
       });
     }
   }
@@ -806,6 +839,20 @@
 
     document.getElementById("btnToggleCalendar")?.addEventListener("click", () => toggleCalendarView());
     document.getElementById("brandHomeBtn")?.addEventListener("click", () => toggleCalendarView("tiers"));
+
+    /* Кнопка открытия подробной аналитики и статистики */
+    document.getElementById("btnOpenStatsModal")?.addEventListener("click", () => {
+      if (typeof StatsEngine !== "undefined" && typeof StatsEngine.openDetailedStatsModal === "function") {
+        StatsEngine.openDetailedStatsModal(appData?.tiers || [], (uid, tierId) => {
+          const tier = appData?.tiers?.find(t => t.id === tierId);
+          const item = tier?.items?.find(i => i.uid === uid);
+          if (item && tier && typeof Modals !== "undefined") {
+            Modals.showAnimeDetails(item, tier);
+          }
+        });
+      }
+    });
+
     document.getElementById("btnAddTitleTop")?.addEventListener("click", () => {
       if (!GitHubSync.isOwner()) {
         showToast("Для добавления войдите как владелец", "#ff3c8c");
@@ -829,7 +876,6 @@
       const gMenu = document.getElementById("genreDropdownMenu");
       const stMenu = document.getElementById("studioDropdownMenu");
 
-      // Выпадающее меню фильтра по типу (TV Сериал, Фильм, OVA, ONA, Спешл)
       if (e.target.closest("#kindDropdownBtn")) {
         e.preventDefault();
         gMenu?.classList.remove("open");
@@ -955,7 +1001,7 @@
       const val = studioPicker.value;
       if (!val) return;
       const inp = document.getElementById("fStudio");
-      const currentList = inp.value.split(",").map(s => s.trim()).filter(Boolean);
+      const currentList = inp.value.replace(/ {3,}/g, ", ").split(",").map(s => s.trim()).filter(Boolean);
       if (!currentList.some(s => s.toLowerCase() === val.toLowerCase())) {
         currentList.push(val);
         inp.value = currentList.join(", ");
@@ -991,7 +1037,7 @@
       const val = picker.value;
       if (!val) return;
       const inp = document.getElementById("fGenres");
-      const currentList = inp.value.split(",").map(s => s.trim()).filter(Boolean);
+      const currentList = inp.value.replace(/ {3,}/g, ", ").split(",").map(s => s.trim()).filter(Boolean);
       if (!currentList.some(g => g.toLowerCase() === val.toLowerCase())) {
         currentList.push(val);
         inp.value = currentList.join(", ");
@@ -1191,11 +1237,14 @@
 
       const parsedYear = parseInt(document.getElementById("fYear").value, 10);
 
+      /* Автоматическая замена 3+ пробелов на запятую при сохранении жанров и студий */
       const studiosArr = document.getElementById("fStudio").value
+        .replace(/ {3,}/g, ", ")
         .split(",")
         .map(s => s.trim())
         .filter(Boolean);
       const genresArr = document.getElementById("fGenres").value
+        .replace(/ {3,}/g, ", ")
         .split(",")
         .map(s => s.trim())
         .filter(Boolean);
@@ -1204,7 +1253,7 @@
 
       const newItem = {
         uid,
-        updatedAt: nowMs, // Строгая фиксация времени добавления/обновления для 1-го места в "Недавно добавленные"!
+        updatedAt: nowMs,
         kind: document.getElementById("fKind").value,
         title: ruTitle,
         origTitle: document.getElementById("fOrigTitle").value.trim(),
@@ -1239,8 +1288,11 @@
 
       if (!wasExisting) {
         const destTier = appData.tiers.find(t => t.id === targetTierId) || appData.tiers[0];
-        destTier.items.unshift(newItem);
+        destTier.items.push(newItem);
       }
+
+      // Автоматически сортируем тир по времени (от большего к меньшему)
+      sortAllTiersByTimeDesc(appData);
 
       Modals.closeModal("editorModal");
       render();
