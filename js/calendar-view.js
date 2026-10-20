@@ -1,4 +1,4 @@
-/* ═══════════════════ COMPACT SPLIT CALENDAR & CHRONOLOGICAL LIST VIEW (v18.6) ═══════════════════ */
+/* ═══════════════════ COMPACT SPLIT CALENDAR & LIST VIEW (v20.0 NO-DATE ON TOP & GOLD ONLY FOR UPCOMING) ═══════════════════ */
 const CalendarView = (() => {
   const MONTHS_NOM = [
     "Январь", "Февраль", "Март", "Апрель", "Май", "Июнь",
@@ -19,10 +19,10 @@ const CalendarView = (() => {
     E: { bg: "rgba(140, 150, 190, 0.18)", border: "#8c96be", text: "#d0d6f2" }
   };
 
-  let mode = "calendar"; // "calendar" | "list" | "nodate"
+  let mode = "calendar"; // "calendar" | "list"
   let curYear = new Date().getFullYear();
   let curMonth = new Date().getMonth();
-  let selectedDay = null; // null = показывать весь месяц, число = конкретный день
+  let selectedDay = null;
   let searchQuery = "";
   let filterYearSelect = "ALL";
   let initializedToLatest = false;
@@ -396,6 +396,18 @@ const CalendarView = (() => {
         font-weight: 900;
       }
 
+      /* ЗОЛОТАЯ ОБВОДКА ТОЛЬКО ДЛЯ АНОНСОВ */
+      .month-block.is-upcoming-block {
+        border: 1px solid rgba(255, 215, 106, 0.6) !important;
+        box-shadow: 0 0 24px -6px rgba(255, 215, 106, 0.28) !important;
+        background: linear-gradient(135deg, rgba(38, 28, 48, 0.92), rgba(16, 13, 32, 0.96)) !important;
+      }
+      .month-entry-card.is-upcoming-card {
+        border: 1px solid rgba(255, 215, 106, 0.65) !important;
+        background: linear-gradient(135deg, rgba(255, 215, 106, 0.12), rgba(255, 255, 255, 0.03)) !important;
+        box-shadow: 0 0 16px -4px rgba(255, 215, 106, 0.35) !important;
+      }
+
       @media (max-width: 960px) {
         .mta-cal-split-layout {
           grid-template-columns: 1fr;
@@ -412,7 +424,6 @@ const CalendarView = (() => {
     document.head.appendChild(st);
   }
 
-  /* Собираем все записи. Если у анонса (0 серий) не заполнена дата, но указан Год (например 2026 или 2027), он получает precision="year" и встаёт в список за этот год! */
   function collectAllEntries(tiers) {
     const datedEntries = [];
     const noDateEntries = [];
@@ -429,7 +440,6 @@ const CalendarView = (() => {
           const isUpcoming = Number(part.episodes) === 0;
           const relYr = part.releaseYear !== undefined && part.releaseYear !== null ? Number(part.releaseYear) : 0;
 
-          // Если дата не указана (или написано "Анонс"), но у сезона/анонса задан конкретный год (например 2026 или 2027 > 0), ставим его как запись с годом!
           if ((!parsed || !parsed.year) && relYr > 0) {
             parsed = {
               precision: "year",
@@ -452,7 +462,6 @@ const CalendarView = (() => {
               poster: displayPoster,
               rawPoster: item.poster || "",
               blobSha: item.posterBlobSha || "",
-              score: item.score,
               partTitle: part.title,
               partType: part.type,
               partNote: part.note || "",
@@ -461,10 +470,10 @@ const CalendarView = (() => {
               epMinutes: part.epMinutes,
               partHours: isUpcoming ? 0 : (part.episodes * part.epMinutes) / 60,
               isUpcoming,
-              precision: parsed.precision, // "day" | "month" | "year"
+              precision: parsed.precision,
               year: parsed.year,
-              month: parsed.month, // 0..11 или null
-              day: parsed.day,     // 1..31 или null
+              month: parsed.month,
+              day: parsed.day,
               ms: parsed.ms,
               rawDate: parsed.raw
             });
@@ -477,7 +486,6 @@ const CalendarView = (() => {
               poster: displayPoster,
               rawPoster: item.poster || "",
               blobSha: item.posterBlobSha || "",
-              score: item.score,
               partTitle: part.title,
               partType: part.type,
               partNote: part.note || "",
@@ -532,9 +540,11 @@ const CalendarView = (() => {
 
     const filteredDated = datedEntries.filter(matchSearchAndYear);
     const filteredNoDate = noDateEntries.filter(e => {
-      return !q ||
+      const matchText = !q ||
         (e.title && e.title.toLowerCase().includes(q)) ||
         (e.partTitle && e.partTitle.toLowerCase().includes(q));
+      const matchYr = filterYearSelect === "ALL";
+      return matchText && matchYr;
     });
 
     // 1. Вкладка «Календарь»
@@ -636,18 +646,18 @@ const CalendarView = (() => {
                 const tc = TIER_COLORS[e.tierId] || TIER_COLORS.S;
                 const dateBadge = e.precision === "day"
                   ? `${String(e.day).padStart(2, "0")}.${String(e.month + 1).padStart(2, "0")}.${e.year}`
-                  : `${MONTHS_NOM[e.month]}${e.year}`;
+                  : `${MONTHS_NOM[e.month]} ${e.year}`;
                 const timeOrUpcoming = e.isUpcoming
                   ? `<b style="color:#ffd76a;">⏳ Анонс</b>`
                   : `⏱ ${formatHours(e.partHours)} ч.`;
                 return `
-                  <div class="mta-watch-row" data-uid="${esc(e.uid)}" data-tier="${esc(e.tierId)}">
+                  <div class="mta-watch-row" data-uid="${esc(e.uid)}" data-tier="${esc(e.tierId)}" style="${e.isUpcoming ? "border-color:rgba(255,215,106,0.65);" : ""}">
                     <div class="mta-watch-date">${esc(dateBadge)}</div>
                     <img class="mta-watch-thumb card-poster" src="${esc(e.poster)}" data-raw-path="${esc(e.rawPoster)}" data-blob-sha="${esc(e.blobSha)}" alt="">
                     <div class="mta-watch-info">
                       <div class="mta-watch-title">${esc(e.title)}</div>
                       <div class="mta-watch-sub">
-                        ${esc(e.tierName)} · <b style="color:#ffd76a;">${esc(e.partTitle)}</b> (${esc(e.partType)}) ·${timeOrUpcoming}
+                        ${esc(e.tierName)} · <b style="color:#ffd76a;">${esc(e.partTitle)}</b> (${esc(e.partType)}) · ${timeOrUpcoming}
                       </div>
                     </div>
                     <div class="mta-watch-tier-pill" style="background:${tc.bg};border:1px solid ${tc.border};color:${tc.text};">
@@ -666,13 +676,12 @@ const CalendarView = (() => {
       `;
     }
 
-    // 2. Вкладка «Список» (годовые блоки стоят между Декабрём своего года и Январём следующего года, без текста "(указан только год)")
+    // 2. Вкладка «Список» (Без даты — в самом верху поверх всех годов; золотая обводка — ТОЛЬКО у анонсов!)
     function buildChronologicalListHtml() {
       const groupsMap = new Map();
 
       filteredDated.forEach(e => {
         if (e.precision === "year" || e.month === null) {
-          // monthOrder = 12 ставит "2026 год" строго между Декабрём 2026 (11) и Январём 2027 (year 2027, monthOrder 0)!
           const key = `${e.year}-YEAR_TOP`;
           if (!groupsMap.has(key)) {
             groupsMap.set(key, {
@@ -702,19 +711,57 @@ const CalendarView = (() => {
         return b.monthOrder - a.monthOrder;
       });
 
-      if (!sortedGroups.length) {
+      if (!sortedGroups.length && !filteredNoDate.length) {
         return `<div class="month-block">По вашему запросу записей не найдено.</div>`;
       }
 
+      // Блок «Без даты» выводится самым первым вверху поверх всех годов!
+      const noDateTopBlockHtml = filteredNoDate.length ? (() => {
+        const allAreUpcoming = filteredNoDate.some(e => e.isUpcoming);
+        return `
+          <div class="month-block ${allAreUpcoming ? "is-upcoming-block" : ""}">
+            <div class="month-block-head">
+              <h3 style="margin:0;font-family:var(--serif);font-size:18px;color:${allAreUpcoming ? "#ffd76a" : "#ffffff"};">
+                ⏳ Без даты и анонсы (${filteredNoDate.length})
+              </h3>
+              <span style="font-size:12px;color:#ffd76a;font-weight:700;">
+                Частей: ${filteredNoDate.length}
+              </span>
+            </div>
+            <div class="month-entries-grid">
+              ${filteredNoDate.map(e => `
+                <div class="month-entry-card ${e.isUpcoming ? "is-upcoming-card" : ""}" data-uid="${esc(e.uid)}" data-tier="${esc(e.tierId)}">
+                  <img class="card-poster" src="${esc(e.poster)}" data-raw-path="${esc(e.rawPoster)}" data-blob-sha="${esc(e.blobSha)}" alt="">
+                  <div style="min-width:0;flex:1;">
+                    <div style="font-size:11px;color:#ffd76a;font-weight:700;">
+                      ⏳ ${esc(e.rawDate)} · Тир ${esc(e.tierId)}
+                    </div>
+                    <div style="font-size:13.5px;font-weight:800;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                      ${esc(e.title)}
+                    </div>
+                    <div style="font-size:11.5px;color:#00f5ff;font-weight:600;">
+                      ${esc(e.partTitle)} (${esc(e.partType)}${e.releaseYear > 0 ? `, ${esc(e.releaseYear)} г.` : ""}) — ${e.isUpcoming ? `<b style="color:#ffd76a;">⏳ Анонс</b>` : `${formatHours(e.partHours)} ч.`}
+                    </div>
+                  </div>
+                </div>
+              `).join("")}
+            </div>
+          </div>
+        `;
+      })() : "";
+
       return `
         <div class="months-list">
+          ${noDateTopBlockHtml}
           ${sortedGroups.map(g => {
             const totalGroupHours = g.items.reduce((acc, i) => acc + i.partHours, 0);
-            const isYearOnlyBlock = g.monthOrder === 12;
+            // Золотая обводка ставится у блока ТОЛЬКО если все записи внутри него — это анонсы! У обычных годов золотой обводки больше нет!
+            const isAllUpcomingGroup = g.items.length > 0 && g.items.every(i => i.isUpcoming);
+
             return `
-              <div class="month-block" style="${isYearOnlyBlock ? "border-color:rgba(255,215,106,0.45);background:linear-gradient(135deg,rgba(32,24,52,0.92),rgba(16,13,32,0.95));" : ""}">
+              <div class="month-block ${isAllUpcomingGroup ? "is-upcoming-block" : ""}">
                 <div class="month-block-head">
-                  <h3 style="margin:0;font-family:var(--serif);font-size:18px;color:${isYearOnlyBlock ? "#ffd76a" : "#ffffff"};">
+                  <h3 style="margin:0;font-family:var(--serif);font-size:18px;color:${isAllUpcomingGroup ? "#ffd76a" : "#ffffff"};">
                     ${esc(g.title)}
                   </h3>
                   <span style="font-size:12px;color:#00f5ff;font-weight:700;">
@@ -728,11 +775,11 @@ const CalendarView = (() => {
                       : (e.precision === "month" ? `🗓 ${MONTHS_NOM[e.month]} ${e.year}` : `📌 ${e.year} год`);
 
                     const statusOrHours = e.isUpcoming
-                      ? `⏳ Анонс`
+                      ? `<b style="color:#ffd76a;">⏳ Анонс</b>`
                       : `${formatHours(e.partHours)} ч.`;
 
                     return `
-                      <div class="month-entry-card" data-uid="${esc(e.uid)}" data-tier="${esc(e.tierId)}">
+                      <div class="month-entry-card ${e.isUpcoming ? "is-upcoming-card" : ""}" data-uid="${esc(e.uid)}" data-tier="${esc(e.tierId)}">
                         <img class="card-poster" src="${esc(e.poster)}" data-raw-path="${esc(e.rawPoster)}" data-blob-sha="${esc(e.blobSha)}" alt="">
                         <div style="min-width:0;flex:1;">
                           <div style="font-size:11px;color:#ffd76a;font-weight:700;">
@@ -756,45 +803,13 @@ const CalendarView = (() => {
       `;
     }
 
-    // 3. Вкладка «Без даты» (только те записи и анонсы, у которых год = 0 / неизвестен)
-    function buildNoDateHtml() {
-      if (!filteredNoDate.length) {
-        return `<div class="month-block" style="text-align:center;color:var(--ink-soft);">Нет сезонов или анонсов без указанной даты.</div>`;
-      }
-      return `
-        <div class="month-block">
-          <div class="month-block-head">
-            <h3 style="margin:0;font-family:var(--serif);font-size:18px;color:#ffd76a;">⏳ Анонсы без известного года и части без даты (${filteredNoDate.length})</h3>
-          </div>
-          <div class="month-entries-grid">
-            ${filteredNoDate.map(e => `
-              <div class="month-entry-card" data-uid="${esc(e.uid)}" data-tier="${esc(e.tierId)}">
-                <img class="card-poster" src="${esc(e.poster)}" data-raw-path="${esc(e.rawPoster)}" data-blob-sha="${esc(e.blobSha)}" alt="">
-                <div style="min-width:0;flex:1;">
-                  <div style="font-size:11px;color:#ffd76a;font-weight:700;">
-                    ⏳ ${esc(e.rawDate)} · Тир ${esc(e.tierId)}
-                  </div>
-                  <div style="font-size:13.5px;font-weight:800;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
-                    ${esc(e.title)}
-                  </div>
-                  <div style="font-size:11.5px;color:#00f5ff;font-weight:600;">
-                    ${esc(e.partTitle)} (${esc(e.partType)}${e.releaseYear > 0 ? `, ${esc(e.releaseYear)} г.` : ", год не указан"})
-                  </div>
-                </div>
-              </div>
-            `).join("")}
-          </div>
-        </div>
-      `;
-    }
-
     host.innerHTML = `
       <div class="mta-cal-shell">
         <div class="mta-cal-top-header">
           <div>
             <h2 class="mta-cal-main-title">История просмотров</h2>
             <div class="mta-cal-sub-counts">
-              ${titlesWithDateCount} тайтлов с датой · ${datedEntries.length} записей просмотра
+              ${titlesWithDateCount} тайтлов с датой · ${datedEntries.length} записей просмотра${noDateEntries.length ? ` · ${noDateEntries.length} без даты` : ""}
             </div>
           </div>
         </div>
@@ -810,11 +825,10 @@ const CalendarView = (() => {
         <div class="mta-cal-tabs-row">
           <button type="button" class="mta-cal-tab ${mode === "calendar" ? "active" : ""}" data-cal-mode="calendar">Календарь</button>
           <button type="button" class="mta-cal-tab ${mode === "list" ? "active" : ""}" data-cal-mode="list">Список</button>
-          <button type="button" class="mta-cal-tab ${mode === "nodate" ? "active" : ""}" data-cal-mode="nodate">Без даты · ${noDateEntries.length}</button>
         </div>
 
         <div id="calDynamicBody">
-          ${mode === "calendar" ? buildCompactCalendarHtml() : (mode === "list" ? buildChronologicalListHtml() : buildNoDateHtml())}
+          ${mode === "calendar" ? buildCompactCalendarHtml() : buildChronologicalListHtml()}
         </div>
       </div>
     `;
