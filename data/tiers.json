@@ -4,12 +4,12 @@
     "owner": "geraltschwarzenegger-svg",
     "repo": "noxyholmes/myTierAnime",
     "branch": "main",
-    "updatedAt": "2026-10-20T20:18:57.966Z",
+    "updatedAt": "2026-10-20T20:20:16.941Z",
     "activeMode": "emblems-realism",
     "bgImage": "backgrounds/1792058756499____________________________________.png",
     "bgDim": 65,
     "bgBlur": 5,
-    "revision": 375,
+    "revision": 376,
     "bgBlobSha": "1de942c76368b8d317071e794ae55fed35d163ad",
     "bgMime": "image/png",
     "bgmVolume": 10,
@@ -823,7 +823,7 @@
         },
         {
           "uid": "anime-1792486914510",
-          "updatedAt": 1792487014647,
+          "updatedAt": 1792527616814,
           "kind": "ONA",
           "title": "Аватар: Легенда об Аанге",
           "origTitle": "Avatar: The Last Airbender",
@@ -888,7 +888,7 @@
               "releaseYear": 2026,
               "episodes": 1,
               "epMinutes": 100,
-              "date": "04.2026",
+              "date": "29.04.2026",
               "note": ""
             }
           ],
@@ -906,7 +906,7 @@
               "note": "Сезон 3 - Книга 3. Огонь"
             },
             {
-              "date": "04.2026",
+              "date": "29.04.2026",
               "note": "Фильм - Легенда об Аанге: Последний маг воздуха"
             }
           ]
