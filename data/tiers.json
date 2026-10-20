@@ -4,12 +4,12 @@
     "owner": "geraltschwarzenegger-svg",
     "repo": "noxyholmes/myTierAnime",
     "branch": "main",
-    "updatedAt": "2026-10-20T13:58:45.798Z",
+    "updatedAt": "2026-10-20T13:58:53.030Z",
     "activeMode": "emblems-realism",
     "bgImage": "backgrounds/1792058756499____________________________________.png",
     "bgDim": 65,
     "bgBlur": 5,
-    "revision": 308,
+    "revision": 310,
     "bgBlobSha": "1de942c76368b8d317071e794ae55fed35d163ad",
     "bgMime": "image/png",
     "bgmVolume": 10,
@@ -1922,59 +1922,6 @@
       "hue": 185,
       "items": [
         {
-          "uid": "anime-1792440354818",
-          "updatedAt": 1792504696272,
-          "kind": "TV Сериал",
-          "title": "Ателье колдовских колпаков",
-          "origTitle": "Atelier of Witch Hat",
-          "year": 2026,
-          "studio": "BUG FILMS",
-          "studios": [
-            "BUG FILMS"
-          ],
-          "poster": "posters/1792440310947_264333.jpg",
-          "posterBlobSha": "8da739b1bd5901723f0a8f7fbfdbe98e992abb53",
-          "genres": [
-            "Сэйнэн",
-            "Драма",
-            "Приключения",
-            "Фэнтези",
-            "Магия",
-            "Целый фэнтези мир"
-          ],
-          "comment": "",
-          "seasons": [
-            {
-              "title": "Сезон 1",
-              "type": "TV Сериал",
-              "releaseYear": 2026,
-              "episodes": 13,
-              "epMinutes": 24,
-              "date": "01.07.2026",
-              "note": ""
-            },
-            {
-              "title": "Сезон 2",
-              "type": "TV Сериал",
-              "releaseYear": 0,
-              "episodes": 0,
-              "epMinutes": 24,
-              "date": "",
-              "note": ""
-            }
-          ],
-          "watched": [
-            {
-              "date": "01.07.2026",
-              "note": "Сезон 1"
-            },
-            {
-              "date": "",
-              "note": "Сезон 2"
-            }
-          ]
-        },
-        {
           "uid": "anime-1792502591970",
           "updatedAt": 1792502591970,
           "kind": "TV Сериал",
@@ -2737,6 +2684,59 @@
             {
               "date": "02.2026",
               "note": "Сезон 1"
+            }
+          ]
+        },
+        {
+          "uid": "anime-1792440354818",
+          "updatedAt": 1792504696272,
+          "kind": "TV Сериал",
+          "title": "Ателье колдовских колпаков",
+          "origTitle": "Atelier of Witch Hat",
+          "year": 2026,
+          "studio": "BUG FILMS",
+          "studios": [
+            "BUG FILMS"
+          ],
+          "poster": "posters/1792440310947_264333.jpg",
+          "posterBlobSha": "8da739b1bd5901723f0a8f7fbfdbe98e992abb53",
+          "genres": [
+            "Сэйнэн",
+            "Драма",
+            "Приключения",
+            "Фэнтези",
+            "Магия",
+            "Целый фэнтези мир"
+          ],
+          "comment": "",
+          "seasons": [
+            {
+              "title": "Сезон 1",
+              "type": "TV Сериал",
+              "releaseYear": 2026,
+              "episodes": 13,
+              "epMinutes": 24,
+              "date": "01.07.2026",
+              "note": ""
+            },
+            {
+              "title": "Сезон 2",
+              "type": "TV Сериал",
+              "releaseYear": 0,
+              "episodes": 0,
+              "epMinutes": 24,
+              "date": "",
+              "note": ""
+            }
+          ],
+          "watched": [
+            {
+              "date": "01.07.2026",
+              "note": "Сезон 1"
+            },
+            {
+              "date": "",
+              "note": "Сезон 2"
             }
           ]
         },
