@@ -4,12 +4,12 @@
     "owner": "geraltschwarzenegger-svg",
     "repo": "noxyholmes/myTierAnime",
     "branch": "main",
-    "updatedAt": "2026-10-20T20:38:47.852Z",
+    "updatedAt": "2026-10-20T20:39:36.749Z",
     "activeMode": "emblems-realism",
     "bgImage": "backgrounds/1792058756499____________________________________.png",
     "bgDim": 65,
     "bgBlur": 5,
-    "revision": 384,
+    "revision": 385,
     "bgBlobSha": "1de942c76368b8d317071e794ae55fed35d163ad",
     "bgMime": "image/png",
     "bgmVolume": 10,
@@ -5446,7 +5446,7 @@
         },
         {
           "uid": "anime-1792528261149",
-          "updatedAt": 1792528261149,
+          "updatedAt": 1792528776619,
           "kind": "Фильм",
           "title": "Пять сантиметров в секунду",
           "origTitle": "Byousoku 5 Centimeter",
@@ -5473,13 +5473,13 @@
               "releaseYear": 2007,
               "episodes": 1,
               "epMinutes": 60,
-              "date": "24.04.2206",
+              "date": "24.04.2026",
               "note": ""
             }
           ],
           "watched": [
             {
-              "date": "24.04.2206",
+              "date": "24.04.2026",
               "note": "Фильм"
             }
           ]
