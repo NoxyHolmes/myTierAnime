@@ -4,12 +4,12 @@
     "owner": "geraltschwarzenegger-svg",
     "repo": "noxyholmes/myTierAnime",
     "branch": "main",
-    "updatedAt": "2026-10-20T19:49:54.456Z",
+    "updatedAt": "2026-10-20T19:51:43.271Z",
     "activeMode": "emblems-realism",
     "bgImage": "backgrounds/1792058756499____________________________________.png",
     "bgDim": 65,
     "bgBlur": 5,
-    "revision": 355,
+    "revision": 356,
     "bgBlobSha": "1de942c76368b8d317071e794ae55fed35d163ad",
     "bgMime": "image/png",
     "bgmVolume": 10,
@@ -36,7 +36,8 @@
       "CLAP",
       "Telecom Animation Film",
       "Blade",
-      "Diomedea"
+      "Diomedea",
+      "NAZ"
     ],
     "bgInline": ""
   },
@@ -4442,6 +4443,46 @@
           "watched": [
             {
               "date": "28.09.2026",
+              "note": "Сезон 1"
+            }
+          ]
+        },
+        {
+          "uid": "anime-1792525903171",
+          "updatedAt": 1792525903171,
+          "kind": "TV Сериал",
+          "title": "ID: Вторжение",
+          "origTitle": "Id:Invaded",
+          "year": 2020,
+          "studio": "NAZ",
+          "studios": [
+            "NAZ"
+          ],
+          "poster": "https://placehold.co/400x600/16122b/ffd76a?text=myTierAnime",
+          "genres": [
+            "Детектив",
+            "Убийцы",
+            "Мистика",
+            "Триллер",
+            "Фантастика",
+            "Полицейские",
+            "Психология"
+          ],
+          "comment": "",
+          "seasons": [
+            {
+              "title": "Сезон 1",
+              "type": "TV Сериал",
+              "releaseYear": 2020,
+              "episodes": 13,
+              "epMinutes": 24,
+              "date": "25.05.2026",
+              "note": ""
+            }
+          ],
+          "watched": [
+            {
+              "date": "25.05.2026",
               "note": "Сезон 1"
             }
           ]
