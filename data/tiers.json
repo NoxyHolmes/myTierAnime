@@ -4,12 +4,12 @@
     "owner": "geraltschwarzenegger-svg",
     "repo": "noxyholmes/myTierAnime",
     "branch": "main",
-    "updatedAt": "2026-10-25T07:31:37.207Z",
+    "updatedAt": "2026-10-25T07:36:07.856Z",
     "activeMode": "emblems-realism",
     "bgImage": "backgrounds/1792058756499____________________________________.png",
     "bgDim": 65,
     "bgBlur": 5,
-    "revision": 387,
+    "revision": 388,
     "bgBlobSha": "1de942c76368b8d317071e794ae55fed35d163ad",
     "bgMime": "image/png",
     "bgmVolume": 10,
@@ -5808,7 +5808,7 @@
         },
         {
           "uid": "anime-1792913497055",
-          "updatedAt": 1792913497055,
+          "updatedAt": 1792913767725,
           "kind": "TV Сериал",
           "title": "Моя возлюбленная забыла свои очки",
           "origTitle": "Suki na Ko ga Megane wo Wasureta",
@@ -5837,12 +5837,25 @@
               "epMinutes": 24,
               "date": "25.10.2026",
               "note": ""
+            },
+            {
+              "title": "ONA - Короткие эпизоды",
+              "type": "ONA",
+              "releaseYear": 2023,
+              "episodes": 4,
+              "epMinutes": 0.46,
+              "date": "25.10.2026",
+              "note": ""
             }
           ],
           "watched": [
             {
               "date": "25.10.2026",
               "note": "Сезон 1"
+            },
+            {
+              "date": "25.10.2026",
+              "note": "ONA - Короткие эпизоды"
             }
           ]
         },
