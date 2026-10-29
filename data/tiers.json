@@ -4,12 +4,12 @@
     "owner": "geraltschwarzenegger-svg",
     "repo": "noxyholmes/myTierAnime",
     "branch": "main",
-    "updatedAt": "2026-10-29T09:19:46.903Z",
+    "updatedAt": "2026-10-29T12:54:32.739Z",
     "activeMode": "emblems-realism",
     "bgImage": "backgrounds/1792058756499____________________________________.png",
     "bgDim": 65,
     "bgBlur": 5,
-    "revision": 390,
+    "revision": 391,
     "bgBlobSha": "1de942c76368b8d317071e794ae55fed35d163ad",
     "bgMime": "image/png",
     "bgmVolume": 10,
@@ -825,7 +825,7 @@
         },
         {
           "uid": "anime-1792915413244",
-          "updatedAt": 1793265586751,
+          "updatedAt": 1793278472572,
           "kind": "TV Сериал",
           "title": "Клинок, рассекающий демонов",
           "origTitle": "Kimetsu no Yaiba",
@@ -876,7 +876,7 @@
               "releaseYear": 2020,
               "episodes": 1,
               "epMinutes": 115,
-              "date": "",
+              "date": "29.10.2026",
               "note": ""
             },
             {
@@ -953,7 +953,7 @@
               "note": "Спешл - Банкет демона"
             },
             {
-              "date": "",
+              "date": "29.10.2026",
               "note": "Фильм 1 - Бесконечный поезд"
             },
             {
