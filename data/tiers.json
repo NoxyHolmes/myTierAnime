@@ -4,12 +4,12 @@
     "owner": "geraltschwarzenegger-svg",
     "repo": "noxyholmes/myTierAnime",
     "branch": "main",
-    "updatedAt": "2026-10-29T12:54:32.739Z",
+    "updatedAt": "2026-10-30T09:46:28.101Z",
     "activeMode": "emblems-realism",
     "bgImage": "backgrounds/1792058756499____________________________________.png",
     "bgDim": 65,
     "bgBlur": 5,
-    "revision": 391,
+    "revision": 392,
     "bgBlobSha": "1de942c76368b8d317071e794ae55fed35d163ad",
     "bgMime": "image/png",
     "bgmVolume": 10,
@@ -825,7 +825,7 @@
         },
         {
           "uid": "anime-1792915413244",
-          "updatedAt": 1793278472572,
+          "updatedAt": 1793353587830,
           "kind": "TV Сериал",
           "title": "Клинок, рассекающий демонов",
           "origTitle": "Kimetsu no Yaiba",
@@ -885,7 +885,7 @@
               "releaseYear": 2021,
               "episodes": 4,
               "epMinutes": 2.33,
-              "date": "",
+              "date": "29.10.2026",
               "note": ""
             },
             {
@@ -894,7 +894,7 @@
               "releaseYear": 2021,
               "episodes": 11,
               "epMinutes": 24,
-              "date": "",
+              "date": "30.10.2026",
               "note": ""
             },
             {
@@ -957,11 +957,11 @@
               "note": "Фильм 1 - Бесконечный поезд"
             },
             {
-              "date": "",
+              "date": "29.10.2026",
               "note": "ONA - День святого Валентина"
             },
             {
-              "date": "",
+              "date": "30.10.2026",
               "note": "Сезон 2 - Квартал красных фонарей"
             },
             {
