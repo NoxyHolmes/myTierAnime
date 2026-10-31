@@ -4,12 +4,12 @@
     "owner": "geraltschwarzenegger-svg",
     "repo": "noxyholmes/myTierAnime",
     "branch": "main",
-    "updatedAt": "2026-10-30T09:46:28.101Z",
+    "updatedAt": "2026-10-31T07:33:31.535Z",
     "activeMode": "emblems-realism",
     "bgImage": "backgrounds/1792058756499____________________________________.png",
     "bgDim": 65,
     "bgBlur": 5,
-    "revision": 392,
+    "revision": 393,
     "bgBlobSha": "1de942c76368b8d317071e794ae55fed35d163ad",
     "bgMime": "image/png",
     "bgmVolume": 10,
@@ -825,7 +825,7 @@
         },
         {
           "uid": "anime-1792915413244",
-          "updatedAt": 1793353587830,
+          "updatedAt": 1793432011391,
           "kind": "TV Сериал",
           "title": "Клинок, рассекающий демонов",
           "origTitle": "Kimetsu no Yaiba",
@@ -903,7 +903,7 @@
               "releaseYear": 2023,
               "episodes": 11,
               "epMinutes": 24,
-              "date": "",
+              "date": "31.10.2026",
               "note": ""
             },
             {
@@ -965,7 +965,7 @@
               "note": "Сезон 2 - Квартал красных фонарей"
             },
             {
-              "date": "",
+              "date": "31.10.2026",
               "note": "Сезон 3 - Деревня кузнецов"
             },
             {
