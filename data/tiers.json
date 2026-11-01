@@ -4,12 +4,12 @@
     "owner": "geraltschwarzenegger-svg",
     "repo": "noxyholmes/myTierAnime",
     "branch": "main",
-    "updatedAt": "2026-11-01T06:25:58.634Z",
+    "updatedAt": "2026-11-01T06:27:44.736Z",
     "activeMode": "emblems-realism",
     "bgImage": "backgrounds/1792058756499____________________________________.png",
     "bgDim": 65,
     "bgBlur": 5,
-    "revision": 396,
+    "revision": 397,
     "bgBlobSha": "1de942c76368b8d317071e794ae55fed35d163ad",
     "bgMime": "image/png",
     "bgmVolume": 10,
@@ -825,7 +825,7 @@
         },
         {
           "uid": "anime-1792915413244",
-          "updatedAt": 1793514358482,
+          "updatedAt": 1793514464589,
           "kind": "TV Сериал",
           "title": "Клинок, рассекающий демонов",
           "origTitle": "Kimetsu no Yaiba",
@@ -921,7 +921,7 @@
               "releaseYear": 2025,
               "episodes": 1,
               "epMinutes": 155,
-              "date": "",
+              "date": "01.11.2026",
               "note": ""
             },
             {
@@ -973,7 +973,7 @@
               "note": "Сезон 4 - Тренировка столпов"
             },
             {
-              "date": "",
+              "date": "01.11.2026",
               "note": "Фильм 2 - Бесконечный замок"
             },
             {
