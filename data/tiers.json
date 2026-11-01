@@ -4,12 +4,12 @@
     "owner": "geraltschwarzenegger-svg",
     "repo": "noxyholmes/myTierAnime",
     "branch": "main",
-    "updatedAt": "2026-11-01T11:03:55.260Z",
+    "updatedAt": "2026-11-01T11:04:04.455Z",
     "activeMode": "emblems-realism",
     "bgImage": "backgrounds/1792058756499____________________________________.png",
     "bgDim": 65,
     "bgBlur": 5,
-    "revision": 398,
+    "revision": 399,
     "bgBlobSha": "1de942c76368b8d317071e794ae55fed35d163ad",
     "bgMime": "image/png",
     "bgmVolume": 10,
@@ -825,7 +825,7 @@
         },
         {
           "uid": "anime-1792915413244",
-          "updatedAt": 1793531035112,
+          "updatedAt": 1793531044319,
           "kind": "TV Сериал",
           "title": "Клинок, рассекающий демонов",
           "origTitle": "Kimetsu no Yaiba",
@@ -916,7 +916,7 @@
               "note": ""
             },
             {
-              "title": "Фильм 2 - Бесконечный замок — Возвращение Акадзы",
+              "title": "Фильм 2 - Бесконечный замок - Возвращение Акадзы",
               "type": "Фильм",
               "releaseYear": 2025,
               "episodes": 1,
@@ -974,7 +974,7 @@
             },
             {
               "date": "01.11.2026",
-              "note": "Фильм 2 - Бесконечный замок — Возвращение Акадзы"
+              "note": "Фильм 2 - Бесконечный замок - Возвращение Акадзы"
             },
             {
               "date": "",
