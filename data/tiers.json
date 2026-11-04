@@ -4,12 +4,12 @@
     "owner": "geraltschwarzenegger-svg",
     "repo": "noxyholmes/myTierAnime",
     "branch": "main",
-    "updatedAt": "2026-11-04T07:18:07.094Z",
+    "updatedAt": "2026-11-04T07:22:40.020Z",
     "activeMode": "emblems-realism",
     "bgImage": "backgrounds/1792058756499____________________________________.png",
     "bgDim": 65,
     "bgBlur": 5,
-    "revision": 406,
+    "revision": 407,
     "bgBlobSha": "1de942c76368b8d317071e794ae55fed35d163ad",
     "bgMime": "image/png",
     "bgmVolume": 10,
@@ -4145,7 +4145,7 @@
         },
         {
           "uid": "anime-1793531278123",
-          "updatedAt": 1793637140862,
+          "updatedAt": 1793776959998,
           "kind": "TV Сериал",
           "title": "Город, в котором меня нет",
           "origTitle": "Boku dake ga Inai Machi",
@@ -4178,13 +4178,13 @@
               "releaseYear": 2016,
               "episodes": 12,
               "epMinutes": 23,
-              "date": "",
+              "date": "02.11.2026",
               "note": ""
             }
           ],
           "watched": [
             {
-              "date": "",
+              "date": "02.11.2026",
               "note": "Сезон 1"
             }
           ]
