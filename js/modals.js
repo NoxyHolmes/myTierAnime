@@ -1,4 +1,4 @@
-/* ═══════════════════ MODALS: ESC CLOSE, 3-ROW SEASONS SCROLL & DOSSIER (v22.2) ═══════════════════ */
+/* ═══════════════════ MODALS: BACKGROUND SCROLL LOCK, ESC CLOSE & 3-ROW SEASONS (v22.3) ═══════════════════ */
 const Modals = (() => {
   let deleteHandler = null;
 
@@ -12,6 +12,20 @@ const Modals = (() => {
     const st = document.createElement("style");
     st.id = "dossierSelfContainedStyles";
     st.textContent = `
+      /* Полная блокировка прокрутки фона при открытом модальном окне */
+      html.modal-scroll-locked,
+      body.modal-scroll-locked {
+        overflow: hidden !important;
+        overscroll-behavior: none !important;
+      }
+      .modal-backdrop {
+        overscroll-behavior: contain !important;
+      }
+      .modal-box,
+      .dossier-scroll-content {
+        overscroll-behavior: contain !important;
+      }
+
       .dossier-cinema-box {
         padding: 0 !important;
         display: flex !important;
@@ -283,6 +297,7 @@ const Modals = (() => {
         max-height: 184px !important;
         overflow-y: auto !important;
         overflow-x: hidden !important;
+        overscroll-behavior: contain !important;
         padding-right: 6px !important;
         scrollbar-width: thin !important;
         scrollbar-color: rgba(0, 245, 255, 0.45) rgba(255, 255, 255, 0.05) !important;
@@ -430,6 +445,42 @@ const Modals = (() => {
     document.head.appendChild(st);
   }
 
+  /* ──────── БЛОКИРОВКА ПРОКРУТКИ ФОНА ПРИ ОТКРЫТЫХ МОДАЛЬНЫХ ОКНАХ ──────── */
+  function syncBodyScrollLock() {
+    const hasOpenModal = !!document.querySelector(".modal-backdrop.open, .mta-poster-lightbox.open");
+    if (hasOpenModal) {
+      if (!document.body.classList.contains("modal-scroll-locked")) {
+        const sbWidth = window.innerWidth - document.documentElement.clientWidth;
+        if (sbWidth > 0) document.body.style.paddingRight = `${sbWidth}px`;
+        document.body.classList.add("modal-scroll-locked");
+        document.documentElement.classList.add("modal-scroll-locked");
+      }
+    } else {
+      document.body.classList.remove("modal-scroll-locked");
+      document.documentElement.classList.remove("modal-scroll-locked");
+      document.body.style.paddingRight = "";
+    }
+  }
+
+  // Перехватываем колесо мыши и свайпы, если курсор находится за пределами модального окна
+  document.addEventListener("wheel", e => {
+    const openBackdrop = document.querySelector(".modal-backdrop.open, .mta-poster-lightbox.open");
+    if (!openBackdrop) return;
+    const modalBox = e.target.closest(".modal-box");
+    if (!modalBox) {
+      e.preventDefault();
+    }
+  }, { passive: false });
+
+  document.addEventListener("touchmove", e => {
+    const openBackdrop = document.querySelector(".modal-backdrop.open, .mta-poster-lightbox.open");
+    if (!openBackdrop) return;
+    const modalBox = e.target.closest(".modal-box");
+    if (!modalBox) {
+      e.preventDefault();
+    }
+  }, { passive: false });
+
   function togglePosterLightbox(imgSrc, altText = "") {
     let lb = document.getElementById("mtaPosterLightbox");
     if (!lb) {
@@ -440,6 +491,7 @@ const Modals = (() => {
       lb.innerHTML = `<img id="mtaPosterLightboxImg" src="" alt="">`;
       lb.addEventListener("click", () => {
         lb.classList.remove("open");
+        syncBodyScrollLock();
       });
       document.body.appendChild(lb);
     }
@@ -454,11 +506,13 @@ const Modals = (() => {
       }
       lb.classList.add("open");
     }
+    syncBodyScrollLock();
   }
 
   function openModal(id) {
     ensureDossierStyles();
     document.getElementById(id)?.classList.add("open");
+    syncBodyScrollLock();
   }
 
   function closeModal(id) {
@@ -467,20 +521,20 @@ const Modals = (() => {
       document.getElementById("mtaPosterLightbox")?.classList.remove("open");
     }
     document.getElementById(id)?.classList.remove("open");
+    syncBodyScrollLock();
   }
 
   /* ГЛОБАЛЬНОЕ ЗАКРЫТИЕ ЛЮБЫХ МОДАЛЬНЫХ ОКОН, LIGHTBOX И ПАНЕЛЕЙ ПО КЛАВИШЕ ESC */
   document.addEventListener("keydown", e => {
     if (e.key !== "Escape") return;
 
-    // 1. Если открыта полноэкранная обложка — сначала закрываем только её
     const lb = document.getElementById("mtaPosterLightbox");
     if (lb && lb.classList.contains("open")) {
       lb.classList.remove("open");
+      syncBodyScrollLock();
       return;
     }
 
-    // 2. Если открыто любое модальное окно (.modal-backdrop.open) — закрываем верхнее открытое окно
     const openModals = [...document.querySelectorAll(".modal-backdrop.open")];
     if (openModals.length > 0) {
       const topModal = openModals[openModals.length - 1];
@@ -488,26 +542,28 @@ const Modals = (() => {
         closeModal(topModal.id);
       } else if (topModal) {
         topModal.classList.remove("open");
+        syncBodyScrollLock();
       }
       return;
     }
 
-    // 3. Если открыта боковая студия кастомизации (#fxPanel) — закрываем её
     const fxPanel = document.getElementById("fxPanel");
     if (fxPanel && fxPanel.classList.contains("show")) {
       fxPanel.classList.remove("show");
       return;
     }
 
-    // 4. Закрываем открытые выпадающие списки фильтров в шапке
     document.querySelectorAll(".genre-dropdown-menu.open").forEach(m => m.classList.remove("open"));
   });
 
-  // Также закрытие модального окна по клику на тёмный фон вокруг окна
+  // Закрытие модального окна по клику на тёмный фон вокруг окна
   document.addEventListener("mousedown", e => {
     if (e.target && e.target.classList && e.target.classList.contains("modal-backdrop") && e.target.classList.contains("open")) {
       if (e.target.id) closeModal(e.target.id);
-      else e.target.classList.remove("open");
+      else {
+        e.target.classList.remove("open");
+        syncBodyScrollLock();
+      }
     }
   });
 
