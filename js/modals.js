@@ -1,4 +1,4 @@
-/* ═══════════════════ MODALS: 3-SPACE AUTO-COMMA, FULLSCREEN LIGHTBOX & DOSSIER (v20.0) ═══════════════════ */
+/* ═══════════════════ MODALS: PER-TYPE SEASON/MOVIE COUNTER & DOSSIER (v22.1) ═══════════════════ */
 const Modals = (() => {
   let deleteHandler = null;
 
@@ -457,7 +457,6 @@ const Modals = (() => {
     } catch {}
   }
 
-  /* Автозамена 3+ пробелов на ", " и синхронизация чипов ЖАНРОВ */
   function syncEditorGenreChips() {
     const inp = document.getElementById("fGenres");
     const box = document.getElementById("editorGenreChips");
@@ -492,7 +491,6 @@ const Modals = (() => {
     });
   }
 
-  /* Автозамена 3+ пробелов на ", " и синхронизация чипов СТУДИЙ */
   function syncEditorStudioChips() {
     const inp = document.getElementById("fStudio");
     const box = document.getElementById("editorStudioChips");
@@ -788,6 +786,33 @@ const Modals = (() => {
     }
   }
 
+  /* Вспомогательные функции независимой нумерации по каждому типу (Сезон 1..N, Фильм 1..N, OVA 1..N и т.д.) */
+  function getPrefixForType(type) {
+    if (type === "TV Сериал") return "Сезон";
+    if (type === "Фильм") return "Фильм";
+    return type;
+  }
+
+  function autoRenumberDefaultSeasonTitles(listHost) {
+    if (!listHost) return;
+    const counters = {};
+    listHost.querySelectorAll(".season-row").forEach(row => {
+      const tp = row.querySelector(".s-type")?.value || "TV Сериал";
+      counters[tp] = (counters[tp] || 0) + 1;
+      const num = counters[tp];
+      const prefix = getPrefixForType(tp);
+
+      const titleInp = row.querySelector(".s-title");
+      if (!titleInp) return;
+      const curVal = titleInp.value.trim();
+
+      // Если название стандартное ("Сезон X", "Фильм Y", "OVA Z" без кастомного текста после номера), автоматически ставим правильный номер внутри этого типа!
+      if (/^(Сезон|Фильм|OVA|ONA|Спешл|Часть)\s*\d*$/i.test(curVal)) {
+        titleInp.value = `${prefix} ${num}`;
+      }
+    });
+  }
+
   function createSeasonRowElement(part = {}) {
     const row = document.createElement("div");
     row.className = "season-row";
@@ -811,7 +836,7 @@ const Modals = (() => {
     const noteStr = part.note || "";
 
     row.innerHTML = `
-      <input type="text" class="form-control s-title" placeholder="Сезон 1 / Фильм" value="${esc(part.title || "Сезон 1")}">
+      <input type="text" class="form-control s-title" placeholder="Сезон 1 / Фильм 1" value="${esc(part.title || "Сезон 1")}">
       <select class="form-control s-type">
         ${["TV Сериал", "Фильм", "OVA", "ONA", "Спешл"].map(t => `<option value="${t}" ${t === type ? "selected" : ""}>${t}</option>`).join("")}
       </select>
@@ -835,14 +860,17 @@ const Modals = (() => {
       } else if (+minsInp.value === 110) {
         minsInp.value = 24;
       }
+      autoRenumberDefaultSeasonTitles(document.getElementById("seasonsEditorList"));
       recalculateSeasonsPreview();
     });
 
     epsInp.addEventListener("input", recalculateSeasonsPreview);
     minsInp.addEventListener("input", recalculateSeasonsPreview);
     row.querySelector(".s-remove").addEventListener("click", () => {
+      const listHost = document.getElementById("seasonsEditorList");
       if (document.querySelectorAll("#seasonsEditorList .season-row").length > 1) {
         row.remove();
+        autoRenumberDefaultSeasonTitles(listHost);
         recalculateSeasonsPreview();
       } else {
         showToast("У тайтла должен быть хотя бы 1 сезон или фильм");
@@ -889,7 +917,13 @@ const Modals = (() => {
   function readSeasonsFromEditor() {
     const rows = [...document.querySelectorAll("#seasonsEditorList .season-row")];
     const fallbackYr = parseInt(document.getElementById("fYear")?.value, 10) || 2026;
-    return rows.map((r, i) => {
+    const counters = {};
+
+    return rows.map(r => {
+      const tp = r.querySelector(".s-type").value;
+      counters[tp] = (counters[tp] || 0) + 1;
+      const defaultNameForType = `${getPrefixForType(tp)} ${counters[tp]}`;
+
       const rawEp = parseInt(r.querySelector(".s-eps").value, 10);
       const ep = isNaN(rawEp) ? 0 : Math.max(0, rawEp);
       const rawMn = parseFloat(r.querySelector(".s-mins").value);
@@ -908,8 +942,8 @@ const Modals = (() => {
       const cleanDate = rawDateVal === "0" ? "" : rawDateVal;
 
       return {
-        title: r.querySelector(".s-title").value.trim() || `Часть ${i + 1}`,
-        type: r.querySelector(".s-type").value,
+        title: r.querySelector(".s-title").value.trim() || defaultNameForType,
+        type: tp,
         releaseYear: relYr,
         episodes: ep,
         epMinutes: mn,
@@ -981,12 +1015,20 @@ const Modals = (() => {
     openModal("editorModal");
   }
 
+  /* При добавлении новой части считает только количество частей ИМЕННО ЭТОГО типа! */
   function addSeasonRow(type = "TV Сериал") {
     const listHost = document.getElementById("seasonsEditorList");
     if (!listHost) return;
-    const idx = listHost.querySelectorAll(".season-row").length + 1;
-    const defaultTitle = type === "Фильм" ? `Фильм ${idx}` : (type === "TV Сериал" ? `Сезон ${idx}` : `${type} ${idx}`);
+
+    let sameTypeCount = 0;
+    listHost.querySelectorAll(".season-row .s-type").forEach(sel => {
+      if (sel.value === type) sameTypeCount++;
+    });
+
+    const nextTypeIdx = sameTypeCount + 1;
+    const defaultTitle = `${getPrefixForType(type)} ${nextTypeIdx}`;
     const baseYear = parseInt(document.getElementById("fYear")?.value, 10) || 2026;
+
     listHost.appendChild(createSeasonRowElement({
       title: defaultTitle,
       type,
