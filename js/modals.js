@@ -1,4 +1,4 @@
-/* ═══════════════════ MODALS: PER-TYPE SEASON/MOVIE COUNTER & DOSSIER (v22.1) ═══════════════════ */
+/* ═══════════════════ MODALS: ESC CLOSE, 3-ROW SEASONS SCROLL & DOSSIER (v22.2) ═══════════════════ */
 const Modals = (() => {
   let deleteHandler = null;
 
@@ -273,12 +273,32 @@ const Modals = (() => {
         border-color: #00f5ff !important;
         color: #ffffff !important;
       }
+
+      /* ОКНО СПИСКА СЕЗОНОВ РОВНО НА 3 СТРОКИ С ПРОКРУТКОЙ ВНИЗ */
       .dossier-seasons-vertical-list {
         display: grid !important;
         grid-template-columns: minmax(220px, 1fr) max-content max-content max-content max-content max-content !important;
         row-gap: 8px !important;
         width: 100% !important;
+        max-height: 184px !important;
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+        padding-right: 6px !important;
+        scrollbar-width: thin !important;
+        scrollbar-color: rgba(0, 245, 255, 0.45) rgba(255, 255, 255, 0.05) !important;
       }
+      .dossier-seasons-vertical-list::-webkit-scrollbar {
+        width: 6px !important;
+      }
+      .dossier-seasons-vertical-list::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.04) !important;
+        border-radius: 999px !important;
+      }
+      .dossier-seasons-vertical-list::-webkit-scrollbar-thumb {
+        background: linear-gradient(180deg, #ffd76a, #00f5ff) !important;
+        border-radius: 999px !important;
+      }
+
       .dossier-season-bar {
         grid-column: 1 / -1 !important;
         display: grid !important;
@@ -289,19 +309,24 @@ const Modals = (() => {
         border: 1px solid rgba(255, 255, 255, 0.14) !important;
         border-left: 3px solid #00f5ff !important;
         border-radius: 10px !important;
-        padding: 10px 14px !important;
+        padding: 9px 14px !important;
+        min-height: 54px !important;
+        box-sizing: border-box !important;
       }
       @supports not (grid-template-columns: subgrid) {
         .dossier-seasons-vertical-list {
           display: flex !important;
           flex-direction: column !important;
           gap: 8px !important;
+          max-height: 184px !important;
+          overflow-y: auto !important;
         }
         .dossier-season-bar {
           display: grid !important;
           grid-template-columns: minmax(220px, 1fr) 96px 125px 120px 92px 115px !important;
           align-items: center !important;
           column-gap: 14px !important;
+          flex-shrink: 0 !important;
         }
       }
       .dossier-season-bar.is-upcoming {
@@ -398,7 +423,7 @@ const Modals = (() => {
       @media (max-width: 980px) {
         .dossier-split-layout { grid-template-columns: 1fr !important; }
         .dossier-left-poster-col { max-width: 250px !important; margin: 0 auto !important; }
-        .dossier-seasons-vertical-list { display: flex !important; flex-direction: column !important; gap: 8px !important; }
+        .dossier-seasons-vertical-list { display: flex !important; flex-direction: column !important; gap: 8px !important; max-height: 210px !important; }
         .dossier-season-bar { display: flex !important; flex-wrap: wrap !important; gap: 10px !important; }
       }
     `;
@@ -411,7 +436,7 @@ const Modals = (() => {
       lb = document.createElement("div");
       lb.id = "mtaPosterLightbox";
       lb.className = "mta-poster-lightbox";
-      lb.title = "Нажмите в любое место, чтобы вернуть обложку в исходное состояние";
+      lb.title = "Нажмите в любое место или клавишу Esc, чтобы вернуть обложку в исходное состояние";
       lb.innerHTML = `<img id="mtaPosterLightboxImg" src="" alt="">`;
       lb.addEventListener("click", () => {
         lb.classList.remove("open");
@@ -443,6 +468,48 @@ const Modals = (() => {
     }
     document.getElementById(id)?.classList.remove("open");
   }
+
+  /* ГЛОБАЛЬНОЕ ЗАКРЫТИЕ ЛЮБЫХ МОДАЛЬНЫХ ОКОН, LIGHTBOX И ПАНЕЛЕЙ ПО КЛАВИШЕ ESC */
+  document.addEventListener("keydown", e => {
+    if (e.key !== "Escape") return;
+
+    // 1. Если открыта полноэкранная обложка — сначала закрываем только её
+    const lb = document.getElementById("mtaPosterLightbox");
+    if (lb && lb.classList.contains("open")) {
+      lb.classList.remove("open");
+      return;
+    }
+
+    // 2. Если открыто любое модальное окно (.modal-backdrop.open) — закрываем верхнее открытое окно
+    const openModals = [...document.querySelectorAll(".modal-backdrop.open")];
+    if (openModals.length > 0) {
+      const topModal = openModals[openModals.length - 1];
+      if (topModal && topModal.id) {
+        closeModal(topModal.id);
+      } else if (topModal) {
+        topModal.classList.remove("open");
+      }
+      return;
+    }
+
+    // 3. Если открыта боковая студия кастомизации (#fxPanel) — закрываем её
+    const fxPanel = document.getElementById("fxPanel");
+    if (fxPanel && fxPanel.classList.contains("show")) {
+      fxPanel.classList.remove("show");
+      return;
+    }
+
+    // 4. Закрываем открытые выпадающие списки фильтров в шапке
+    document.querySelectorAll(".genre-dropdown-menu.open").forEach(m => m.classList.remove("open"));
+  });
+
+  // Также закрытие модального окна по клику на тёмный фон вокруг окна
+  document.addEventListener("mousedown", e => {
+    if (e.target && e.target.classList && e.target.classList.contains("modal-backdrop") && e.target.classList.contains("open")) {
+      if (e.target.id) closeModal(e.target.id);
+      else e.target.classList.remove("open");
+    }
+  });
 
   function setDeleteHandler(fn) {
     deleteHandler = fn;
@@ -668,6 +735,7 @@ const Modals = (() => {
             <div class="dossier-seasons-header">
               <strong style="font-size:12px;text-transform:uppercase;color:#d6d0f5;letter-spacing:0.06em;">
                 🎬 Хронология сезонов и частей (${m.seasons.length}):
+                ${m.seasons.length > 3 ? `<span style="font-size:10.5px;color:#00f5ff;text-transform:none;margin-left:6px;">(прокрутите вниз ↕)</span>` : ""}
               </strong>
               <div class="dossier-filter-pills">
                 <button type="button" class="dossier-pill-btn active" data-s-filter="ALL">Все (${m.seasons.length})</button>
@@ -786,7 +854,6 @@ const Modals = (() => {
     }
   }
 
-  /* Вспомогательные функции независимой нумерации по каждому типу (Сезон 1..N, Фильм 1..N, OVA 1..N и т.д.) */
   function getPrefixForType(type) {
     if (type === "TV Сериал") return "Сезон";
     if (type === "Фильм") return "Фильм";
@@ -806,7 +873,6 @@ const Modals = (() => {
       if (!titleInp) return;
       const curVal = titleInp.value.trim();
 
-      // Если название стандартное ("Сезон X", "Фильм Y", "OVA Z" без кастомного текста после номера), автоматически ставим правильный номер внутри этого типа!
       if (/^(Сезон|Фильм|OVA|ONA|Спешл|Часть)\s*\d*$/i.test(curVal)) {
         titleInp.value = `${prefix} ${num}`;
       }
@@ -1015,7 +1081,6 @@ const Modals = (() => {
     openModal("editorModal");
   }
 
-  /* При добавлении новой части считает только количество частей ИМЕННО ЭТОГО типа! */
   function addSeasonRow(type = "TV Сериал") {
     const listHost = document.getElementById("seasonsEditorList");
     if (!listHost) return;
