@@ -1,0 +1,39 @@
+name: Build Rust WebAssembly Engine
+
+on:
+  push:
+    paths:
+      - 'Cargo.toml'
+      - 'src/**'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-wasm:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+
+      - name: Install wasm-pack
+        run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+
+      - name: Compile Rust to WebAssembly into /pkg
+        run: |
+          wasm-pack build --target web --out-dir pkg --release
+          rm -f pkg/.gitignore pkg/package.json pkg/README.md
+
+      - name: Commit compiled /pkg back to repository
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add pkg/
+          git diff --staged --quiet || git commit -m "🦀 Auto-compile Rust Wasm engine into /pkg"
+          git push
