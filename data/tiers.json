@@ -4,12 +4,12 @@
     "owner": "geraltschwarzenegger-svg",
     "repo": "noxyholmes/myTierAnime",
     "branch": "main",
-    "updatedAt": "2026-11-06T22:10:05.197Z",
+    "updatedAt": "2026-11-07T21:03:37.087Z",
     "activeMode": "emblems-realism",
     "bgImage": "backgrounds/1792058756499____________________________________.png",
     "bgDim": 65,
     "bgBlur": 5,
-    "revision": 413,
+    "revision": 414,
     "bgBlobSha": "1de942c76368b8d317071e794ae55fed35d163ad",
     "bgMime": "image/png",
     "bgmVolume": 10,
@@ -2197,8 +2197,8 @@
         },
         {
           "uid": "anime-1794003005160",
-          "updatedAt": 1794003005160,
-          "kind": "TV Сериал",
+          "updatedAt": 1794085417051,
+          "kind": "ONA",
           "title": "Киберпанк: Бегущие по краю",
           "origTitle": "Cyberpunk: Edgerunners",
           "year": 2022,
@@ -2230,20 +2230,20 @@
           "seasons": [
             {
               "title": "Сезон 1",
-              "type": "TV Сериал",
+              "type": "ONA",
               "releaseYear": 2022,
               "episodes": 10,
-              "epMinutes": 24,
+              "epMinutes": 25.5,
               "date": "07.11.2026",
               "note": ""
             },
             {
               "title": "Сезон 2",
-              "type": "TV Сериал",
+              "type": "ONA",
               "releaseYear": 2026,
               "episodes": 10,
-              "epMinutes": 24,
-              "date": "",
+              "epMinutes": 27.5,
+              "date": "08.11.2026",
               "note": ""
             }
           ],
@@ -2253,7 +2253,7 @@
               "note": "Сезон 1"
             },
             {
-              "date": "",
+              "date": "08.11.2026",
               "note": "Сезон 2"
             }
           ]
