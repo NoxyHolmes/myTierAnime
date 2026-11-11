@@ -4,12 +4,12 @@
     "owner": "geraltschwarzenegger-svg",
     "repo": "noxyholmes/myTierAnime",
     "branch": "main",
-    "updatedAt": "2026-11-11T11:22:55.788Z",
+    "updatedAt": "2026-11-11T15:06:11.739Z",
     "activeMode": "emblems-realism",
     "bgImage": "backgrounds/1792058756499____________________________________.png",
     "bgDim": 65,
     "bgBlur": 5,
-    "revision": 417,
+    "revision": 418,
     "bgBlobSha": "1de942c76368b8d317071e794ae55fed35d163ad",
     "bgMime": "image/png",
     "bgmVolume": 10,
@@ -330,7 +330,7 @@
         },
         {
           "uid": "anime-1792414590041",
-          "updatedAt": 1794241590290,
+          "updatedAt": 1794409571701,
           "kind": "TV Сериал",
           "title": "Мастера Меча Онлайн",
           "origTitle": "Sword Art Online",
@@ -484,6 +484,15 @@
               "epMinutes": 95,
               "date": "09.11.2026",
               "note": ""
+            },
+            {
+              "title": "Фильм 2 - Прогрессив - Скерцо глубокой ночи",
+              "type": "Фильм",
+              "releaseYear": 2022,
+              "episodes": 1,
+              "epMinutes": 100,
+              "date": "11.11.2026",
+              "note": ""
             }
           ],
           "watched": [
@@ -542,6 +551,10 @@
             {
               "date": "09.11.2026",
               "note": "Фильм 1 - Прогрессив - Ария в беззвёздной ночи"
+            },
+            {
+              "date": "11.11.2026",
+              "note": "Фильм 2 - Прогрессив - Скерцо глубокой ночи"
             }
           ]
         },
