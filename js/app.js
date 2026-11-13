@@ -1,4 +1,4 @@
-/* ═══════════════════ MAIN APPLICATION ORCHESTRATOR (v23.0 REWATCH TOTALS & CUSTOM FRAMES) ═══════════════════ */
+/* ═══════════════════ MAIN APPLICATION ORCHESTRATOR (v27.0 CLEAN CARDS ON MAIN MENU) ═══════════════════ */
 (() => {
   if (typeof window.pluralRu !== "function") {
     window.pluralRu = function (number, one, few, many) {
@@ -66,7 +66,6 @@
     return rawList.map(s => String(s).trim()).filter(Boolean);
   }
 
-  /* Сортировка внутри тира идёт по уникальной длительности самого тайтла (totalMinutes) */
   function sortAllTiersByTimeDesc(dataObj) {
     if (!dataObj || !Array.isArray(dataObj.tiers)) return;
     dataObj.tiers.forEach(tier => {
@@ -415,7 +414,7 @@
     });
   }
 
-  /* Карточка тайтла: отображает индивидуальную рамку по названию и уникальное число серий без дублирования при повторе */
+  /* В главном меню на карточке тайтла НЕ выводятся значки повторных просмотров — только чистые серии, фильмы и части! */
   function cardEl(item, idx, tierId) {
     const m = calcItemMetrics(item);
     const yr = m.latestYear || item.year || "";
@@ -430,16 +429,11 @@
       ? `<span title="В карточке играет фоновая музыка" style="position:absolute;top:28px;right:6px;z-index:4;padding:1.5px 5px;border-radius:5px;font-size:8.5px;background:rgba(14,11,28,0.88);border:1px solid rgba(0,245,255,0.45);color:#00f5ff;pointer-events:none;">🎵 OST</span>`
       : "";
 
-    const rewatchCornerBadge = m.rewatchCount > 0
-      ? `<span title="Повторных просмотров: ${m.rewatchCount}" style="position:absolute;top:28px;left:6px;z-index:4;padding:1.5px 5px;border-radius:5px;font-size:8.5px;font-weight:800;background:rgba(20,12,38,0.9);border:1px solid #b57cff;color:#e2cdff;pointer-events:none;">🔄 ×${m.rewatchCount + 1}</span>`
-      : "";
-
     const customFrameHtml = typeof renderTitleCustomFrameHtml === "function" ? renderTitleCustomFrameHtml(item.title) : "";
 
     const studiosList = extractItemStudios(item);
     const studiosDisplay = studiosList.join(", ");
 
-    // Считаем количество уникальных частей (без учёта дублей повторного просмотра)
     const uniquePartsCount = Math.max(1, m.seasons.length - (m.rewatchCount || 0));
 
     return `
@@ -454,7 +448,6 @@
           <span class="rank">${idx + 1}</span>
           ${yearBadgeHtml}
           ${musicCornerBadge}
-          ${rewatchCornerBadge}
 
           <div class="card-info">
             <h3 class="card-title">${esc(item.title)}</h3>
@@ -465,7 +458,7 @@
         <div class="card-under-meta">
           <div class="cum-row">
             <span class="cum-kind">${esc(m.kind)}</span>
-            <span class="cum-seasons-badge">Частей: <b>${uniquePartsCount}</b>${m.rewatchCount > 0 ? ` <span style="color:#e2cdff;" title="Повторных просмотров: ${m.rewatchCount}">(+🔄${m.rewatchCount})</span>` : ""}</span>
+            <span class="cum-seasons-badge">Частей: <b>${uniquePartsCount}</b></span>
           </div>
           <div class="cum-episodes-line" title="${esc(countLabel)}">🎞 ${countLabel}</div>
           <div class="cum-hours-bar">
@@ -502,10 +495,9 @@
     const host = document.getElementById("tiersRoot");
     if (!host || !appData || !Array.isArray(appData.tiers)) return;
 
-    if (typeof Modals !== "undefined" && typeof Modals.openModal === "function") {
-      // Гарантируем, что CSS для рамок инъектирован сразу при старте
+    if (typeof Modals !== "undefined" && typeof Modals.closeModal === "function") {
       const dummy = document.getElementById("dossierSelfContainedStyles");
-      if (!dummy && typeof Modals.closeModal === "function") Modals.closeModal("__init_styles__");
+      if (!dummy) Modals.closeModal("__init_styles__");
     }
 
     sortAllTiersByTimeDesc(appData);
@@ -524,7 +516,6 @@
     host.innerHTML = appData.tiers.map((tier, tierIdx) => {
       const allTierItems = tier.items || [];
 
-      /* В общий счётчик тира (viewedEpisodes, viewedMovies, viewedHours) входят и первые, и повторные просмотры (100 + 100 = 200)! */
       let tierEpisodes = 0;
       let tierMovies = 0;
       let tierHours = 0;
