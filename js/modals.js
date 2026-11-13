@@ -1,4 +1,4 @@
-/* ═══════════════════ MODALS: BACKGROUND SCROLL LOCK, ESC CLOSE & 3-ROW SEASONS (v22.3) ═══════════════════ */
+/* ═══════════════════ MODALS: REWATCH DETECTION, CUSTOM FRAMES & DOSSIER (v23.0) ═══════════════════ */
 const Modals = (() => {
   let deleteHandler = null;
 
@@ -12,7 +12,6 @@ const Modals = (() => {
     const st = document.createElement("style");
     st.id = "dossierSelfContainedStyles";
     st.textContent = `
-      /* Полная блокировка прокрутки фона при открытом модальном окне */
       html.modal-scroll-locked,
       body.modal-scroll-locked {
         overflow: hidden !important;
@@ -24,6 +23,80 @@ const Modals = (() => {
       .modal-box,
       .dossier-scroll-content {
         overscroll-behavior: contain !important;
+      }
+
+      /* ──────── СТИЛИ ИНДИВИДУАЛЬНЫХ РАМОК НА ОБЛОЖКИ АНИМЕ ──────── */
+      .anime-custom-frame {
+        position: absolute !important;
+        inset: 0 !important;
+        border-radius: inherit !important;
+        pointer-events: none !important;
+        z-index: 3 !important;
+        box-shadow:
+          inset 0 0 0 1.8px var(--fc1, #ffd76a),
+          inset 0 0 16px -3px var(--fc2, #00f5ff),
+          0 0 14px -4px var(--fc1, #ffd76a) !important;
+        transition: box-shadow 0.28s ease, opacity 0.28s ease !important;
+      }
+      .anime-custom-frame::before {
+        content: "" !important;
+        position: absolute !important;
+        inset: 3px !important;
+        border-radius: calc(var(--card-radius, 10px) - 3px) !important;
+        border: 1px solid color-mix(in srgb, var(--fc2, #00f5ff) 62%, transparent) !important;
+        opacity: 0.85 !important;
+      }
+      .card:hover .anime-custom-frame,
+      .recent-item-card:hover .anime-custom-frame {
+        box-shadow:
+          inset 0 0 0 2.2px var(--fc1, #ffd76a),
+          inset 0 0 24px -2px var(--fc2, #00f5ff),
+          0 0 22px -2px var(--fc1, #ffd76a) !important;
+      }
+      .acf-corner {
+        position: absolute !important;
+        width: 11px !important;
+        height: 11px !important;
+        border-color: var(--fc1, #ffd76a) !important;
+        border-style: solid !important;
+        filter: drop-shadow(0 0 4px var(--fc2, #00f5ff)) !important;
+      }
+      .acf-corner.tl { top: 4px !important; left: 4px !important; border-width: 2px 0 0 2px !important; border-top-left-radius: 4px !important; }
+      .acf-corner.tr { top: 4px !important; right: 4px !important; border-width: 2px 2px 0 0 !important; border-top-right-radius: 4px !important; }
+      .acf-corner.bl { bottom: 4px !important; left: 4px !important; border-width: 0 0 2px 2px !important; border-bottom-left-radius: 4px !important; }
+      .acf-corner.br { bottom: 4px !important; right: 4px !important; border-width: 0 2px 2px 0 !important; border-bottom-right-radius: 4px !important; }
+      .acf-emblem {
+        position: absolute !important;
+        top: 6px !important;
+        right: 6px !important;
+        font-style: normal !important;
+        font-size: 10px !important;
+        line-height: 1 !important;
+        padding: 2.5px 5px !important;
+        border-radius: 6px !important;
+        background: rgba(8, 6, 18, 0.84) !important;
+        border: 1px solid var(--fc1, #ffd76a) !important;
+        box-shadow: 0 0 8px -1px var(--fc2, #00f5ff) !important;
+      }
+
+      /* Бейдж повторного просмотра на карточке и в досье */
+      .rewatch-pill-badge {
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 4px !important;
+        padding: 2px 8px !important;
+        border-radius: 999px !important;
+        font-size: 10px !important;
+        font-weight: 800 !important;
+        color: #e2cdff !important;
+        background: rgba(181, 124, 255, 0.22) !important;
+        border: 1px solid #b57cff !important;
+        box-shadow: 0 0 12px -3px rgba(181, 124, 255, 0.55) !important;
+        white-space: nowrap !important;
+      }
+      .dossier-season-bar.is-rewatch {
+        border-left-color: #b57cff !important;
+        background: linear-gradient(135deg, rgba(44, 24, 68, 0.78), rgba(18, 14, 38, 0.96)) !important;
       }
 
       .dossier-cinema-box {
@@ -140,6 +213,7 @@ const Modals = (() => {
         border-radius: 999px !important;
         pointer-events: none !important;
         opacity: 0.9 !important;
+        z-index: 6 !important;
       }
 
       .mta-poster-lightbox {
@@ -374,6 +448,10 @@ const Modals = (() => {
         font-weight: 800 !important;
         color: #ffffff !important;
         line-height: 1.25 !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+        flex-wrap: wrap !important;
       }
       .dsb-note-inline {
         font-size: 11px !important;
@@ -445,7 +523,6 @@ const Modals = (() => {
     document.head.appendChild(st);
   }
 
-  /* ──────── БЛОКИРОВКА ПРОКРУТКИ ФОНА ПРИ ОТКРЫТЫХ МОДАЛЬНЫХ ОКНАХ ──────── */
   function syncBodyScrollLock() {
     const hasOpenModal = !!document.querySelector(".modal-backdrop.open, .mta-poster-lightbox.open");
     if (hasOpenModal) {
@@ -462,7 +539,6 @@ const Modals = (() => {
     }
   }
 
-  // Перехватываем колесо мыши и свайпы, если курсор находится за пределами модального окна
   document.addEventListener("wheel", e => {
     const openBackdrop = document.querySelector(".modal-backdrop.open, .mta-poster-lightbox.open");
     if (!openBackdrop) return;
@@ -524,7 +600,6 @@ const Modals = (() => {
     syncBodyScrollLock();
   }
 
-  /* ГЛОБАЛЬНОЕ ЗАКРЫТИЕ ЛЮБЫХ МОДАЛЬНЫХ ОКОН, LIGHTBOX И ПАНЕЛЕЙ ПО КЛАВИШЕ ESC */
   document.addEventListener("keydown", e => {
     if (e.key !== "Escape") return;
 
@@ -556,7 +631,6 @@ const Modals = (() => {
     document.querySelectorAll(".genre-dropdown-menu.open").forEach(m => m.classList.remove("open"));
   });
 
-  // Закрытие модального окна по клику на тёмный фон вокруг окна
   document.addEventListener("mousedown", e => {
     if (e.target && e.target.classList && e.target.classList.contains("modal-backdrop") && e.target.classList.contains("open")) {
       if (e.target.id) closeModal(e.target.id);
@@ -660,11 +734,13 @@ const Modals = (() => {
 
     const m = calcItemMetrics(item);
     const displayPoster = item.posterInline || item.poster || "https://placehold.co/400x600/16122b/ffd76a?text=myTierAnime";
+    const frameObj = typeof getTitleCustomFrame === "function" ? getTitleCustomFrame(item.title) : { c1: "#ffd76a", c2: "#00f5ff", emblem: "✦" };
 
     if (topBadges) {
       topBadges.innerHTML = `
         <span class="dossier-badge-pill gold">ТИР ${esc(tier.id)} · ${esc(tier.name)}</span>
         <span class="dossier-badge-pill">${esc(m.kind)}</span>
+        ${m.rewatchCount > 0 ? `<span class="rewatch-pill-badge">🔄 Повторных просмотров: ${m.rewatchCount} (Всего с повторами: ${m.viewedEpisodes} эп. / ${formatHours(m.viewedHours)} ч.)</span>` : ""}
       `;
     }
 
@@ -678,6 +754,7 @@ const Modals = (() => {
 
       return filtered.map((s, idx) => {
         const isUpcoming = Number(s.episodes) === 0;
+        const isRewatch = !!s.isRewatch;
         const partHours = isUpcoming ? "0" : formatHours((s.episodes * s.epMinutes) / 60);
 
         const hasReleaseYear = s.releaseYear !== undefined && s.releaseYear !== null && Number(s.releaseYear) > 0;
@@ -688,18 +765,27 @@ const Modals = (() => {
           ? rawDateStr
           : (isUpcoming ? "Анонс" : "—");
 
-        const volumeText = isUpcoming
-          ? `<span class="s-chip-upcoming">⏳ Анонс (0 ${s.type === "Фильм" ? "ф." : "эп."})</span>`
-          : `<b class="s-chip-vol">${s.type === "Фильм" ? formatMoviesCount(s.episodes) : formatEpisodesCount(s.episodes)}</b>`;
+        let volumeText = "";
+        if (isUpcoming) {
+          volumeText = `<span class="s-chip-upcoming">⏳ Анонс (0 ${s.type === "Фильм" ? "ф." : "эп."})</span>`;
+        } else if (isRewatch) {
+          // В личной карточке повторно просмотренный сезон НЕ прибавляется к длине тайтла, а помечается как повторный просмотр!
+          volumeText = `<span style="color:#e2cdff;font-weight:800;" title="В карточке тайтла не дублируется, но учитывается в общей статистике всех просмотров!">🔄 ${s.type === "Фильм" ? formatMoviesCount(s.episodes) : formatEpisodesCount(s.episodes)} (в общ. стат.)</span>`;
+        } else {
+          volumeText = `<b class="s-chip-vol">${s.type === "Фильм" ? formatMoviesCount(s.episodes) : formatEpisodesCount(s.episodes)}</b>`;
+        }
 
         const noteText = s.note ? String(s.note).trim() : "";
 
         return `
-          <div class="dossier-season-bar ${isUpcoming ? "is-upcoming" : ""}">
+          <div class="dossier-season-bar ${isUpcoming ? "is-upcoming" : ""} ${isRewatch ? "is-rewatch" : ""}">
             <div class="dsb-col-left">
               <span class="dsc-num">#${idx + 1}</span>
               <div class="dsc-title-wrap">
-                <strong class="dsc-name">${esc(s.title)}</strong>
+                <strong class="dsc-name">
+                  <span>${esc(s.title)}</span>
+                  ${isRewatch ? `<span class="rewatch-pill-badge">🔄 Повторный просмотр (#${s.rewatchNumber})</span>` : ""}
+                </strong>
                 ${noteText ? `<span class="dsb-note-inline">💬 ${esc(noteText)}</span>` : ""}
               </div>
             </div>
@@ -721,7 +807,7 @@ const Modals = (() => {
 
             <div class="dsb-col-stat">
               <span class="dsc-lbl">Время:</span>
-              <b style="color:#00f5ff;">${partHours} ч.</b>
+              <b style="color:${isRewatch ? "#e2cdff" : "#00f5ff"};">${partHours} ч.${isRewatch ? " (повтор)" : ""}</b>
             </div>
 
             <div class="dsb-col-stat">
@@ -745,9 +831,10 @@ const Modals = (() => {
         <div class="dossier-hero-scrim"></div>
 
         <aside class="dossier-left-poster-col">
-          <div class="dossier-poster-large" id="dossierPosterFrame" title="Нажмите, чтобы открыть обложку в полный размер">
+          <div class="dossier-poster-large" id="dossierPosterFrame" style="border-color:${frameObj.c1} !important;box-shadow:0 18px 45px rgba(0,0,0,0.9), 0 0 30px -4px ${frameObj.c2} !important;" title="Нажмите, чтобы открыть обложку в полный размер">
             <img id="dossierMainPosterImg" src="${esc(displayPoster)}" alt="${esc(item.title)}"
                  onerror="this.src='https://placehold.co/400x600/16122b/ffd76a?text=myTierAnime'">
+            ${typeof renderTitleCustomFrameHtml === "function" ? renderTitleCustomFrameHtml(item.title) : ""}
             <span class="dossier-zoom-hint">🔍 На весь экран</span>
           </div>
         </aside>
@@ -763,13 +850,13 @@ const Modals = (() => {
 
             <div class="dossier-metrics-row">
               <div class="dossier-metric-card">
-                <div class="dm-lbl">🎞 Серии и Фильмы</div>
+                <div class="dm-lbl">🎞 Объём тайтла (без дублей)</div>
                 <div class="dm-val" style="color:#ffd76a;">
                   ${formatEpisodesCount(m.totalEpisodes)} ${m.totalMovies ? `+ <span style="color:#ff5e7e;">${formatMoviesCount(m.totalMovies)}</span>` : ""}
                 </div>
               </div>
               <div class="dossier-metric-card">
-                <div class="dm-lbl">⏱ Затрачено часов</div>
+                <div class="dm-lbl">⏱ Длительность тайтла</div>
                 <div class="dm-val" style="color:#00f5ff;">${formatHours(m.totalHours)} ч.</div>
               </div>
               <div class="dossier-metric-card">
@@ -971,10 +1058,12 @@ const Modals = (() => {
       <button type="button" class="btn btn-sm s-remove" title="Удалить часть">✕</button>
     `;
 
+    const titleInp = row.querySelector(".s-title");
     const typeSel = row.querySelector(".s-type");
     const epsInp = row.querySelector(".s-eps");
     const minsInp = row.querySelector(".s-mins");
 
+    titleInp.addEventListener("input", recalculateSeasonsPreview);
     typeSel.addEventListener("change", () => {
       if (typeSel.value === "Фильм") {
         if (+epsInp.value > 1) epsInp.value = 1;
@@ -1002,36 +1091,69 @@ const Modals = (() => {
     return row;
   }
 
+  /* В предпросмотре редактора также сразу показывается, какие строки распознаны как Повторный просмотр! */
   function recalculateSeasonsPreview() {
     const rows = [...document.querySelectorAll("#seasonsEditorList .season-row")];
-    let sumEps = 0;
-    let sumMovies = 0;
-    let sumMins = 0;
+    const seenMap = new Map();
+
+    let uniqueEps = 0;
+    let uniqueMovies = 0;
+    let uniqueMins = 0;
+
+    let viewedEps = 0;
+    let viewedMovies = 0;
+    let viewedMins = 0;
+    let rewatches = 0;
 
     rows.forEach(r => {
       const tp = r.querySelector(".s-type").value;
+      const titleStr = (r.querySelector(".s-title")?.value || "").trim().toLowerCase();
+      const key = `${tp.toLowerCase()}::${titleStr}`;
+
       const rawEp = parseInt(r.querySelector(".s-eps").value, 10);
       const ep = isNaN(rawEp) ? 0 : Math.max(0, rawEp);
       const rawMn = parseFloat(r.querySelector(".s-mins").value);
       const mn = isNaN(rawMn) ? 24 : Math.max(0, rawMn);
 
+      const calcEl = r.querySelector(".s-calc");
+
       if (ep > 0) {
         const partMins = ep * mn;
-        sumMins += partMins;
-        if (tp === "Фильм") sumMovies += ep;
-        else sumEps += ep;
-        r.querySelector(".s-calc").textContent = `${formatHours(partMins / 60)} ч.`;
+        const prev = seenMap.get(key) || 0;
+        const isRewatch = prev >= 1;
+        seenMap.set(key, prev + 1);
+
+        viewedMins += partMins;
+        if (tp === "Фильм") viewedMovies += ep;
+        else viewedEps += ep;
+
+        if (!isRewatch) {
+          uniqueMins += partMins;
+          if (tp === "Фильм") uniqueMovies += ep;
+          else uniqueEps += ep;
+          calcEl.style.color = "";
+          calcEl.textContent = `${formatHours(partMins / 60)} ч.`;
+        } else {
+          rewatches++;
+          calcEl.style.color = "#e2cdff";
+          calcEl.textContent = `🔄 Повтор (${formatHours(partMins / 60)} ч.)`;
+        }
       } else {
-        r.querySelector(".s-calc").textContent = `Анонс (0 ч.)`;
+        calcEl.style.color = "#ffd76a";
+        calcEl.textContent = `Анонс (0 ч.)`;
       }
     });
 
     const preview = document.getElementById("seasonsTotalPreview");
     if (preview) {
-      const hrs = sumMins / 60;
+      const uniqueHrs = uniqueMins / 60;
+      const viewedHrs = viewedMins / 60;
       preview.innerHTML = `
-        <span>Итого просмотрено: <b>${formatEpisodesCount(sumEps)}</b> ${sumMovies ? `+ <b>${formatMoviesCount(sumMovies)}</b>` : ""}</span>
-        <span>Суммарное время: <b style="color:#00f5ff;">${formatHours(hrs)} часов</b> (${(hrs / 24).toFixed(2)} дней)</span>
+        <span>В карточке тайтла (без дублей): <b>${formatEpisodesCount(uniqueEps)}</b> ${uniqueMovies ? `+ <b>${formatMoviesCount(uniqueMovies)}</b>` : ""} (<b style="color:#00f5ff;">${formatHours(uniqueHrs)} ч.</b>)</span>
+        ${rewatches > 0
+          ? `<span style="color:#e2cdff;">🔄 С учётом повторов в общую статистику: <b>${formatEpisodesCount(viewedEps)}</b> ${viewedMovies ? `+ <b>${formatMoviesCount(viewedMovies)}</b>` : ""} (<b>${formatHours(viewedHrs)} ч.</b>)</span>`
+          : `<span>Суммарное время: <b style="color:#00f5ff;">${formatHours(uniqueHrs)} часов</b> (${(uniqueHrs / 24).toFixed(2)} дней)</span>`
+        }
       `;
     }
   }
