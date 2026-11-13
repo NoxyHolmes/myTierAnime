@@ -14,10 +14,10 @@
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;900&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&family=Montserrat:wght@500;700;800&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
   <link rel="manifest" href="manifest.json">
 
-  <link rel="stylesheet" href="css/tokens.css?v=22.0">
-  <link rel="stylesheet" href="css/realism-3d.css?v=22.0">
-  <link rel="stylesheet" href="css/cards-and-tiers.css?v=22.0">
-  <link rel="stylesheet" href="css/modals-and-panels.css?v=22.0">
+  <link rel="stylesheet" href="css/tokens.css?v=23.0">
+  <link rel="stylesheet" href="css/realism-3d.css?v=23.0">
+  <link rel="stylesheet" href="css/cards-and-tiers.css?v=23.0">
+  <link rel="stylesheet" href="css/modals-and-panels.css?v=23.0">
 </head>
 <body class="emblems-realism letter-style-gold motion-precession fx-tier-motion fx-tilt">
   <div id="globalOwnerBg" class="global-owner-bg" aria-hidden="true">
@@ -103,6 +103,11 @@
 
           <button type="button" id="btnOpenStatsModal" class="btn btn-neon-gold" title="Подробная аналитика и статистика коллекции">
             📊 Статистика
+          </button>
+
+          <!-- Кнопка алфавитного списка всех тайтлов (только для владельца) -->
+          <button type="button" id="btnOpenAlphaListOwner" class="btn btn-neon-cyan owner-only" title="Весь список тайтлов по алфавиту (только нумерация и название)">
+            📋 Список А–Я
           </button>
 
           <button type="button" id="btnAddTitleTop" class="btn btn-neon-gold owner-only">
@@ -501,7 +506,7 @@
             <div>
               <strong>🎬 Сезоны, Фильмы, OVA, ONA и Спешлы</strong>
               <div style="font-size:11px;color:var(--ink-soft);">
-                Дату просмотра можно указать полностью (<b>03.04.2026</b>), только месяц и год (<b>04.2026</b>) или просто год (<b>2026</b>). Для анонса без известного года укажите <b>0</b> в поле года и <b>0</b> серий.
+                Дату просмотра можно указать полностью (<b>03.04.2026</b>), только месяц и год (<b>04.2026</b>) или просто год (<b>2026</b>). Для анонса без известного года укажите <b>0</b> в поле года и <b>0</b> серий. При совпадении названия сезона/фильма он автоматически помечается как <b>Повторный просмотр</b>.
               </div>
             </div>
             <div style="display:flex;gap:6px;flex-wrap:wrap;">
@@ -573,19 +578,39 @@
     </div>
   </div>
 
+  <!-- Модальное окно 5: Алфавитный список всех тайтлов для владельца (только нумерация и название) -->
+  <div id="alphaListModal" class="modal-backdrop">
+    <div class="modal-box dossier-cinema-box" style="max-width:680px;">
+      <div class="dossier-sticky-topbar">
+        <div class="dossier-badges-row" style="margin:0;">
+          <span class="dossier-badge-pill gold">📋 Алфавитный список тайтлов</span>
+          <span id="alphaListCountBadge" class="dossier-badge-pill">0</span>
+        </div>
+        <div class="dossier-top-btns">
+          <button type="button" id="btnCopyAlphaList" class="btn btn-sm btn-neon-gold" title="Скопировать весь список в буфер обмена">📋 Скопировать</button>
+          <button type="button" class="btn btn-sm" data-close-modal="alphaListModal">✕ Закрыть</button>
+        </div>
+      </div>
+      <div style="padding:14px 22px 10px;background:#120e26;border-bottom:1px solid rgba(255,255,255,0.08);">
+        <input type="search" id="alphaListSearchInput" class="form-control" placeholder="🔎 Быстрый фильтр по названию...">
+      </div>
+      <div id="alphaListModalBody" class="dossier-scroll-content" style="padding:14px 22px 22px;max-height:70vh;"></div>
+    </div>
+  </div>
+
   <div id="toastContainer"></div>
 
-  <script src="js/utils.js?v=22.0"></script>
-  <script src="js/realism-core.js?v=22.0"></script>
-  <script src="js/realism-engine.js?v=22.0"></script>
-  <script src="js/github-sync.js?v=22.0"></script>
-  <script src="js/shikimori-api.js?v=22.0"></script>
-  <script src="js/fx-controller.js?v=22.0"></script>
-  <script src="js/stats-engine.js?v=22.0"></script>
+  <script src="js/utils.js?v=23.0"></script>
+  <script src="js/realism-core.js?v=23.0"></script>
+  <script src="js/realism-engine.js?v=23.0"></script>
+  <script src="js/github-sync.js?v=23.0"></script>
+  <script src="js/shikimori-api.js?v=23.0"></script>
+  <script src="js/fx-controller.js?v=23.0"></script>
+  <script src="js/stats-engine.js?v=23.0"></script>
 
-  <!-- ВСТРОЕННЫЙ ГАРАНТИРОВАННЫЙ ГЕНЕРАТОР ВЕРХНЕЙ ПАНЕЛИ СТАТИСТИКИ И МОДАЛЬНОГО ОКНА «📊 Статистика» -->
+  <!-- ВСТРОЕННЫЙ ДВИЖОК СТАТИСТИКИ (С УЧЁТОМ ПОВТОРНЫХ ПРОСМОТРОВ) И АЛФАВИТНОГО СПИСКА ДЛЯ ВЛАДЕЛЬЦА -->
   <script>
-    (function initBuiltInStatsEngine() {
+    (function initBuiltInStatsAndAlphaList() {
       const st = document.createElement("style");
       st.textContent = `
         .st-hero-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 22px; }
@@ -608,26 +633,68 @@
         .st-top-longest-row { display: grid; grid-template-columns: 28px 36px minmax(0, 1fr) auto; align-items: center; gap: 10px; padding: 7px 10px; border-radius: 10px; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.07); cursor: pointer; transition: border-color 0.15s, background 0.15s; }
         .st-top-longest-row:hover { border-color: #ffd76a; background: rgba(255, 215, 106, 0.08); }
         .st-top-longest-row img { width: 36px; height: 50px; object-fit: cover; border-radius: 5px; }
+
+        /* Чистый алфавитный список (только номер и название) */
+        .alpha-pure-list { display: flex; flex-direction: column; gap: 5px; }
+        .alpha-pure-row {
+          display: flex;
+          align-items: baseline;
+          gap: 12px;
+          padding: 8px 13px;
+          border-radius: 9px;
+          background: rgba(255, 255, 255, 0.035);
+          border: 1px solid rgba(255, 255, 255, 0.07);
+          font-size: 13.5px;
+          color: #f5f3ff;
+          transition: background 0.15s ease, border-color 0.15s ease;
+        }
+        .alpha-pure-row:hover {
+          background: rgba(255, 215, 106, 0.08);
+          border-color: rgba(255, 215, 106, 0.4);
+        }
+        .alpha-pure-num {
+          font-family: 'JetBrains Mono', monospace;
+          font-size: 12px;
+          font-weight: 800;
+          color: #ffd76a;
+          min-width: 34px;
+          text-align: right;
+          flex-shrink: 0;
+        }
+        .alpha-pure-title {
+          font-weight: 700;
+          color: #ffffff;
+          line-height: 1.35;
+          word-break: break-word;
+        }
         @media (max-width: 960px) { .st-section-grid { grid-template-columns: 1fr; } }
       `;
       document.head.appendChild(st);
 
+      let latestTiersRef = [];
+      let alphaTitlesCache = [];
+
       window.StatsEngine = {
         updateStats(tiers) {
+          latestTiersRef = Array.isArray(tiers) ? tiers : [];
           const host = document.getElementById("statsRibbon");
           if (!host || !Array.isArray(tiers)) return;
-          let totalTitles = 0, sumEpisodes = 0, sumMovies = 0, sumHours = 0, totalParts = 0;
+
+          let totalTitles = 0, sumEpisodes = 0, sumMovies = 0, sumHours = 0, totalParts = 0, totalRewatches = 0;
           tiers.forEach(t => {
             const items = t.items || [];
             totalTitles += items.length;
             items.forEach(it => {
               const m = calcItemMetrics(it);
-              sumEpisodes += m.totalEpisodes;
-              sumMovies += m.totalMovies;
-              sumHours += m.totalHours;
+              // В общую статистику входят все просмотры, включая повторные (100 + 100 = 200)!
+              sumEpisodes += (m.viewedEpisodes ?? m.totalEpisodes);
+              sumMovies += (m.viewedMovies ?? m.totalMovies);
+              sumHours += (m.viewedHours ?? m.totalHours);
               totalParts += (m.seasons || []).length;
+              totalRewatches += (m.rewatchCount || 0);
             });
           });
+
           const totalDays = (sumHours / 24).toFixed(1);
           const titlesStr = typeof formatTitlesCount === "function" ? formatTitlesCount(totalTitles) : (totalTitles + " тайтлов");
           const epStr = typeof formatEpisodesCount === "function" ? formatEpisodesCount(sumEpisodes) : (sumEpisodes + " серий");
@@ -638,7 +705,7 @@
               <div>
                 <div class="stat-label">Всего просмотрено</div>
                 <div class="stat-val">${totalTitles} <span style="font-size:13px;color:var(--ink-soft);">${titlesStr.replace(/^\d+\s*/, "")}</span></div>
-                <div class="stat-sub">Всего частей и сезонов: <b style="color:#ffd76a;">${totalParts}</b></div>
+                <div class="stat-sub">Всего частей: <b style="color:#ffd76a;">${totalParts}</b>${totalRewatches > 0 ? ` · Повторов: <b style="color:#e2cdff;">🔄 ${totalRewatches}</b>` : ""}</div>
               </div>
               <span style="font-size:26px;">📚</span>
             </div>
@@ -668,10 +735,11 @@
         },
 
         openDetailedStatsModal(tiers, onSelectAnime) {
+          latestTiersRef = Array.isArray(tiers) ? tiers : latestTiersRef;
           const body = document.getElementById("statsModalBody");
-          if (!body || !Array.isArray(tiers)) return;
+          if (!body || !Array.isArray(latestTiersRef)) return;
 
-          let totalTitles = 0, totalWatchedParts = 0, totalUpcomingParts = 0;
+          let totalTitles = 0, totalWatchedParts = 0, totalUpcomingParts = 0, totalRewatches = 0;
           let totalEpisodes = 0, totalMovies = 0, totalMinutes = 0, totalHours = 0, titlesWithOst = 0;
 
           const formatBreakdown = {
@@ -688,7 +756,7 @@
           const allItemsWithMetrics = [];
           const tierStatsRows = [];
 
-          tiers.forEach(tier => {
+          latestTiersRef.forEach(tier => {
             const items = tier.items || [];
             let tEps = 0, tMovies = 0, tHours = 0, tParts = 0;
 
@@ -697,14 +765,20 @@
               if (item.bgmUrl || item.bgmBlobSha) titlesWithOst++;
 
               const m = calcItemMetrics(item);
-              totalEpisodes += m.totalEpisodes;
-              totalMovies += m.totalMovies;
-              totalMinutes += m.totalMinutes;
-              totalHours += m.totalHours;
+              const vEps = m.viewedEpisodes ?? m.totalEpisodes;
+              const vMov = m.viewedMovies ?? m.totalMovies;
+              const vMin = m.viewedMinutes ?? m.totalMinutes;
+              const vHrs = m.viewedHours ?? m.totalHours;
 
-              tEps += m.totalEpisodes;
-              tMovies += m.totalMovies;
-              tHours += m.totalHours;
+              totalEpisodes += vEps;
+              totalMovies += vMov;
+              totalMinutes += vMin;
+              totalHours += vHrs;
+              totalRewatches += (m.rewatchCount || 0);
+
+              tEps += vEps;
+              tMovies += vMov;
+              tHours += vHrs;
               tParts += (m.seasons || []).length;
 
               allItemsWithMetrics.push({ item, tier, m });
@@ -740,7 +814,7 @@
                 if (!clean) return;
                 const cur = genreMap.get(clean) || { name: clean, count: 0, hours: 0 };
                 cur.count++;
-                cur.hours += m.totalHours;
+                cur.hours += vHrs;
                 genreMap.set(clean, cur);
               });
 
@@ -750,7 +824,7 @@
               rawStudios.map(s => s.trim()).filter(Boolean).forEach(stName => {
                 const cur = studioMap.get(stName) || { name: stName, count: 0, hours: 0 };
                 cur.count++;
-                cur.hours += m.totalHours;
+                cur.hours += vHrs;
                 studioMap.set(stName, cur);
               });
             });
@@ -789,7 +863,7 @@
               <div class="st-kpi-box">
                 <span class="st-kpi-lbl">📚 Всего тайтлов</span>
                 <span class="st-kpi-val" style="color:#ffd76a;">${totalTitles}</span>
-                <span class="st-kpi-sub">Просмотрено частей: <b>${totalWatchedParts}</b>${totalUpcomingParts ? ` · Анонсов: <b>${totalUpcomingParts}</b>` : ""}</span>
+                <span class="st-kpi-sub">Просмотрено частей: <b>${totalWatchedParts}</b>${totalRewatches ? ` · Повторов: <b>🔄 ${totalRewatches}</b>` : ""}${totalUpcomingParts ? ` · Анонсов: <b>${totalUpcomingParts}</b>` : ""}</span>
               </div>
               <div class="st-kpi-box">
                 <span class="st-kpi-lbl">⏱ Суммарно часов</span>
@@ -802,7 +876,7 @@
                 <span class="st-kpi-sub">${totalWeeks.toFixed(2)} недель без перерыва</span>
               </div>
               <div class="st-kpi-box">
-                <span class="st-kpi-lbl">🎞 Серии и Фильмы</span>
+                <span class="st-kpi-lbl">🎞 Серии и Фильмы (с повторами)</span>
                 <span class="st-kpi-val">${totalEpisodes} <span style="font-size:14px;color:#a6a0c4;">эп.</span> + ${totalMovies} <span style="font-size:14px;color:#ff5e7e;">ф.</span></span>
                 <span class="st-kpi-sub">В среднем ${avgEpsPerTitle} эп. (${formatHours(avgHoursPerTitle)} ч.) на 1 тайтл</span>
               </div>
@@ -817,7 +891,7 @@
               <div class="st-panel st-panel-full">
                 <h4 class="st-panel-title">
                   <span>🏛 Распределение по тирам (S – E)</span>
-                  <span style="font-size:11.5px;color:#9e97bf;font-family:var(--sans);">Полная сводка по каждому рангу</span>
+                  <span style="font-size:11.5px;color:#9e97bf;font-family:var(--sans);">Полная сводка по каждому рангу (включая повторные просмотры)</span>
                 </h4>
                 <div style="overflow-x:auto;">
                   <table class="st-table">
@@ -899,7 +973,7 @@
 
               <div class="st-panel st-panel-full">
                 <h4 class="st-panel-title">
-                  <span>🏆 Топ-10 самых масштабных тайтлов по затраченному времени</span>
+                  <span>🏆 Топ-10 самых масштабных тайтлов по уникальной длительности</span>
                   <span style="font-size:11px;color:#9e97bf;font-family:var(--sans);">Нажмите на тайтл, чтобы открыть его карточку</span>
                 </h4>
                 <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(360px,1fr));gap:8px;">
@@ -992,13 +1066,93 @@
           }
         }
       };
+
+      /* ──────── АЛФАВИТНЫЙ СПИСОК ВСЕХ ТАЙТЛОВ ДЛЯ ВЛАДЕЛЬЦА (ТОЛЬКО НУМЕРАЦИЯ И НАЗВАНИЕ) ──────── */
+      function renderAlphaListRows(query = "") {
+        const body = document.getElementById("alphaListModalBody");
+        const badge = document.getElementById("alphaListCountBadge");
+        if (!body) return;
+
+        const q = query.trim().toLowerCase();
+        const filtered = alphaTitlesCache.filter(title => !q || title.toLowerCase().includes(q));
+
+        if (badge) {
+          badge.textContent = typeof formatTitlesCount === "function"
+            ? formatTitlesCount(filtered.length)
+            : `${filtered.length} тайтлов`;
+        }
+
+        if (!filtered.length) {
+          body.innerHTML = `<div style="padding:24px;text-align:center;color:var(--ink-soft);">Ничего не найдено.</div>`;
+          return;
+        }
+
+        body.innerHTML = `
+          <div class="alpha-pure-list">
+            ${filtered.map((title, idx) => `
+              <div class="alpha-pure-row">
+                <span class="alpha-pure-num">${idx + 1}.</span>
+                <span class="alpha-pure-title">${esc(title)}</span>
+              </div>
+            `).join("")}
+          </div>
+        `;
+      }
+
+      function openOwnerAlphabeticalListModal() {
+        const allTitles = [];
+        (latestTiersRef || []).forEach(tier => {
+          (tier.items || []).forEach(item => {
+            if (item && item.title && String(item.title).trim()) {
+              allTitles.push(String(item.title).trim());
+            }
+          });
+        });
+
+        // Строгая сортировка по русскому и английскому алфавиту (А–Я, A–Z)
+        allTitles.sort((a, b) => a.localeCompare(b, "ru", { sensitivity: "base" }));
+        alphaTitlesCache = allTitles;
+
+        const searchInp = document.getElementById("alphaListSearchInput");
+        if (searchInp) searchInp.value = "";
+
+        renderAlphaListRows("");
+        if (typeof Modals !== "undefined") {
+          Modals.openModal("alphaListModal");
+        }
+      }
+
+      window.addEventListener("DOMContentLoaded", () => {
+        document.getElementById("btnOpenAlphaListOwner")?.addEventListener("click", () => {
+          openOwnerAlphabeticalListModal();
+        });
+
+        document.getElementById("alphaListSearchInput")?.addEventListener("input", e => {
+          renderAlphaListRows(e.target.value);
+        });
+
+        document.getElementById("btnCopyAlphaList")?.addEventListener("click", async () => {
+          if (!alphaTitlesCache.length) return;
+          const plainText = alphaTitlesCache.map((t, i) => `${i + 1}. ${t}`).join("\n");
+          try {
+            await navigator.clipboard.writeText(plainText);
+            if (typeof showToast === "function") {
+              showToast(`✔ Скопировано ${alphaTitlesCache.length} названий по алфавиту!`, "#38ef7d");
+            }
+          } catch {
+            if (typeof showToast === "function") {
+              showToast("Не удалось скопировать в буфер обмена", "#ff3c8c");
+            }
+          }
+        });
+      });
     })();
   </script>
 
-  <script src="js/calendar-view.js?v=22.0"></script>
-  <script src="js/drag-drop.js?v=22.0"></script>
-  <script src="js/modals.js?v=22.0"></script>
-  <script type="module" src="js/wasm-bridge.js?v=22.0"></script>
-  <script src="js/app.js?v=22.0"></script>
+  <script src="js/calendar-view.js?v=23.0"></script>
+  <script src="js/drag-drop.js?v=23.0"></script>
+  <script src="js/modals.js?v=23.0"></script>
+  <script type="module" src="js/wasm-bridge.js?v=23.0"></script>
+  <script src="js/app.js?v=23.0"></script>
 </body>
 </html>
