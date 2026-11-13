@@ -1,4 +1,4 @@
-/* ═══════════════════ MAIN APPLICATION ORCHESTRATOR (v22.0 COMPACT & VERIFIED) ═══════════════════ */
+/* ═══════════════════ MAIN APPLICATION ORCHESTRATOR (v23.0 REWATCH TOTALS & CUSTOM FRAMES) ═══════════════════ */
 (() => {
   if (typeof window.pluralRu !== "function") {
     window.pluralRu = function (number, one, few, many) {
@@ -66,6 +66,7 @@
     return rawList.map(s => String(s).trim()).filter(Boolean);
   }
 
+  /* Сортировка внутри тира идёт по уникальной длительности самого тайтла (totalMinutes) */
   function sortAllTiersByTimeDesc(dataObj) {
     if (!dataObj || !Array.isArray(dataObj.tiers)) return;
     dataObj.tiers.forEach(tier => {
@@ -378,10 +379,7 @@
             const it = entry.item;
             const tr = entry.tier;
             const displayPoster = it.posterInline || it.poster || "https://placehold.co/400x600/16122b/ffd76a?text=myTierAnime";
-            const hasMusic = !!(it.bgmUrl || it.bgmBlobSha);
-            const musicBadge = hasMusic
-              ? `<span title="В карточке играет фоновая музыка" style="position:absolute;top:6px;right:6px;z-index:4;padding:1.5px 5px;border-radius:5px;font-size:8.5px;background:rgba(14,11,28,0.88);border:1px solid rgba(0,245,255,0.45);color:#00f5ff;pointer-events:none;">🎵 OST</span>`
-              : "";
+            const customFrameHtml = typeof renderTitleCustomFrameHtml === "function" ? renderTitleCustomFrameHtml(it.title) : "";
 
             return `
               <div class="recent-item-card" data-recent-uid="${esc(it.uid)}" data-recent-tier="${esc(tr.id)}">
@@ -389,8 +387,8 @@
                   <img class="recent-poster-img card-poster" draggable="false" src="${esc(displayPoster)}" data-raw-path="${esc(it.poster || "")}" data-blob-sha="${esc(it.posterBlobSha || "")}" alt="${esc(it.title)}" loading="lazy"
                        onerror="this.src='https://placehold.co/400x600/16122b/ffd76a?text=myTierAnime'">
                   <div class="scrim" style="position:absolute;inset:0;background:linear-gradient(to top,rgba(6,5,14,0.95) 0%,rgba(6,5,14,0.45) 42%,transparent 75%);pointer-events:none;"></div>
+                  ${customFrameHtml}
                   <span class="recent-tier-badge">Тир ${esc(tr.id)}</span>
-                  ${musicBadge}
 
                   <div class="card-info">
                     <h3 class="card-title">${esc(it.title)}</h3>
@@ -417,6 +415,7 @@
     });
   }
 
+  /* Карточка тайтла: отображает индивидуальную рамку по названию и уникальное число серий без дублирования при повторе */
   function cardEl(item, idx, tierId) {
     const m = calcItemMetrics(item);
     const yr = m.latestYear || item.year || "";
@@ -428,11 +427,20 @@
 
     const hasMusic = !!(item.bgmUrl || item.bgmBlobSha);
     const musicCornerBadge = hasMusic
-      ? `<span title="В карточке играет фоновая музыка" style="position:absolute;top:6px;right:6px;z-index:4;padding:1.5px 5px;border-radius:5px;font-size:8.5px;background:rgba(14,11,28,0.88);border:1px solid rgba(0,245,255,0.45);color:#00f5ff;pointer-events:none;">🎵 OST</span>`
+      ? `<span title="В карточке играет фоновая музыка" style="position:absolute;top:28px;right:6px;z-index:4;padding:1.5px 5px;border-radius:5px;font-size:8.5px;background:rgba(14,11,28,0.88);border:1px solid rgba(0,245,255,0.45);color:#00f5ff;pointer-events:none;">🎵 OST</span>`
       : "";
+
+    const rewatchCornerBadge = m.rewatchCount > 0
+      ? `<span title="Повторных просмотров: ${m.rewatchCount}" style="position:absolute;top:28px;left:6px;z-index:4;padding:1.5px 5px;border-radius:5px;font-size:8.5px;font-weight:800;background:rgba(20,12,38,0.9);border:1px solid #b57cff;color:#e2cdff;pointer-events:none;">🔄 ×${m.rewatchCount + 1}</span>`
+      : "";
+
+    const customFrameHtml = typeof renderTitleCustomFrameHtml === "function" ? renderTitleCustomFrameHtml(item.title) : "";
 
     const studiosList = extractItemStudios(item);
     const studiosDisplay = studiosList.join(", ");
+
+    // Считаем количество уникальных частей (без учёта дублей повторного просмотра)
+    const uniquePartsCount = Math.max(1, m.seasons.length - (m.rewatchCount || 0));
 
     return `
       <div class="card-unit" draggable="true" data-uid="${esc(item.uid)}" data-tier-id="${esc(tierId)}">
@@ -441,10 +449,12 @@
                onerror="this.src='https://placehold.co/400x600/16122b/ffd76a?text=myTierAnime'">
           <div class="scrim"></div>
           <span class="holo-foil" aria-hidden="true"></span>
-          ${tierId === "S" ? floralFrame() + `<span class="card-coronet" aria-hidden="true">${royalCrown("card" + item.uid)}</span>` : ""}
+          ${customFrameHtml}
+          ${tierId === "S" ? `<span class="card-coronet" aria-hidden="true">${royalCrown("card" + item.uid)}</span>` : ""}
           <span class="rank">${idx + 1}</span>
           ${yearBadgeHtml}
           ${musicCornerBadge}
+          ${rewatchCornerBadge}
 
           <div class="card-info">
             <h3 class="card-title">${esc(item.title)}</h3>
@@ -455,7 +465,7 @@
         <div class="card-under-meta">
           <div class="cum-row">
             <span class="cum-kind">${esc(m.kind)}</span>
-            <span class="cum-seasons-badge">Частей: <b>${m.seasons.length}</b></span>
+            <span class="cum-seasons-badge">Частей: <b>${uniquePartsCount}</b>${m.rewatchCount > 0 ? ` <span style="color:#e2cdff;" title="Повторных просмотров: ${m.rewatchCount}">(+🔄${m.rewatchCount})</span>` : ""}</span>
           </div>
           <div class="cum-episodes-line" title="${esc(countLabel)}">🎞 ${countLabel}</div>
           <div class="cum-hours-bar">
@@ -492,6 +502,12 @@
     const host = document.getElementById("tiersRoot");
     if (!host || !appData || !Array.isArray(appData.tiers)) return;
 
+    if (typeof Modals !== "undefined" && typeof Modals.openModal === "function") {
+      // Гарантируем, что CSS для рамок инъектирован сразу при старте
+      const dummy = document.getElementById("dossierSelfContainedStyles");
+      if (!dummy && typeof Modals.closeModal === "function") Modals.closeModal("__init_styles__");
+    }
+
     sortAllTiersByTimeDesc(appData);
 
     if (typeof FXController !== "undefined" && typeof FXController.applyGlobalBackground === "function") {
@@ -508,14 +524,15 @@
     host.innerHTML = appData.tiers.map((tier, tierIdx) => {
       const allTierItems = tier.items || [];
 
+      /* В общий счётчик тира (viewedEpisodes, viewedMovies, viewedHours) входят и первые, и повторные просмотры (100 + 100 = 200)! */
       let tierEpisodes = 0;
       let tierMovies = 0;
       let tierHours = 0;
       allTierItems.forEach(it => {
         const m = calcItemMetrics(it);
-        tierEpisodes += m.totalEpisodes;
-        tierMovies += m.totalMovies;
-        tierHours += m.totalHours;
+        tierEpisodes += (m.viewedEpisodes ?? m.totalEpisodes);
+        tierMovies += (m.viewedMovies ?? m.totalMovies);
+        tierHours += (m.viewedHours ?? m.totalHours);
       });
       const tierDays = (tierHours / 24).toFixed(1);
 
