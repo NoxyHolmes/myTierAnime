@@ -1,4 +1,4 @@
-/* ═══════════════════ MODALS: GROUPED REWATCH TIMELINE & 122 EXACT FRAMES (v24.0) ═══════════════════ */
+/* ═══════════════════ MODALS: SEPARATE COLOR-CODED REWATCH ROWS & TAB IN DOSSIER (v27.0) ═══════════════════ */
 const Modals = (() => {
   let deleteHandler = null;
 
@@ -25,79 +25,22 @@ const Modals = (() => {
         overscroll-behavior: contain !important;
       }
 
-      /* ──────── УНИКАЛЬНЫЕ РАМКИ НА ОБЛОЖКИ ДЛЯ 122 ТАЙТЛОВ ──────── */
-      .anime-custom-frame {
-        position: absolute !important;
-        inset: 0 !important;
-        border-radius: inherit !important;
-        pointer-events: none !important;
-        z-index: 3 !important;
-        box-shadow:
-          inset 0 0 0 2px var(--fc1, #ffd76a),
-          inset 0 0 18px -2px var(--fc2, #00f5ff),
-          0 0 14px -4px var(--fc1, #ffd76a) !important;
-        transition: box-shadow 0.28s ease, transform 0.28s ease !important;
+      /* ──────── ОТДЕЛЬНОЕ ЦВЕТОВОЕ ОФОРМЛЕНИЕ СТРОК ПОВТОРНОГО ПРОСМОТРА В ЛИЧНОЙ КАРТОЧКЕ ──────── */
+      .dossier-season-bar.is-rewatch {
+        border: 1px solid rgba(181, 124, 255, 0.55) !important;
+        border-left: 4px solid #b57cff !important;
+        background: linear-gradient(135deg, rgba(58, 28, 92, 0.88), rgba(24, 15, 48, 0.96)) !important;
+        box-shadow: 0 4px 16px -4px rgba(181, 124, 255, 0.35) !important;
       }
-      .anime-custom-frame::before {
-        content: "" !important;
-        position: absolute !important;
-        inset: 3px !important;
-        border-radius: calc(var(--card-radius, 10px) - 3px) !important;
-        border: 1px solid color-mix(in srgb, var(--fc2, #00f5ff) 68%, transparent) !important;
-        opacity: 0.9 !important;
+      .dossier-season-bar.is-rewatch .dsc-num {
+        background: #b57cff !important;
+        color: #090614 !important;
       }
-      /* Вариации стилей рамок */
-      .anime-custom-frame.frame-style-cyber::before {
-        border-style: dashed !important;
+      .dossier-season-bar.is-rewatch .cum-kind {
+        background: rgba(181, 124, 255, 0.22) !important;
+        border-color: #b57cff !important;
+        color: #f3e5ff !important;
       }
-      .anime-custom-frame.frame-style-royal::before {
-        border-width: 1.5px !important;
-        box-shadow: inset 0 0 10px color-mix(in srgb, var(--fc1) 45%, transparent) !important;
-      }
-      .anime-custom-frame.frame-style-gothic::before {
-        border-style: double !important;
-        border-width: 3px !important;
-      }
-      .anime-custom-frame.frame-style-flame {
-        box-shadow:
-          inset 0 0 0 2px var(--fc1),
-          inset 0 -18px 26px -8px var(--fc2),
-          0 0 16px -3px var(--fc1) !important;
-      }
-      .card:hover .anime-custom-frame,
-      .recent-item-card:hover .anime-custom-frame {
-        box-shadow:
-          inset 0 0 0 2.4px var(--fc1, #ffd76a),
-          inset 0 0 26px -1px var(--fc2, #00f5ff),
-          0 0 22px -2px var(--fc1, #ffd76a) !important;
-      }
-      .acf-corner {
-        position: absolute !important;
-        width: 12px !important;
-        height: 12px !important;
-        border-color: var(--fc1, #ffd76a) !important;
-        border-style: solid !important;
-        filter: drop-shadow(0 0 5px var(--fc2, #00f5ff)) !important;
-      }
-      .acf-corner.tl { top: 4px !important; left: 4px !important; border-width: 2.2px 0 0 2.2px !important; border-top-left-radius: 4px !important; }
-      .acf-corner.tr { top: 4px !important; right: 4px !important; border-width: 2.2px 2.2px 0 0 !important; border-top-right-radius: 4px !important; }
-      .acf-corner.bl { bottom: 4px !important; left: 4px !important; border-width: 0 0 2.2px 2.2px !important; border-bottom-left-radius: 4px !important; }
-      .acf-corner.br { bottom: 4px !important; right: 4px !important; border-width: 0 2.2px 2.2px 0 !important; border-bottom-right-radius: 4px !important; }
-      .acf-emblem {
-        position: absolute !important;
-        top: 6px !important;
-        right: 6px !important;
-        font-style: normal !important;
-        font-size: 10.5px !important;
-        line-height: 1 !important;
-        padding: 2.5px 5.5px !important;
-        border-radius: 6px !important;
-        background: rgba(8, 6, 18, 0.88) !important;
-        border: 1px solid var(--fc1, #ffd76a) !important;
-        box-shadow: 0 0 8px -1px var(--fc2, #00f5ff) !important;
-      }
-
-      /* ──────── ОФОРМЛЕНИЕ ПОВТОРНОГО ПРОСМОТРА В ЛИЧНОЙ КАРТОЧКЕ ──────── */
       .rewatch-pill-badge {
         display: inline-flex !important;
         align-items: center !important;
@@ -106,40 +49,21 @@ const Modals = (() => {
         border-radius: 999px !important;
         font-size: 10px !important;
         font-weight: 800 !important;
-        color: #ffe8a3 !important;
-        background: linear-gradient(135deg, rgba(181, 124, 255, 0.32), rgba(255, 215, 106, 0.22)) !important;
-        border: 1px solid #ffd76a !important;
-        box-shadow: 0 0 12px -2px rgba(181, 124, 255, 0.6) !important;
+        color: #f3e5ff !important;
+        background: rgba(181, 124, 255, 0.28) !important;
+        border: 1px solid #b57cff !important;
         white-space: nowrap !important;
       }
-      .rewatch-history-chain {
-        display: flex !important;
-        flex-wrap: wrap !important;
-        align-items: center !important;
-        gap: 5px !important;
-        margin-top: 3px !important;
+      .dossier-pill-btn.rewatch-tab-btn {
+        border-color: rgba(181, 124, 255, 0.55) !important;
+        color: #e2cdff !important;
+        background: rgba(181, 124, 255, 0.12) !important;
       }
-      .rewatch-step-chip {
-        display: inline-flex !important;
-        align-items: center !important;
-        gap: 4px !important;
-        padding: 1.5px 7px !important;
-        border-radius: 5px !important;
-        font-size: 10px !important;
-        font-weight: 700 !important;
-        background: rgba(255, 255, 255, 0.06) !important;
-        border: 1px solid rgba(255, 255, 255, 0.14) !important;
-        color: #d6d0f5 !important;
-      }
-      .rewatch-step-chip.is-repeat {
-        background: rgba(181, 124, 255, 0.2) !important;
+      .dossier-pill-btn.rewatch-tab-btn.active {
+        background: rgba(181, 124, 255, 0.35) !important;
         border-color: #b57cff !important;
-        color: #f3e5ff !important;
-      }
-      .dossier-season-bar.is-rewatch {
-        border-left: 3.5px solid #b57cff !important;
-        background: linear-gradient(135deg, rgba(44, 24, 68, 0.82), rgba(18, 14, 38, 0.96)) !important;
-        box-shadow: inset 0 0 18px -8px rgba(181, 124, 255, 0.45) !important;
+        color: #ffffff !important;
+        box-shadow: 0 0 14px -3px rgba(181, 124, 255, 0.65) !important;
       }
 
       .dossier-cinema-box {
@@ -411,7 +335,7 @@ const Modals = (() => {
         grid-template-columns: minmax(220px, 1fr) max-content max-content max-content max-content max-content !important;
         row-gap: 8px !important;
         width: 100% !important;
-        max-height: 192px !important;
+        max-height: 184px !important;
         overflow-y: auto !important;
         overflow-x: hidden !important;
         overscroll-behavior: contain !important;
@@ -450,12 +374,12 @@ const Modals = (() => {
           display: flex !important;
           flex-direction: column !important;
           gap: 8px !important;
-          max-height: 192px !important;
+          max-height: 184px !important;
           overflow-y: auto !important;
         }
         .dossier-season-bar {
           display: grid !important;
-          grid-template-columns: minmax(220px, 1fr) 96px 125px 120px 92px 135px !important;
+          grid-template-columns: minmax(220px, 1fr) 96px 125px 120px 92px 115px !important;
           align-items: center !important;
           column-gap: 14px !important;
           flex-shrink: 0 !important;
@@ -766,6 +690,8 @@ const Modals = (() => {
     });
   }
 
+  /* В личной карточке тайтла каждая запись (и первый просмотр, и повторный просмотр) выводится отдельной строкой,
+     но повторные просмотры выделены другим (пурпурно-аметистовым) цветом и имеют отдельную вкладку фильтрации! */
   function showAnimeDetails(item, tier) {
     ensureDossierStyles();
     stopActiveBgm();
@@ -784,51 +710,42 @@ const Modals = (() => {
       topBadges.innerHTML = `
         <span class="dossier-badge-pill gold">ТИР ${esc(tier.id)} · ${esc(tier.name)}</span>
         <span class="dossier-badge-pill">${esc(m.kind)}</span>
-        ${m.rewatchCount > 0 ? `<span class="rewatch-pill-badge" title="Повторно просмотренные серии не увеличивают длину самого аниме, но засчитаны в общую статистику всех просмотров!">🔄 Повторных просмотров: ${m.rewatchCount} (В общей стат.: ${m.viewedEpisodes} эп. / ${formatHours(m.viewedHours)} ч.)</span>` : ""}
       `;
     }
 
-    // Используем groupedSeasons, где одинаковые по названию сезоны/фильмы объединены без удвоения серий!
-    const uniqueSeasonsList = Array.isArray(m.groupedSeasons) ? m.groupedSeasons : m.seasons;
+    // Полный список всех записей: основные сезоны/фильмы + отдельные строки повторных просмотров (помеченные другим цветом)
+    const allSeasonEntries = m.seasons || [];
+    const rewatchesOnlyCount = allSeasonEntries.filter(s => s.isRewatch).length;
 
     function renderSeasonsVerticalStack(filterType = "ALL") {
-      const filtered = uniqueSeasonsList.filter(s => {
+      const filtered = allSeasonEntries.filter(s => {
         if (filterType === "ALL") return true;
-        if (filterType === "TV") return s.type === "TV Сериал";
-        if (filterType === "MOVIE") return s.type === "Фильм";
-        return s.type !== "TV Сериал" && s.type !== "Фильм";
+        if (filterType === "REWATCH") return !!s.isRewatch;
+        if (filterType === "TV") return !s.isRewatch && s.type === "TV Сериал";
+        if (filterType === "MOVIE") return !s.isRewatch && s.type === "Фильм";
+        return !s.isRewatch && s.type !== "TV Сериал" && s.type !== "Фильм";
       });
+
+      if (!filtered.length) {
+        return `<div style="grid-column:1/-1;padding:18px;text-align:center;color:var(--ink-soft);font-size:12.5px;">В этой категории записей нет.</div>`;
+      }
 
       return filtered.map((s, idx) => {
         const isUpcoming = Number(s.episodes) === 0;
-        const isRewatch = (s.watchCount || 1) > 1;
+        const isRewatch = !!s.isRewatch;
         const partHours = isUpcoming ? "0" : formatHours((s.episodes * s.epMinutes) / 60);
 
         const hasReleaseYear = s.releaseYear !== undefined && s.releaseYear !== null && Number(s.releaseYear) > 0;
         const yearBadgeText = hasReleaseYear ? `${esc(s.releaseYear)} г.` : "Анонс";
 
-        const volumeText = isUpcoming
-          ? `<span class="s-chip-upcoming">⏳ Анонс (0 ${s.type === "Фильм" ? "ф." : "эп."})</span>`
-          : `<b class="s-chip-vol">${s.type === "Фильм" ? formatMoviesCount(s.episodes) : formatEpisodesCount(s.episodes)}</b>`;
-
-        // Если сезон просмотрен несколько раз — выводим цепочку дат каждого просмотра (1-й просмотр -> Повтор #2 и т.д.)
-        let rewatchTimelineHtml = "";
-        if (isRewatch && Array.isArray(s.watchHistory)) {
-          rewatchTimelineHtml = `
-            <div class="rewatch-history-chain">
-              ${s.watchHistory.map(h => `
-                <span class="rewatch-step-chip ${h.num > 1 ? "is-repeat" : ""}">
-                  ${h.num === 1 ? `① 1-й просмотр: ${esc(h.date || "—")}` : `🔄 Повтор #${h.num}: ${esc(h.date || "—")}`}
-                </span>
-              `).join("")}
-            </div>
-          `;
-        }
-
-        const rawDateStr = s.latestRewatchDate || (s.date ? String(s.date).trim() : "");
+        const rawDateStr = s.date ? String(s.date).trim() : "";
         const displayDateStr = (rawDateStr && rawDateStr !== "0")
           ? rawDateStr
           : (isUpcoming ? "Анонс" : "—");
+
+        const volumeText = isUpcoming
+          ? `<span class="s-chip-upcoming">⏳ Анонс (0 ${s.type === "Фильм" ? "ф." : "эп."})</span>`
+          : `<b class="s-chip-vol" style="${isRewatch ? "color:#e2cdff !important;" : ""}">${s.type === "Фильм" ? formatMoviesCount(s.episodes) : formatEpisodesCount(s.episodes)}</b>`;
 
         const noteText = s.note ? String(s.note).trim() : "";
 
@@ -839,9 +756,8 @@ const Modals = (() => {
               <div class="dsc-title-wrap">
                 <strong class="dsc-name">
                   <span>${esc(s.title)}</span>
-                  ${isRewatch ? `<span class="rewatch-pill-badge">🔄 Просмотрено ×${s.watchCount} (Повтор)</span>` : ""}
+                  ${isRewatch ? `<span class="rewatch-pill-badge">🔄 Повторный просмотр</span>` : ""}
                 </strong>
-                ${rewatchTimelineHtml}
                 ${noteText ? `<span class="dsb-note-inline">💬 ${esc(noteText)}</span>` : ""}
               </div>
             </div>
@@ -863,12 +779,12 @@ const Modals = (() => {
 
             <div class="dsb-col-stat">
               <span class="dsc-lbl">Время:</span>
-              <b style="color:#00f5ff;">${partHours} ч.</b>
+              <b style="color:${isRewatch ? "#e2cdff" : "#00f5ff"};">${partHours} ч.</b>
             </div>
 
             <div class="dsb-col-stat">
-              <span class="dsc-lbl">${isRewatch ? "Посл. повтор:" : "Дата:"}</span>
-              <b style="color:${isRewatch ? "#ffe8a3" : "#ffffff"};">${esc(displayDateStr)}</b>
+              <span class="dsc-lbl">Дата:</span>
+              <b style="color:${isRewatch ? "#f3e5ff" : "#ffffff"};">${esc(displayDateStr)}</b>
             </div>
           </div>
         `;
@@ -910,13 +826,13 @@ const Modals = (() => {
 
             <div class="dossier-metrics-row">
               <div class="dossier-metric-card">
-                <div class="dm-lbl">🎞 Серии и Фильмы (в тайтле)</div>
+                <div class="dm-lbl">🎞 Серии и Фильмы</div>
                 <div class="dm-val" style="color:#ffd76a;">
                   ${formatEpisodesCount(m.totalEpisodes)} ${m.totalMovies ? `+ <span style="color:#ff5e7e;">${formatMoviesCount(m.totalMovies)}</span>` : ""}
                 </div>
               </div>
               <div class="dossier-metric-card">
-                <div class="dm-lbl">⏱ Время тайтла</div>
+                <div class="dm-lbl">⏱ Затрачено часов</div>
                 <div class="dm-val" style="color:#00f5ff;">${formatHours(m.totalHours)} ч.</div>
               </div>
               <div class="dossier-metric-card">
@@ -937,14 +853,15 @@ const Modals = (() => {
           <div class="dossier-seasons-block">
             <div class="dossier-seasons-header">
               <strong style="font-size:12px;text-transform:uppercase;color:#d6d0f5;letter-spacing:0.06em;">
-                🎬 Хронология сезонов и частей (${uniqueSeasonsList.length}):
-                ${uniqueSeasonsList.length > 3 ? `<span style="font-size:10.5px;color:#00f5ff;text-transform:none;margin-left:6px;">(прокрутите вниз ↕)</span>` : ""}
+                🎬 Хронология сезонов и частей (${allSeasonEntries.length}):
+                ${allSeasonEntries.length > 3 ? `<span style="font-size:10.5px;color:#00f5ff;text-transform:none;margin-left:6px;">(прокрутите вниз ↕)</span>` : ""}
               </strong>
               <div class="dossier-filter-pills">
-                <button type="button" class="dossier-pill-btn active" data-s-filter="ALL">Все (${uniqueSeasonsList.length})</button>
+                <button type="button" class="dossier-pill-btn active" data-s-filter="ALL">Все (${allSeasonEntries.length})</button>
                 <button type="button" class="dossier-pill-btn" data-s-filter="TV">Сериалы</button>
                 <button type="button" class="dossier-pill-btn" data-s-filter="MOVIE">Фильмы</button>
                 <button type="button" class="dossier-pill-btn" data-s-filter="OTHER">OVA / ONA / Спешлы</button>
+                ${rewatchesOnlyCount > 0 ? `<button type="button" class="dossier-pill-btn rewatch-tab-btn" data-s-filter="REWATCH">🔄 Повторные просмотры (${rewatchesOnlyCount})</button>` : ""}
               </div>
             </div>
 
@@ -1194,8 +1111,8 @@ const Modals = (() => {
           calcEl.textContent = `${formatHours(partMins / 60)} ч.`;
         } else {
           rewatches++;
-          calcEl.style.color = "#ffe8a3";
-          calcEl.textContent = `🔄 Повтор #${prev + 1}`;
+          calcEl.style.color = "#e2cdff";
+          calcEl.textContent = `🔄 Повтор (${formatHours(partMins / 60)} ч.)`;
         }
       } else {
         calcEl.style.color = "#ffd76a";
@@ -1210,7 +1127,7 @@ const Modals = (() => {
       preview.innerHTML = `
         <span>В тайтле (без суммирования повторов): <b>${formatEpisodesCount(uniqueEps)}</b> ${uniqueMovies ? `+ <b>${formatMoviesCount(uniqueMovies)}</b>` : ""} (<b style="color:#00f5ff;">${formatHours(uniqueHrs)} ч.</b>)</span>
         ${rewatches > 0
-          ? `<span style="color:#ffe8a3;">🔄 В общую статистику всех просмотров: <b>${formatEpisodesCount(viewedEps)}</b> ${viewedMovies ? `+ <b>${formatMoviesCount(viewedMovies)}</b>` : ""} (<b>${formatHours(viewedHrs)} ч.</b>)</span>`
+          ? `<span style="color:#e2cdff;">🔄 В общую статистику всех просмотров: <b>${formatEpisodesCount(viewedEps)}</b> ${viewedMovies ? `+ <b>${formatMoviesCount(viewedMovies)}</b>` : ""} (<b>${formatHours(viewedHrs)} ч.</b>)</span>`
           : `<span>Суммарное время: <b style="color:#00f5ff;">${formatHours(uniqueHrs)} часов</b> (${(uniqueHrs / 24).toFixed(2)} дней)</span>`
         }
       `;
