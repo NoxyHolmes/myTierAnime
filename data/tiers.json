@@ -4,12 +4,12 @@
     "owner": "geraltschwarzenegger-svg",
     "repo": "noxyholmes/myTierAnime",
     "branch": "main",
-    "updatedAt": "2026-11-13T18:05:32.524Z",
+    "updatedAt": "2026-11-14T09:34:10.292Z",
     "activeMode": "emblems-realism",
     "bgImage": "backgrounds/1792058756499____________________________________.png",
     "bgDim": 65,
     "bgBlur": 5,
-    "revision": 421,
+    "revision": 422,
     "bgBlobSha": "1de942c76368b8d317071e794ae55fed35d163ad",
     "bgMime": "image/png",
     "bgmVolume": 10,
@@ -43,7 +43,10 @@
       "Studio Chromato",
       "Studio Kafka",
       "Lapin Track",
-      "Studio Graph77"
+      "Studio Graph77",
+      "B.CMAY PICTURES",
+      "Colored Pencil Animation",
+      "Lingsanwu Animation"
     ],
     "bgInline": ""
   },
@@ -1500,6 +1503,110 @@
           ]
         },
         {
+          "uid": "anime-1792406949521",
+          "updatedAt": 1794648850259,
+          "kind": "ONA",
+          "title": "Аватар короля",
+          "origTitle": "Master of Skills",
+          "year": 2017,
+          "studio": "B.CMAY PICTURES, Colored Pencil Animation, Lingsanwu Animation",
+          "studios": [
+            "B.CMAY PICTURES",
+            "Colored Pencil Animation",
+            "Lingsanwu Animation"
+          ],
+          "poster": "posters/1792406727321_1080_45726979.jpg",
+          "posterBlobSha": "069a9d63d1b340dd60727c78a219e6eef39cc21e",
+          "genres": [
+            "Экшен",
+            "Не японское",
+            "Игры"
+          ],
+          "comment": "",
+          "seasons": [
+            {
+              "title": "Сезон 1",
+              "type": "ONA",
+              "releaseYear": 2017,
+              "episodes": 12,
+              "epMinutes": 24,
+              "date": "2024",
+              "note": ""
+            },
+            {
+              "title": "Спешл - Спецвыпуск",
+              "type": "Спешл",
+              "releaseYear": 2018,
+              "episodes": 3,
+              "epMinutes": 24,
+              "date": "2024",
+              "note": ""
+            },
+            {
+              "title": "Фильм - Вершина славы",
+              "type": "Фильм",
+              "releaseYear": 2019,
+              "episodes": 1,
+              "epMinutes": 95,
+              "date": "2024",
+              "note": ""
+            },
+            {
+              "title": "Сезон 2",
+              "type": "ONA",
+              "releaseYear": 2020,
+              "episodes": 12,
+              "epMinutes": 24,
+              "date": "2024",
+              "note": ""
+            },
+            {
+              "title": "Сезон 3",
+              "type": "ONA",
+              "releaseYear": 2024,
+              "episodes": 17,
+              "epMinutes": 24,
+              "date": "2017",
+              "note": ""
+            },
+            {
+              "title": "Сезон 4",
+              "type": "ONA",
+              "releaseYear": 0,
+              "episodes": 0,
+              "epMinutes": 24,
+              "date": "",
+              "note": ""
+            }
+          ],
+          "watched": [
+            {
+              "date": "2024",
+              "note": "Сезон 1"
+            },
+            {
+              "date": "2024",
+              "note": "Спешл - Спецвыпуск"
+            },
+            {
+              "date": "2024",
+              "note": "Фильм - Вершина славы"
+            },
+            {
+              "date": "2024",
+              "note": "Сезон 2"
+            },
+            {
+              "date": "2017",
+              "note": "Сезон 3"
+            },
+            {
+              "date": "",
+              "note": "Сезон 4"
+            }
+          ]
+        },
+        {
           "uid": "anime-1792509578967",
           "updatedAt": 1792509578967,
           "kind": "TV Сериал",
@@ -1610,105 +1717,6 @@
             {
               "date": "12.07.2026",
               "note": "Сезон 1"
-            }
-          ]
-        },
-        {
-          "uid": "anime-1792406949521",
-          "kind": "ONA",
-          "title": "Аватар короля",
-          "origTitle": "Master of Skills",
-          "year": 2017,
-          "studio": "B.CMAY PICTURES, Colored Pencil Animation, Lingsanwu Animation",
-          "score": 0,
-          "poster": "posters/1792406727321_1080_45726979.jpg",
-          "posterBlobSha": "069a9d63d1b340dd60727c78a219e6eef39cc21e",
-          "genres": [
-            "Экшен",
-            "Не японское",
-            "Игры"
-          ],
-          "comment": "",
-          "seasons": [
-            {
-              "title": "Сезон 1",
-              "type": "ONA",
-              "releaseYear": 2017,
-              "episodes": 12,
-              "epMinutes": 24,
-              "date": "2024",
-              "note": ""
-            },
-            {
-              "title": "Спешл - Спецвыпуск",
-              "type": "Спешл",
-              "releaseYear": 2018,
-              "episodes": 3,
-              "epMinutes": 24,
-              "date": "2024",
-              "note": ""
-            },
-            {
-              "title": "Фильм - Вершина славы",
-              "type": "Фильм",
-              "releaseYear": 2019,
-              "episodes": 1,
-              "epMinutes": 95,
-              "date": "2024",
-              "note": ""
-            },
-            {
-              "title": "Сезон 1",
-              "type": "ONA",
-              "releaseYear": 2020,
-              "episodes": 12,
-              "epMinutes": 24,
-              "date": "2024",
-              "note": ""
-            },
-            {
-              "title": "Сезон 2",
-              "type": "ONA",
-              "releaseYear": 2024,
-              "episodes": 17,
-              "epMinutes": 24,
-              "date": "2017",
-              "note": ""
-            },
-            {
-              "title": "Сезон 3",
-              "type": "ONA",
-              "releaseYear": 0,
-              "episodes": 0,
-              "epMinutes": 24,
-              "date": "",
-              "note": ""
-            }
-          ],
-          "watched": [
-            {
-              "date": "2024",
-              "note": "Сезон 1"
-            },
-            {
-              "date": "2024",
-              "note": "Спешл - Спецвыпуск"
-            },
-            {
-              "date": "2024",
-              "note": "Фильм - Вершина славы"
-            },
-            {
-              "date": "2024",
-              "note": "Сезон 1"
-            },
-            {
-              "date": "2017",
-              "note": "Сезон 2"
-            },
-            {
-              "date": "",
-              "note": "Сезон 3"
             }
           ]
         },
