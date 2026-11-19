@@ -4,12 +4,12 @@
     "owner": "geraltschwarzenegger-svg",
     "repo": "noxyholmes/myTierAnime",
     "branch": "main",
-    "updatedAt": "2026-11-14T09:34:10.292Z",
+    "updatedAt": "2026-11-19T10:03:32.918Z",
     "activeMode": "emblems-realism",
     "bgImage": "backgrounds/1792058756499____________________________________.png",
     "bgDim": 65,
     "bgBlur": 5,
-    "revision": 422,
+    "revision": 423,
     "bgBlobSha": "1de942c76368b8d317071e794ae55fed35d163ad",
     "bgMime": "image/png",
     "bgmVolume": 10,
@@ -333,7 +333,7 @@
         },
         {
           "uid": "anime-1792414590041",
-          "updatedAt": 1794593130520,
+          "updatedAt": 1795082612848,
           "kind": "TV Сериал",
           "title": "Мастера Меча Онлайн",
           "origTitle": "Sword Art Online",
@@ -496,6 +496,15 @@
               "epMinutes": 100,
               "date": "11.11.2026",
               "note": ""
+            },
+            {
+              "title": "Сезон 1",
+              "type": "TV Сериал",
+              "releaseYear": 2012,
+              "episodes": 25,
+              "epMinutes": 24,
+              "date": "17.11.2026",
+              "note": ""
             }
           ],
           "watched": [
@@ -558,6 +567,10 @@
             {
               "date": "11.11.2026",
               "note": "Фильм 2 - Прогрессив - Скерцо глубокой ночи"
+            },
+            {
+              "date": "17.11.2026",
+              "note": "Сезон 1"
             }
           ]
         },
