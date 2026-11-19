@@ -1,4 +1,4 @@
-/* ═══════════════════ MAIN APPLICATION ORCHESTRATOR (v27.0 CLEAN CARDS ON MAIN MENU) ═══════════════════ */
+/* ═══════════════════ MAIN APPLICATION ORCHESTRATOR (v28.0 FAST POSTER LOADING) ═══════════════════ */
 (() => {
   if (typeof window.pluralRu !== "function") {
     window.pluralRu = function (number, one, few, many) {
@@ -299,6 +299,9 @@
     }
   }
 
+  /* Запасная подгрузка обложки через GitHub API срабатывает ТОЛЬКО если картинка ещё не появилась на CDN */
+  const SMART_POSTER_ONERROR = `if(!this.dataset.retried){this.dataset.retried='1';if(window.GitHubSync&&this.dataset.blobSha){GitHubSync.resolveAssetUrl(this.dataset.rawPath,this.dataset.blobSha).then(u=>{if(u)this.src=u;});}else{this.src='https://placehold.co/400x600/16122b/ffd76a?text=myTierAnime';}}`;
+
   function renderRecentShowcase() {
     const recentHost = document.getElementById("recentSection");
     if (!recentHost || !appData || !Array.isArray(appData.tiers)) return;
@@ -383,8 +386,7 @@
             return `
               <div class="recent-item-card" data-recent-uid="${esc(it.uid)}" data-recent-tier="${esc(tr.id)}">
                 <div class="recent-poster-frame">
-                  <img class="recent-poster-img card-poster" draggable="false" src="${esc(displayPoster)}" data-raw-path="${esc(it.poster || "")}" data-blob-sha="${esc(it.posterBlobSha || "")}" alt="${esc(it.title)}" loading="lazy"
-                       onerror="this.src='https://placehold.co/400x600/16122b/ffd76a?text=myTierAnime'">
+                  <img class="recent-poster-img card-poster" draggable="false" src="${esc(displayPoster)}" data-raw-path="${esc(it.poster || "")}" data-blob-sha="${esc(it.posterBlobSha || "")}" alt="${esc(it.title)}" loading="lazy" decoding="async" onerror="${SMART_POSTER_ONERROR}">
                   <div class="scrim" style="position:absolute;inset:0;background:linear-gradient(to top,rgba(6,5,14,0.95) 0%,rgba(6,5,14,0.45) 42%,transparent 75%);pointer-events:none;"></div>
                   ${customFrameHtml}
                   <span class="recent-tier-badge">Тир ${esc(tr.id)}</span>
@@ -414,7 +416,6 @@
     });
   }
 
-  /* В главном меню на карточке тайтла НЕ выводятся значки повторных просмотров — только чистые серии, фильмы и части! */
   function cardEl(item, idx, tierId) {
     const m = calcItemMetrics(item);
     const yr = m.latestYear || item.year || "";
@@ -439,8 +440,7 @@
     return `
       <div class="card-unit" draggable="true" data-uid="${esc(item.uid)}" data-tier-id="${esc(tierId)}">
         <article class="card" data-uid="${esc(item.uid)}" data-tier-id="${esc(tierId)}">
-          <img class="card-poster" draggable="false" src="${esc(displayPosterSrc)}" data-raw-path="${esc(item.poster || "")}" data-blob-sha="${esc(item.posterBlobSha || "")}" alt="${esc(item.title)}" loading="lazy"
-               onerror="this.src='https://placehold.co/400x600/16122b/ffd76a?text=myTierAnime'">
+          <img class="card-poster" draggable="false" src="${esc(displayPosterSrc)}" data-raw-path="${esc(item.poster || "")}" data-blob-sha="${esc(item.posterBlobSha || "")}" alt="${esc(item.title)}" loading="lazy" decoding="async" onerror="${SMART_POSTER_ONERROR}">
           <div class="scrim"></div>
           <span class="holo-foil" aria-hidden="true"></span>
           ${customFrameHtml}
@@ -602,19 +602,6 @@
         </section>
       `;
     }).join("");
-
-    if (typeof GitHubSync !== "undefined" && typeof GitHubSync.resolveAssetUrl === "function") {
-      document.querySelectorAll("img.card-poster").forEach(async img => {
-        const curSrc = img.getAttribute("src") || "";
-        if (curSrc.startsWith("data:")) return;
-        const sha = img.dataset.blobSha;
-        const rawPath = img.dataset.rawPath || curSrc;
-        if (sha || (rawPath && !rawPath.startsWith("http") && !rawPath.startsWith("blob:"))) {
-          const resolved = await GitHubSync.resolveAssetUrl(rawPath, sha);
-          if (resolved) img.src = resolved;
-        }
-      });
-    }
 
     rebuildAll3DLetters();
     if (typeof FXController !== "undefined" && typeof FXController.observeTiers === "function") {
