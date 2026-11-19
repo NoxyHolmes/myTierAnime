@@ -1,4 +1,4 @@
-/* ═══════════════════ CORE UTILITIES: HEAVY ENGRAVED ART FRAMES (v26.0 BLACK CLOVER EDITION) ═══════════════════ */
+/* ═══════════════════ CORE UTILITIES: MODULAR UNIQUE ART FRAMES & REWATCH ENGINE (v28.0) ═══════════════════ */
 window.reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 window.tiltPower = 14;
 
@@ -356,11 +356,11 @@ function reactionHtml() {
   return "";
 }
 
-/* ═══════════════════ ИЛЛЮСТРАТИВНЫЙ ГРАВЮРНЫЙ ДВИЖОК РАМОК (ПО РЕФЕРЕНСУ BLACK CLOVER) ═══════════════════ */
-(function injectHeavyArtFrameStyles() {
-  if (document.getElementById("mtaHeavyArtFrameStyles")) return;
+/* ═══════════════════ МОДУЛЬНЫЙ ГЕНЕРАТОР УНИКАЛЬНЫХ РАМОК (v28.0) ═══════════════════ */
+(function injectUniqueArtFrameStyles() {
+  if (document.getElementById("mtaUniqueArtFrameStyles")) return;
   const st = document.createElement("style");
-  st.id = "mtaHeavyArtFrameStyles";
+  st.id = "mtaUniqueArtFrameStyles";
   st.textContent = `
     .anime-custom-frame {
       position: absolute !important;
@@ -379,16 +379,25 @@ function reactionHtml() {
       height: 100% !important;
       display: block !important;
       pointer-events: none !important;
-      filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.92));
-      transition: transform 0.35s ease, filter 0.35s ease !important;
+      filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.9));
+      transition: filter 0.25s ease !important;
     }
     .card:hover .acf-heavy-svg,
     .recent-item-card:hover .acf-heavy-svg {
-      filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.95)) drop-shadow(0 0 10px var(--fc1, #dc143c)) !important;
+      filter: drop-shadow(0 2px 8px rgba(0,0,0,0.95)) drop-shadow(0 0 9px var(--fc1, #ffd76a)) !important;
     }
-    /* Если у карточки есть богатая гравюрная рамка — отодвигаем кружок ранга чуть ниже, чтобы не перекрывать верхний клевер/герб */
+    .acf-img-overlay {
+      position: absolute !important;
+      inset: 0 !important;
+      width: 100% !important;
+      height: 100% !important;
+      object-fit: fill !important;
+      mix-blend-mode: screen !important;
+      pointer-events: none !important;
+      z-index: 4 !important;
+    }
     .card:has(.anime-custom-frame) .rank {
-      top: 30px !important;
+      top: 28px !important;
       left: 7px !important;
       width: 17px !important;
       height: 17px !important;
@@ -399,444 +408,258 @@ function reactionHtml() {
   else window.addEventListener("DOMContentLoaded", () => document.head.appendChild(st));
 })();
 
-/* Функция рисования 5-листного клевера гримуара (с прожилками и состаренным пергаментным контуром, как на референсе) */
-function svgFiveLeafClover(cx, cy, r, fillCol = "#08060c", strokeCol = "#e4d0b2") {
-  const leaves = [];
+function svgClover5(cx, cy, r, fill, stroke) {
+  let out = `<circle cx="${cx}" cy="${cy}" r="${r * 1.08}" fill="rgba(8,6,14,0.86)" stroke="${stroke}" stroke-width="1"/>`;
   for (let i = 0; i < 5; i++) {
-    const deg = -90 + i * 72;
-    leaves.push(`
-      <g transform="translate(${cx},${cy}) rotate(${deg})">
-        <path d="M0,0 C-${r * 0.42},-${r * 0.35} -${r * 0.58},-${r * 0.95} -${r * 0.16},-${r * 0.98} C0,-${r * 0.82} 0,-${r * 0.82} ${r * 0.16},-${r * 0.98} C${r * 0.58},-${r * 0.95} ${r * 0.42},-${r * 0.35} 0,0 Z"
-              fill="${fillCol}" stroke="${strokeCol}" stroke-width="1.35" stroke-linejoin="round"/>
-        <line x1="0" y1="-1" x2="0" y2="-${r * 0.65}" stroke="${strokeCol}" stroke-width="0.75" opacity="0.75"/>
-      </g>
-    `);
+    out += `<g transform="translate(${cx},${cy}) rotate(${-90 + i * 72})">
+      <path d="M0,0 C-${r * 0.42},-${r * 0.35} -${r * 0.58},-${r * 0.95} -${r * 0.16},-${r * 0.98} C0,-${r * 0.82} 0,-${r * 0.82} ${r * 0.16},-${r * 0.98} C${r * 0.58},-${r * 0.95} ${r * 0.42},-${r * 0.35} 0,0 Z"
+            fill="${fill}" stroke="${stroke}" stroke-width="1.2"/>
+    </g>`;
   }
-  return `
-    <g class="clover-five-unit">
-      <circle cx="${cx}" cy="${cy}" r="${r * 1.08}" fill="rgba(10,7,14,0.85)" stroke="${strokeCol}" stroke-width="1"/>
-      ${leaves.join("")}
-      <path d="M${cx},${cy} Q${cx + r * 0.18},${cy + r * 0.75} ${cx - r * 0.12},${cy + r * 1.15}" fill="none" stroke="${strokeCol}" stroke-width="1.5" stroke-linecap="round"/>
-      <circle cx="${cx}" cy="${cy}" r="${r * 0.14}" fill="#dc143c" stroke="${strokeCol}" stroke-width="0.7"/>
+  return out + `<circle cx="${cx}" cy="${cy}" r="${r * 0.16}" fill="#dc143c"/>`;
+}
+
+const FRAME_BORDERS = {
+  parchment: (c1, c2, p) => `
+    <path d="M0,0 H200 V300 H0 Z M18,34 C50,22 150,22 182,34 C190,85 190,215 180,268 C145,282 55,282 20,268 C10,215 10,85 18,34 Z" fill="#09070e" fill-rule="evenodd" opacity="0.88"/>
+    <path d="M3,3 H197 V297 H3 Z M17,33 C50,22 150,22 183,33 C190,85 190,215 180,269 C145,282 55,282 20,269 C10,215 10,85 17,33 Z" fill="none" stroke="${p}" stroke-width="2"/>
+    <path d="M20,36 C50,25 150,25 180,36 C187,85 187,215 177,266 C145,278 55,278 23,266 C13,215 13,85 20,36 Z" fill="none" stroke="${c1}" stroke-width="1.5" stroke-dasharray="12 5 3 5"/>`,
+  cyber: (c1, c2) => `
+    <path d="M0,0 H200 V300 H0 Z M16,28 L28,18 H172 L184,28 V272 L172,282 H28 L16,272 Z" fill="#060812" fill-rule="evenodd" opacity="0.85"/>
+    <polyline points="2,42 2,14 14,2 42,2" fill="none" stroke="${c1}" stroke-width="3"/>
+    <polyline points="198,42 198,14 186,2 158,2" fill="none" stroke="${c2}" stroke-width="3"/>
+    <polyline points="2,258 2,286 14,298 42,298" fill="none" stroke="${c2}" stroke-width="3"/>
+    <polyline points="198,258 198,286 186,298 158,298" fill="none" stroke="${c1}" stroke-width="3"/>
+    <path d="M16,28 L28,18 H172 L184,28 V272 L172,282 H28 L16,272 Z" fill="none" stroke="${c1}" stroke-width="1.3" stroke-dasharray="16 4 2 4"/>`,
+  japanese: (c1, c2, p) => `
+    <path d="M0,0 H200 V300 H0 Z M16,26 H184 V274 H16 Z" fill="#0b0810" fill-rule="evenodd" opacity="0.86"/>
+    <path d="M4,12 Q100,2 196,12 L192,22 Q100,14 8,22 Z" fill="${c1}" stroke="${p}" stroke-width="1.2"/>
+    <rect x="4" y="4" width="192" height="292" fill="none" stroke="${p}" stroke-width="1.8"/>
+    <rect x="14" y="25" width="172" height="250" fill="none" stroke="${c2}" stroke-width="1.4" stroke-dasharray="8 6"/>`,
+  gothic: (c1, c2, p) => `
+    <path d="M0,0 H200 V300 H0 Z M20,40 Q100,14 180,40 L185,264 Q100,286 15,264 Z" fill="#08050c" fill-rule="evenodd" opacity="0.9"/>
+    <path d="M20,40 Q100,14 180,40 L185,264 Q100,286 15,264 Z" fill="none" stroke="${c1}" stroke-width="2"/>
+    <path d="M4,4 L24,14 L14,24 Z M196,4 L176,14 L186,24 Z M4,296 L24,286 L14,276 Z M196,296 L176,286 L186,276 Z" fill="${c1}" stroke="${p}" stroke-width="0.9"/>`,
+  floral: (c1, c2, p) => `
+    <path d="M0,0 H200 V300 H0 Z M18,32 C60,20 140,20 182,32 C190,100 190,200 182,268 C140,280 60,280 18,268 C10,200 10,100 18,32 Z" fill="#0e0918" fill-rule="evenodd" opacity="0.82"/>
+    <path d="M10,30 C50,14 150,14 190,30 M10,270 C50,286 150,286 190,270" fill="none" stroke="${c1}" stroke-width="2.2"/>
+    <path d="M14,34 C6,100 6,200 14,266 M186,34 C194,100 194,200 186,266" fill="none" stroke="${c2}" stroke-width="1.8"/>`,
+  frost: (c1, c2) => `
+    <path d="M0,0 H200 V300 H0 Z M22,26 L100,18 L178,26 L186,150 L178,274 L100,282 L22,274 L14,150 Z" fill="#070e1c" fill-rule="evenodd" opacity="0.84"/>
+    <polygon points="22,26 100,18 178,26 186,150 178,274 100,282 22,274 14,150" fill="none" stroke="${c1}" stroke-width="1.8"/>
+    <polygon points="4,4 32,4 4,32" fill="${c1}" opacity="0.7"/>
+    <polygon points="196,4 168,4 196,32" fill="${c2}" opacity="0.7"/>
+    <polygon points="4,296 32,296 4,268" fill="${c2}" opacity="0.7"/>
+    <polygon points="196,296 168,296 196,268" fill="${c1}" opacity="0.7"/>`,
+  cinema: (c1, c2) => `
+    <path d="M0,0 H200 V300 H0 Z M18,24 H182 V276 H18 Z" fill="#090710" fill-rule="evenodd" opacity="0.88"/>
+    <rect x="18" y="24" width="164" height="252" fill="none" stroke="${c1}" stroke-width="1.6"/>
+    ${[35,65,95,125,155,185,215,245].map(y => `<rect x="4" y="${y}" width="8" height="12" rx="1.5" fill="${c2}" opacity="0.75"/><rect x="188" y="${y}" width="8" height="12" rx="1.5" fill="${c2}" opacity="0.75"/>`).join("")}`,
+  baroque: (c1, c2, p) => `
+    <path d="M0,0 H200 V300 H0 Z M20,32 Q100,18 180,32 Q190,150 180,268 Q100,282 20,268 Q10,150 20,32 Z" fill="#0d0914" fill-rule="evenodd" opacity="0.88"/>
+    <path d="M20,32 Q100,18 180,32 Q190,150 180,268 Q100,282 20,268 Q10,150 20,32 Z" fill="none" stroke="${p}" stroke-width="2"/>
+    <circle cx="14" cy="14" r="9" fill="none" stroke="${c1}" stroke-width="1.8"/>
+    <circle cx="186" cy="14" r="9" fill="none" stroke="${c1}" stroke-width="1.8"/>
+    <circle cx="14" cy="286" r="9" fill="none" stroke="${c2}" stroke-width="1.8"/>
+    <circle cx="186" cy="286" r="9" fill="none" stroke="${c2}" stroke-width="1.8"/>`
+};
+
+const LEFT_ARTS = {
+  buster: (c1, c2, p) => `<g transform="translate(15,190) rotate(-6)">
+    <line x1="0" y1="-88" x2="0" y2="-62" stroke="${p}" stroke-width="3"/>
+    <path d="M-12,-62 H12 L8,-56 H-8 Z" fill="${p}"/>
+    <polygon points="-6,-56 6,-56 8,66 0,86 -8,66" fill="#17131e" stroke="${p}" stroke-width="1.5"/>
+    <line x1="0" y1="-52" x2="0" y2="76" stroke="${c1}" stroke-width="1.5"/>
+  </g>`,
+  kunai: (c1, c2, p) => `<g transform="translate(15,180) rotate(-5)">
+    <circle cx="0" cy="-72" r="5" fill="none" stroke="${p}" stroke-width="2"/>
+    <rect x="-2.5" y="-67" width="5" height="20" fill="${c1}"/>
+    <polygon points="-9,-47 9,-47 4,-32 10,50 0,76 -10,50 -4,-32" fill="#181522" stroke="${p}" stroke-width="1.5"/>
+  </g>`,
+  katana: (c1, c2, p) => `<g transform="translate(14,185) rotate(-4)">
+    <rect x="-2" y="-82" width="4" height="24" fill="${c2}" stroke="${p}" stroke-width="0.9"/>
+    <ellipse cx="0" cy="-58" rx="8" ry="2.5" fill="${c1}" stroke="${p}" stroke-width="0.9"/>
+    <path d="M-2.5,-55 L2.5,-55 Q5,20 0,82 Q-3,20 -2.5,-55 Z" fill="#dce4f0" stroke="${c1}" stroke-width="1.1"/>
+  </g>`,
+  staff: (c1, c2, p) => `<g transform="translate(15,185) rotate(-4)">
+    <circle cx="0" cy="-74" r="9" fill="#0b0814" stroke="${p}" stroke-width="1.8"/>
+    <polygon points="0,-81 5,-74 0,-67 -5,-74" fill="${c1}"/>
+    <line x1="0" y1="-65" x2="0" y2="82" stroke="${p}" stroke-width="2.8"/>
+  </g>`,
+  chainsaw: (c1, c2, p) => `<g transform="translate(13,182)">
+    <polyline points="-3,-75 6,-65 -3,-55 6,-45 -3,-35 6,-25 -3,-15 6,-5 -3,5 6,15 -3,25 6,35 -3,45 6,55 -3,65 2,78" fill="none" stroke="${p}" stroke-width="2"/>
+    <line x1="-2" y1="-75" x2="-2" y2="78" stroke="${c1}" stroke-width="2.5"/>
+  </g>`,
+  guitar: (c1, c2, p) => `<g transform="translate(15,188) rotate(-5)">
+    <line x1="0" y1="-76" x2="0" y2="10" stroke="${p}" stroke-width="2.8"/>
+    <path d="M-9,10 C-14,25 -10,48 0,52 C10,48 14,25 9,10 Z" fill="${c1}" stroke="${p}" stroke-width="1.4"/>
+    <circle cx="0" cy="30" r="4" fill="#09070e" stroke="${c2}" stroke-width="1.2"/>
+  </g>`,
+  wing: (c1, c2, p) => `<g transform="translate(14,175)">
+    <path d="M-6,-55 C12,-40 16,-10 2,20 C12,5 12,35 -4,60 C-10,20 -10,-20 -6,-55 Z" fill="${c1}" stroke="${p}" stroke-width="1.3" opacity="0.9"/>
+  </g>`,
+  sakura_vine: (c1, c2, p) => `<g transform="translate(12,150)">
+    <path d="M0,-90 Q10,-40 -2,0 T2,90" fill="none" stroke="${p}" stroke-width="1.8"/>
+    <circle cx="4" cy="-50" r="5" fill="${c1}"/><circle cx="-2" cy="10" r="6" fill="${c2}"/><circle cx="4" cy="60" r="4.5" fill="${c1}"/>
+  </g>`,
+  tech_rail: (c1, c2) => `<g transform="translate(10,150)">
+    <polyline points="-4,-90 4,-75 4,75 -4,90" fill="none" stroke="${c1}" stroke-width="2"/>
+    <rect x="-2" y="-30" width="5" height="22" fill="${c2}"/><rect x="-2" y="10" width="5" height="22" fill="${c1}"/>
+  </g>`
+};
+
+const RIGHT_ARTS = {
+  grimoire_bull: (c1, c2, p) => `
+    <g transform="translate(175,30) rotate(20)">
+      <rect x="-12" y="-16" width="24" height="32" rx="2" fill="#120d16" stroke="${p}" stroke-width="1.5"/>
+      ${svgClover5(0, 0, 6, p, "#090612")}
     </g>
-  `;
-}
+    <g transform="translate(182,158)">
+      <path d="M-14,-9 C-20,-16 -10,-20 -6,-11 H6 C10,-20 20,-16 14,-9 C10,-3 8,6 4,13 H-4 C-8,6 -10,-3 -14,-9 Z" fill="#0b0812" stroke="${p}" stroke-width="1.5"/>
+      <circle cx="0" cy="-2" r="2.5" fill="${c1}"/>
+    </g>`,
+  scroll_shuriken: (c1, c2, p) => `
+    <g transform="translate(176,32) rotate(18)">
+      <rect x="-12" y="-6" width="24" height="12" rx="2" fill="${c1}" stroke="${p}" stroke-width="1.3"/>
+    </g>
+    <g transform="translate(183,155)">
+      <polygon points="0,-14 4,-4 14,0 4,4 0,14 -4,4 -14,0 -4,-4" fill="#161224" stroke="${p}" stroke-width="1.4"/>
+      <circle cx="0" cy="0" r="3" fill="${c2}"/>
+    </g>`,
+  castle: (c1, c2, p) => `<g transform="translate(182,150)">
+    <polygon points="-12,24 -12,-6 -7,-22 -2,-6 2,-28 7,-6 12,-20 12,24" fill="#0c0914" stroke="${p}" stroke-width="1.3"/>
+    <rect x="-2" y="6" width="4" height="8" fill="${c1}"/>
+  </g>`,
+  cards: (c1, c2, p) => `<g transform="translate(180,155)">
+    <rect x="-10" y="-18" width="18" height="26" rx="2" transform="rotate(-12)" fill="#120d1a" stroke="${p}" stroke-width="1.4"/>
+    <rect x="-6" y="-10" width="18" height="26" rx="2" transform="rotate(10)" fill="${c1}" stroke="${p}" stroke-width="1.4"/>
+  </g>`,
+  lantern: (c1, c2, p) => `<g transform="translate(184,150)">
+    <line x1="0" y1="-26" x2="0" y2="-14" stroke="${p}" stroke-width="1.5"/>
+    <ellipse cx="0" cy="0" rx="10" ry="14" fill="${c1}" stroke="${p}" stroke-width="1.4"/>
+    <line x1="-9" y1="-5" x2="9" y2="-5" stroke="#090614" stroke-width="1"/>
+    <line x1="-9" y1="5" x2="9" y2="5" stroke="#090614" stroke-width="1"/>
+  </g>`,
+  notes: (c1, c2, p) => `<g transform="translate(182,155)">
+    <ellipse cx="-5" cy="8" rx="4.5" ry="3" fill="${c1}"/>
+    <ellipse cx="6" cy="5" rx="4.5" ry="3" fill="${c2}"/>
+    <polyline points="-1,8 -1,-12 10,-15 10,5" fill="none" stroke="${p}" stroke-width="2"/>
+  </g>`,
+  butterflies: (c1, c2, p) => `<g transform="translate(182,150)">
+    <path d="M0,0 C-12,-14 -14,2 0,4 C14,2 12,-14 0,0 Z" fill="${c1}" stroke="${p}" stroke-width="1"/>
+    <path d="M0,4 C-10,14 -8,2 0,4 C8,2 10,14 0,4 Z" fill="${c2}" stroke="${p}" stroke-width="0.9"/>
+  </g>`,
+  tech_hud: (c1, c2) => `<g transform="translate(186,150)">
+    <circle cx="0" cy="0" r="10" fill="none" stroke="${c1}" stroke-width="1.4" stroke-dasharray="4 3"/>
+    <circle cx="0" cy="0" r="4" fill="${c2}"/>
+    <line x1="0" y1="-16" x2="0" y2="-10" stroke="${c1}" stroke-width="1.5"/>
+    <line x1="0" y1="10" x2="0" y2="16" stroke="${c1}" stroke-width="1.5"/>
+  </g>`,
+  shield_sword: (c1, c2, p) => `<g transform="translate(182,155)">
+    <path d="M-11,-12 H11 L9,4 L0,14 L-9,4 Z" fill="#0d0a16" stroke="${p}" stroke-width="1.5"/>
+    <polygon points="0,-7 4,0 0,7 -4,0" fill="${c1}"/>
+  </g>`
+};
 
-/* Полноразмерная иллюстративная SVG-рамка (масштаб 200x300) в стиле тёмного гравюрного фэнтези с пергаментом, клубами дыма, оружием, замками и гербами */
-function buildHeavyEngravedFrameSvg(frameCfg, uidKey) {
-  const { motif, c1, c2, bannerText } = frameCfg;
-  const parchment = "#e2ceb0";
-  const parchmentDark = "#9e8768";
-  const obsidian = "#09070e";
+const BOTTOM_ARTS = {
+  clover: (c1, c2, p) => svgClover5(100, 276, 12.5, "#07050a", p),
+  spiral: (c1, c2, p) => `<g transform="translate(100,276)">
+    <circle cx="0" cy="0" r="12" fill="#09070e" stroke="${p}" stroke-width="1.6"/>
+    <path d="M0,0 m-1,0 a1.5,1.5 0 1,0 3,0 a3.5,3.5 0 1,0 -7,0 a6,6 0 1,0 12,0" fill="none" stroke="${c1}" stroke-width="1.8" stroke-linecap="round"/>
+  </g>`,
+  star6: (c1, c2, p) => `<g transform="translate(100,276)">
+    <circle cx="0" cy="0" r="12" fill="#0b0714" stroke="${p}" stroke-width="1.4"/>
+    <polygon points="0,-10 2.5,-2.5 10,0 2.5,2.5 0,10 -2.5,2.5 -10,0 -2.5,-2.5" fill="${c1}"/>
+    <circle cx="0" cy="0" r="2.2" fill="${c2}"/>
+  </g>`,
+  crest: (c1, c2, p) => `<g transform="translate(100,276)">
+    <path d="M-12,-10 H12 L10,4 L0,13 L-10,4 Z" fill="#09070e" stroke="${p}" stroke-width="1.6"/>
+    <polygon points="0,-6 4,0 0,6 -4,0" fill="${c1}"/>
+  </g>`,
+  flower: (c1, c2, p) => svgClover5(100, 276, 11.5, c1, p),
+  diamond: (c1, c2, p) => `<g transform="translate(100,276)">
+    <polygon points="0,-12 12,0 0,12 -12,0" fill="#09070e" stroke="${p}" stroke-width="1.6"/>
+    <polygon points="0,-6 6,0 0,6 -6,0" fill="${c1}"/>
+  </g>`
+};
 
-  // Общая рваная гравюрная кайма пергамента и клубов дыма по всему периметру (как на скриншоте Black Clover)
-  const outerEngravedParchment = `
-    <!-- Внешняя состаренная пергаментная рама с фигурным вырезом внутри -->
-    <path d="M0,0 L200,0 L200,300 L0,300 Z
-             M22,36
-             C45,24 155,24 178,36
-             C188,65 188,235 176,268
-             C145,282 55,282 24,268
-             C12,235 12,65 22,36 Z"
-          fill="${obsidian}" fill-rule="evenodd" opacity="0.92"/>
+const SIGNATURE_TITLES = {
+  "чёрный клевер": { c1: "#dc143c", c2: "#ff1744", border: "parchment", left: "buster", right: "grimoire_bull", bottom: "clover", banner: "Black ♣ Clover" },
+  "наруто": { c1: "#ff7b00", c2: "#ffd700", border: "japanese", left: "kunai", right: "scroll_shuriken", bottom: "spiral", banner: "Naruto 🍥 Shippuden" },
+  "боруто: новое поколение": { c1: "#ff4081", c2: "#00e5ff", border: "cyber", left: "kunai", right: "scroll_shuriken", bottom: "spiral", banner: "Boruto ⚡" },
+  "мастера меча онлайн": { c1: "#00f5ff", c2: "#2979ff", border: "cyber", left: "katana", right: "shield_sword", bottom: "diamond", banner: "Sword ⚔ Art Online" },
+  "клинок, рассекающий демонов": { c1: "#ff3d00", c2: "#00e676", border: "japanese", left: "katana", right: "lantern", bottom: "flower", banner: "Demon 🗡 Slayer" },
+  "атака титанов": { c1: "#b71c1c", c2: "#ff5722", border: "gothic", left: "wing", right: "castle", bottom: "crest", banner: "Attack ⚔ on Titan" },
+  "киберпанк: бегущие по краю": { c1: "#ffea00", c2: "#00f5ff", border: "cyber", left: "tech_rail", right: "tech_hud", bottom: "diamond", banner: "Cyberpunk ⚡ 2077" },
+  "звёздное дитя": { c1: "#ff1493", c2: "#00f5ff", border: "baroque", left: "sakura_vine", right: "notes", bottom: "star6", banner: "Oshi ★ no Ko" },
+  "человек-бензопила": { c1: "#ff3d00", c2: "#ffea00", border: "gothic", left: "chainsaw", right: "shield_sword", bottom: "diamond", banner: "Chainsaw 🪚 Man" },
+  "тетрадь смерти": { c1: "#d50000", c2: "#9e9e9e", border: "gothic", left: "wing", right: "cards", bottom: "crest", banner: "Death 🍎 Note" },
+  "провожающая в последний путь фрирен": { c1: "#ffe57f", c2: "#80d8ff", border: "baroque", left: "staff", right: "castle", bottom: "flower", banner: "Frieren 🪄" },
+  "поднятие уровня в одиночку": { c1: "#304ffe", c2: "#00e5ff", border: "frost", left: "katana", right: "tech_hud", bottom: "crest", banner: "Solo 🗡 Leveling" },
+  "безумный азарт": { c1: "#d50000", c2: "#ffd600", border: "baroque", left: "buster", right: "cards", bottom: "diamond", banner: "Kakegurui 🎲" },
+  "одинокий рокер!": { c1: "#ff4081", c2: "#ffea00", border: "cinema", left: "guitar", right: "notes", bottom: "star6", banner: "Bocchi 🎸 Rock!" },
+  "вайолет эвергарден": { c1: "#00bfa5", c2: "#ffd54f", border: "floral", left: "sakura_vine", right: "butterflies", bottom: "flower", banner: "Violet ✉ Evergarden" },
+  "песнь ночных сов": { c1: "#d500f9", c2: "#00e5ff", border: "cinema", left: "tech_rail", right: "butterflies", bottom: "star6", banner: "Call 🌙 of Night" },
+  "унесенные призраками": { c1: "#ff5252", c2: "#ffd740", border: "japanese", left: "sakura_vine", right: "lantern", bottom: "flower", banner: "Spirited 🏮 Away" },
+  "re:zero. жизнь с нуля в альтернативном мире": { c1: "#b57cff", c2: "#00e5ff", border: "frost", left: "staff", right: "castle", bottom: "star6", banner: "Re:Zero ❄" }
+};
 
-    <!-- Светлая гравюрная кайма пергамента с клубами дыма и волнами -->
-    <path d="M3,3 L197,3 L197,297 L3,297 Z
-             M17,32
-             C32,20 65,24 100,22
-             C135,24 168,20 183,32
-             C191,58 184,95 187,150
-             C184,205 191,242 180,271
-             C152,283 125,277 100,281
-             C75,277 48,283 20,271
-             C9,242 16,205 13,150
-             C16,95 9,58 17,32 Z"
-          fill="none" stroke="${parchment}" stroke-width="2.2" stroke-linejoin="round"/>
-
-    <!-- Внутренний резной контур с багровыми/тематическими всполохами энергии -->
-    <path d="M20,35 C50,24 150,24 180,35 C187,80 187,220 177,266 C145,279 55,279 23,266 C13,220 13,80 20,35 Z"
-          fill="none" stroke="${c1}" stroke-width="1.6" stroke-dasharray="14 6 4 6" opacity="0.9"/>
-
-    <!-- Клубы дыма и волны антимагии/стихии снизу и по углам -->
-    <path d="M4,296 C18,268 38,282 56,266 C72,276 86,262 100,270 C114,262 128,276 144,266 C162,282 182,268 196,296 Z"
-          fill="${obsidian}" stroke="${parchment}" stroke-width="1.4"/>
-    <path d="M6,290 C28,272 52,286 78,272 M194,290 C172,272 148,286 122,272"
-          fill="none" stroke="${c1}" stroke-width="2.2" stroke-linecap="round"/>
-
-    <!-- Верхний королевский свод с короной (как надпись Black Clover на примере) -->
-    <path d="M34,4 L166,4 L158,27 C120,23 80,23 42,27 Z"
-          fill="${obsidian}" stroke="${parchment}" stroke-width="1.5"/>
-    <!-- Корона по центру сверху -->
-    <path d="M90,10 L93,3 L97,8 L100,2 L103,8 L107,3 L110,10 Z"
-          fill="${parchment}" stroke="${c1}" stroke-width="0.8"/>
-    <text x="100" y="21.5" text-anchor="middle" fill="${parchment}" stroke="#000" stroke-width="0.4"
-          font-family="'Cinzel', 'Playfair Display', serif" font-weight="900" font-size="11.5" letter-spacing="0.06em">
-      ${esc(bannerText)}
-    </text>
-  `;
-
-  let bespokeSideArt = "";
-
-  if (motif === "clover5") {
-    /* ──────── ТОЧНАЯ КОМПОЗИЦИЯ С ВАШЕГО СКРИНШОТА BLACK CLOVER ────────
-       1) Слева сверху: большой 5-листный клевер в круге с завитушками
-       2) Справа сверху: наклонённый Гримуар Асты с 5-листным клевером на обложке и багровым свечением
-       3) Вдоль всего левого борта: огромный двуручный меч Убийца Демонов (Demon-Slayer Sword), уходящий вниз
-       4) Справа посередине: силуэт замка Клевера + эмблема ордена «Чёрный Бык» (череп быка с рогами)
-       5) Снизу по центру и по бокам: 5-листные клеверы в клубах дыма и силуэт Асты с крылом */
-    bespokeSideArt = `
-      <!-- 1. Левый верхний большой 5-листный клевер -->
-      ${svgFiveLeafClover(22, 30, 14, "#07050a", parchment)}
-
-      <!-- 2. Правый верхний наклонённый Гримуар Асты -->
-      <g transform="translate(174, 30) rotate(22)">
-        <rect x="-13" y="-17" width="26" height="34" rx="2.5" fill="#120d16" stroke="${parchment}" stroke-width="1.6"/>
-        <rect x="-10" y="-14" width="20" height="28" rx="1.5" fill="none" stroke="${c1}" stroke-width="1"/>
-        ${svgFiveLeafClover(0, 0, 6.5, parchment, "#090612")}
-      </g>
-
-      <!-- 3. Огромный двуручный меч Асты (Demon-Slayer Sword) вдоль левого борта (от y=105 до y=282) -->
-      <g transform="translate(16, 192) rotate(-7)">
-        <!-- Алые потоки антимагии вокруг клинка -->
-        <path d="M-8,-75 C6,-40 -10,10 8,55 M6,-60 C-8,-20 10,25 -6,70" fill="none" stroke="${c1}" stroke-width="2.2" stroke-linecap="round"/>
-        <!-- Рукоять и навершие -->
-        <line x1="0" y1="-92" x2="0" y2="-66" stroke="${parchment}" stroke-width="3.2" stroke-linecap="round"/>
-        <circle cx="0" cy="-94" r="3.5" fill="${obsidian}" stroke="${parchment}" stroke-width="1.5"/>
-        <!-- Крестовина (гарда) -->
-        <path d="M-13,-66 L13,-66 L9,-61 L-9,-61 Z" fill="${parchment}" stroke="#000" stroke-width="1"/>
-        <!-- Массивное широкое лезвие Убийцы Демонов -->
-        <polygon points="-6.5,-61 6.5,-61 9,68 0,88 -9,68" fill="#18141f" stroke="${parchment}" stroke-width="1.6"/>
-        <line x1="0" y1="-58" x2="0" y2="78" stroke="${c1}" stroke-width="1.3" opacity="0.85"/>
-        <line x1="-3.5" y1="-45" x2="-5" y2="62" stroke="${parchmentDark}" stroke-width="0.9"/>
-      </g>
-
-      <!-- 4. Силуэт Замка Королевства Клевера справа (y=85..140) -->
-      <g transform="translate(182, 112)">
-        <polygon points="-14,22 -14,-5 -10,-18 -6,-5 -6,-12 -1,-28 4,-12 4,-5 9,-20 13,-5 13,22"
-                 fill="#0c0914" stroke="${parchment}" stroke-width="1.2"/>
-        <rect x="-3" y="4" width="5" height="9" rx="2" fill="${parchment}"/>
-      </g>
-
-      <!-- 5. Герб ордена «Чёрный Бык» (Black Bulls) справа ниже замка (y=158) -->
-      <g transform="translate(180, 162)">
-        <path d="M-16,-10 C-22,-18 -12,-22 -7,-12 L7,-12 C12,-22 22,-18 16,-10 C12,-4 9,6 5,14 L-5,14 C-9,6 -12,-4 -16,-10 Z"
-              fill="#0b0812" stroke="${parchment}" stroke-width="1.6"/>
-        <polygon points="0,-6 2,-1 7,-1 3,2 4,7 0,4 -4,7 -3,2 -7,-1 -2,-1" fill="${parchment}"/>
-      </g>
-
-      <!-- 6. Боковые малые клеверы в клубах дыма и центральный нижний 5-листный клевер -->
-      ${svgFiveLeafClover(191, 68, 7.5, "#07050a", parchment)}
-      ${svgFiveLeafClover(14, 224, 7.5, "#07050a", parchment)}
-      ${svgFiveLeafClover(185, 232, 8.5, "#07050a", parchment)}
-      ${svgFiveLeafClover(100, 276, 13.5, "#07050a", parchment)}
-    `;
-  } else if (motif === "naruto_ninja") {
-    /* НАРУТО / БОРУТО: Кунаи вдоль бортов, свиток призыва сверху, спирали Узумаки и пламя Курамы */
-    bespokeSideArt = `
-      ${svgFiveLeafClover(22, 30, 11, c1, parchment)}
-      <!-- Свиток ниндзя справа сверху -->
-      <g transform="translate(176, 30) rotate(20)">
-        <rect x="-13" y="-7" width="26" height="14" rx="3" fill="${c1}" stroke="${parchment}" stroke-width="1.5"/>
-        <rect x="-16" y="-9" width="4" height="18" rx="1" fill="${obsidian}" stroke="${parchment}" stroke-width="1.2"/>
-        <rect x="12" y="-9" width="4" height="18" rx="1" fill="${obsidian}" stroke="${parchment}" stroke-width="1.2"/>
-      </g>
-      <!-- Огромный кунай Минато вдоль левого борта -->
-      <g transform="translate(15, 185) rotate(-6)">
-        <circle cx="0" cy="-75" r="5" fill="none" stroke="${parchment}" stroke-width="2"/>
-        <rect x="-2.5" y="-70" width="5" height="22" fill="${c1}" stroke="${parchment}" stroke-width="1.2"/>
-        <polygon points="-9,-48 9,-48 4,-32 11,55 0,82 -11,55 -4,-32" fill="#181522" stroke="${parchment}" stroke-width="1.6"/>
-        <line x1="0" y1="-44" x2="0" y2="72" stroke="${c2}" stroke-width="1.4"/>
-      </g>
-      <!-- Сюрикены и знак листа справа -->
-      <g transform="translate(182, 145)">
-        <polygon points="0,-16 4,-4 16,0 4,4 0,16 -4,4 -16,0 -4,-4" fill="#161224" stroke="${parchment}" stroke-width="1.5"/>
-        <circle cx="0" cy="0" r="3.5" fill="${obsidian}" stroke="${c2}" stroke-width="1.2"/>
-      </g>
-      <!-- Центральная печать Узумаки снизу -->
-      <g transform="translate(100, 276)">
-        <circle cx="0" cy="0" r="13" fill="${obsidian}" stroke="${parchment}" stroke-width="1.8"/>
-        <path d="M0,0 m-1,0 a1.5,1.5 0 1,0 3,0 a3.5,3.5 0 1,0 -7,0 a6,6 0 1,0 12,0 a8.5,8.5 0 1,0 -17,0" fill="none" stroke="${c1}" stroke-width="2" stroke-linecap="round"/>
-      </g>
-    `;
-  } else if (motif === "swords_crossed" || motif === "wings_blade" || motif === "demon_slayer") {
-    /* МЕЧИ И КЛИНКИ (SAO, Атака Титанов, Клинок Демонов, Убийца Акамэ, Соло Левелинг):
-       Два массивных клинка вдоль левого и правого бортов + гербовый щит снизу */
-    bespokeSideArt = `
-      <!-- Верхние угловые гербы со скрещёнными клинками -->
-      <g transform="translate(22, 30)">
-        <circle cx="0" cy="0" r="12" fill="${obsidian}" stroke="${parchment}" stroke-width="1.6"/>
-        <path d="M-7,7 L7,-7 M7,7 L-7,-7" stroke="${c1}" stroke-width="2.4" stroke-linecap="round"/>
-        <polygon points="0,-5 4,0 0,5 -4,0" fill="${parchment}"/>
-      </g>
-      <g transform="translate(178, 30)">
-        <circle cx="0" cy="0" r="12" fill="${obsidian}" stroke="${parchment}" stroke-width="1.6"/>
-        <polygon points="0,-9 8,0 0,9 -8,0" fill="${c1}" stroke="${parchment}" stroke-width="1.2"/>
-      </g>
-
-      <!-- Левый полноразмерный рыцарский/демонический клинок -->
-      <g transform="translate(15, 188) rotate(-5)">
-        <line x1="0" y1="-88" x2="0" y2="-62" stroke="${parchment}" stroke-width="3"/>
-        <path d="M-12,-62 L12,-62 L8,-56 L-8,-56 Z" fill="${c2}" stroke="${parchment}" stroke-width="1.2"/>
-        <polygon points="-5.5,-56 5.5,-56 7.5,64 0,85 -7.5,64" fill="#151221" stroke="${parchment}" stroke-width="1.6"/>
-        <line x1="0" y1="-52" x2="0" y2="75" stroke="${c1}" stroke-width="1.5"/>
-      </g>
-
-      <!-- Правый клинок и башня/щит -->
-      <g transform="translate(185, 188) rotate(5)">
-        <line x1="0" y1="-88" x2="0" y2="-62" stroke="${parchment}" stroke-width="3"/>
-        <path d="M-12,-62 L12,-62 L8,-56 L-8,-56 Z" fill="${c1}" stroke="${parchment}" stroke-width="1.2"/>
-        <polygon points="-5.5,-56 5.5,-56 7.5,64 0,85 -7.5,64" fill="#151221" stroke="${parchment}" stroke-width="1.6"/>
-        <line x1="0" y1="-52" x2="0" y2="75" stroke="${c2}" stroke-width="1.5"/>
-      </g>
-
-      <!-- Нижний королевский герб в клубах дыма -->
-      <g transform="translate(100, 276)">
-        <path d="M-13,-11 L13,-11 L11,4 L0,14 L-11,4 Z" fill="${obsidian}" stroke="${parchment}" stroke-width="1.8"/>
-        <polygon points="0,-7 4,0 0,7 -4,0" fill="${c1}" stroke="${parchment}" stroke-width="0.9"/>
-      </g>
-    `;
-  } else if (motif === "chainsaw_teeth" || motif === "gothic_thorn") {
-    /* ЧЕЛОВЕК-БЕНЗОПИЛА / ТЕТРАДЬ СМЕРТИ / МАГИЧЕСКАЯ БИТВА / ВОСХОЖДЕНИЕ В ТЕНИ:
-       Шипованные готические цепи, лезвия пилы вдоль бортов, череп/печать Синигами */
-    bespokeSideArt = `
-      <g transform="translate(22, 30)">
-        <circle cx="0" cy="0" r="12" fill="${obsidian}" stroke="${parchment}" stroke-width="1.6"/>
-        <polygon points="0,-10 3,-3 10,0 3,3 0,10 -3,3 -10,0 -3,-3" fill="${c1}" stroke="${parchment}" stroke-width="1"/>
-      </g>
-      <g transform="translate(178, 30) rotate(18)">
-        <rect x="-11" y="-14" width="22" height="28" rx="2" fill="${obsidian}" stroke="${parchment}" stroke-width="1.5"/>
-        <line x1="0" y1="-9" x2="0" y2="9" stroke="${c1}" stroke-width="2.2"/>
-        <line x1="-6" y1="-3" x2="6" y2="-3" stroke="${c1}" stroke-width="2.2"/>
-      </g>
-      <!-- Зубчатое лезвие вдоль левого борта -->
-      <g transform="translate(14, 185)">
-        <polyline points="-4,-75 6,-65 -4,-55 6,-45 -4,-35 6,-25 -4,-15 6,-5 -4,5 6,15 -4,25 6,35 -4,45 6,55 -4,65 2,80"
-                  fill="none" stroke="${parchment}" stroke-width="2.2" stroke-linejoin="bevel"/>
-        <line x1="-2" y1="-75" x2="-2" y2="78" stroke="${c1}" stroke-width="2.4"/>
-      </g>
-      <!-- Готический замок и печать справа -->
-      <g transform="translate(184, 155)">
-        <polygon points="-11,25 -11,-10 -5,-26 0,-10 6,-22 11,-8 11,25" fill="${obsidian}" stroke="${parchment}" stroke-width="1.4"/>
-        <circle cx="0" cy="6" r="5" fill="${c1}" stroke="${parchment}" stroke-width="1"/>
-      </g>
-      <g transform="translate(100, 276)">
-        <circle cx="0" cy="0" r="13" fill="${obsidian}" stroke="${parchment}" stroke-width="1.8"/>
-        <polygon points="0,-10 3,-2 10,-2 4,3 6,10 0,5 -6,10 -4,3 -10,-2 -3,-2" fill="${c1}" stroke="${parchment}" stroke-width="0.9"/>
-      </g>
-    `;
-  } else {
-    /* ФЭНТЕЗИ / РОМАНТИКА / МУЗЫКА / КИБЕРПАНК / МАГИЧЕСКИЕ ГРИМУАРЫ (Фрирен, Ре:Зеро, Звёздное дитя, Повелитель тайн и др.):
-       Гримуар в правом верхнем углу, магический посох/клинок вдоль левого борта, замок справа и цветок/звезда снизу */
-    bespokeSideArt = `
-      ${svgFiveLeafClover(22, 30, 12, c1, parchment)}
-      <!-- Книга заклинаний / Таро справа сверху -->
-      <g transform="translate(175, 30) rotate(20)">
-        <rect x="-12" y="-16" width="24" height="32" rx="2" fill="#120e1c" stroke="${parchment}" stroke-width="1.6"/>
-        <polygon points="0,-9 6,0 0,9 -6,0" fill="${c1}" stroke="${parchment}" stroke-width="1"/>
-      </g>
-      <!-- Посох / декоративное древко вдоль левого борта -->
-      <g transform="translate(15, 190) rotate(-5)">
-        <circle cx="0" cy="-76" r="9" fill="${obsidian}" stroke="${parchment}" stroke-width="1.8"/>
-        <polygon points="0,-83 5,-76 0,-69 -5,-76" fill="${c1}" stroke="${parchment}" stroke-width="1"/>
-        <line x1="0" y1="-67" x2="0" y2="82" stroke="${parchment}" stroke-width="3.2"/>
-        <line x1="0" y1="-67" x2="0" y2="82" stroke="${c1}" stroke-width="1.2" stroke-dasharray="6 4"/>
-      </g>
-      <!-- Башни замка и геральдический щит справа -->
-      <g transform="translate(182, 135)">
-        <polygon points="-12,20 -12,-6 -7,-20 -2,-6 2,-24 7,-6 12,-18 12,20" fill="${obsidian}" stroke="${parchment}" stroke-width="1.3"/>
-      </g>
-      <g transform="translate(181, 182)">
-        <path d="M-11,-10 L11,-10 L9,4 L0,13 L-9,4 Z" fill="${obsidian}" stroke="${parchment}" stroke-width="1.6"/>
-        <circle cx="0" cy="-1" r="4" fill="${c1}" stroke="${parchment}" stroke-width="0.9"/>
-      </g>
-      <!-- Центральная нижняя розетка в клубах дыма -->
-      ${svgFiveLeafClover(100, 276, 13, c1, parchment)}
-    `;
-  }
-
-  return `
-    <svg class="acf-heavy-svg" viewBox="0 0 200 300" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-      ${outerEngravedParchment}
-      ${bespokeSideArt}
-    </svg>
-  `;
-}
-
-/* ═══════════════════ ПОЛНАЯ БАЗА 122 ТАЙТЛОВ (С АНГЛИЙСКИМИ/ГОТИЧЕСКИМИ ТИТУЛАМИ ДЛЯ ВЕРХНЕЙ АРКИ КАК НА РЕФЕРЕНСЕ) ═══════════════════ */
-const EXACT_ANIME_FRAMES_RAW = [
-  ["100 девушек, которые очень-очень-очень-очень-очень сильно тебя любят", "#ff1493", "#ff80ab", "sakura_bloom", "100 ❀ Girlfriends"],
-  ["Аватар короля", "#ffd740", "#00e5ff", "swords_crossed", "King's ⚔ Avatar"],
-  ["Аватар: Легенда о Корре", "#00b0ff", "#ff6d00", "frost_crystal", "Legend 🌊 Korra"],
-  ["Аватар: Легенда об Аанге", "#00e5ff", "#ffab00", "magic_circle", "Avatar 💨 Aang"],
-  ["Агенты четырёх сезонов: Весенний танец", "#ff80ab", "#69f0ae", "sakura_bloom", "Four ❀ Seasons"],
-  ["Аля иногда кокетничает со мной по-русски", "#e0f7fa", "#ff4081", "frost_crystal", "Roshidere ❄ Alya"],
-  ["Ангел кровопролития", "#304ffe", "#ff1744", "gothic_thorn", "Angels 🌙 Death"],
-  ["Ангел по соседству", "#ffd54f", "#fff9c4", "sakura_bloom", "Angel 🪽 Next Door"],
-  ["Ангельские ритмы!", "#00e5ff", "#ffffff", "music_symphony", "Angel 🎹 Beats!"],
-  ["Арифурэта: Сильнейший ремесленник в мире", "#ff1744", "#b0bec5", "swords_crossed", "Arifureta 🔫"],
-  ["Атака титанов", "#b71c1c", "#ff5722", "wings_blade", "Attack ⚔ on Titan"],
-  ["Ателье колдовских колпаков", "#ffd740", "#80d8ff", "magic_circle", "Witch 🪄 Hat"],
-  ["Безумный азарт", "#d50000", "#ffd600", "cards_royal", "Kakegurui 🎲"],
-  ["Безэмоциональная Касивада и эмоциональный Ота", "#ff8a65", "#4fc3f7", "sakura_bloom", "Kashiwada ❀ Ota"],
-  ["Боруто: Новое Поколение", "#ff4081", "#00e5ff", "naruto_ninja", "Boruto ⚡ Naruto"],
-  ["Вайолет Эвергарден", "#00bfa5", "#ffd54f", "sakura_bloom", "Violet ✉ Evergarden"],
-  ["Ведьма и чудовище", "#b71c1c", "#9575cd", "gothic_thorn", "Witch 🥀 Beast"],
-  ["Ведьмина служба доставки", "#ff1744", "#2979ff", "nature_ghibli", "Kiki's 🧹 Delivery"],
-  ["Военная хроника маленькой девочки", "#ffd600", "#bf360c", "wings_blade", "Youjo ⚙ Senki"],
-  ["Волшебник ледяного клинка правит миром", "#00e5ff", "#82b1ff", "swords_crossed", "Iceblade 🧊 Sorcerer"],
-  ["Восемьдесят шесть", "#ff1744", "#cfd8dc", "wings_blade", "Eighty 🕷 Six · 86"],
-  ["Восхождение в тени", "#6200ea", "#00e5ff", "gothic_thorn", "Eminence 🌑 Shadow"],
-  ["Голубая шкатулка", "#00e5ff", "#ff80ab", "frost_crystal", "Blue 🏸 Box"],
-  ["Город, в котором меня нет", "#00b0ff", "#ff1744", "frost_crystal", "Erased 🦋 Revival"],
-  ["Дитя погоды", "#00b0ff", "#ffd740", "idol_star", "Weathering ☀ You"],
-  ["Добро пожаловать в класс превосходства", "#ff1744", "#d500f9", "cards_royal", "Classroom ♟ Elite"],
-  ["Забота об одарённой девушке: В престижной школе, полной высококлассных учеников, я буду тайно заботиться о самой красивой девушке (не имеющей никаких жизненных навыков)", "#ffd54f", "#f48fb1", "sakura_bloom", "Gifted 🎀 Lady"],
-  ["Задержи этот звук!", "#ffd54f", "#ff8a65", "music_symphony", "Kono 🎶 Oto Tomare"],
-  ["Звёздное дитя", "#ff1493", "#00f5ff", "idol_star", "Oshi ★ no Ko"],
-  ["Звучи, эуфониум", "#ffd740", "#ffab40", "music_symphony", "Hibike! 🎺 Euphonium"],
-  ["Зомбиапокалипсис и список из 100 дел, что я выполню перед смертью", "#00e676", "#ff1744", "chainsaw_teeth", "Zom 100 🎨 Bucket"],
-  ["Из мечтателя в реалиста", "#80d8ff", "#cfd8dc", "frost_crystal", "Dreamer 🍃 Realist"],
-  ["Извращенка со вторым размером", "#ff4081", "#b388ff", "sakura_bloom", "B-Cup 💋 Romance"],
-  ["Иллюзия рая", "#00e676", "#00b0ff", "nature_ghibli", "Heavenly 🌿 Delusion"],
-  ["Иная", "#d50000", "#455a64", "gothic_thorn", "Another 👁 Curse"],
-  ["История знакомства опытной тебя и неопытного меня", "#ff80ab", "#ffd54f", "sakura_bloom", "Kimizero 🌅 Love"],
-  ["История электричества в двадцатом веке", "#ffea00", "#00e5ff", "cyber_hud", "20th ⚡ Century"],
-  ["Кабанэри железной крепости", "#ff3d00", "#ffb300", "wings_blade", "Kabaneri 🚂 Iron"],
-  ["Как и ожидал, моя школьная романтическая жизнь не удалась", "#80d8ff", "#ff80ab", "frost_crystal", "OreGairu ☕ Genuine"],
-  ["Карманы лета", "#00e5ff", "#fff59d", "nature_ghibli", "Summer 🦋 Pockets"],
-  ["Киберпанк: Бегущие по краю", "#ffea00", "#00f5ff", "cyber_hud", "Cyberpunk ⚡ 2077"],
-  ["Клинок, рассекающий демонов", "#ff3d00", "#00e676", "demon_slayer", "Demon 🗡 Slayer"],
-  ["Корзинка фруктов", "#ff80ab", "#fff59d", "sakura_bloom", "Fruits 🍙 Basket"],
-  ["Королева со скальпелем", "#00e5ff", "#ffd740", "cards_royal", "Doctor 🩺 Elise"],
-  ["Корона грешника", "#ff1744", "#7c4dff", "gothic_thorn", "Guilty 👑 Crown"],
-  ["Кошечка из Сакурасо", "#ff80ab", "#ffd740", "sakura_bloom", "Sakurasou 🎨 Pet"],
-  ["Ликорис Рикоил", "#ff1744", "#00b0ff", "cyber_hud", "Lycoris 🌺 Recoil"],
-  ["Магическая битва", "#651fff", "#ff1744", "gothic_thorn", "Jujutsu 🤞 Kaisen"],
-  ["Мастера Меча Онлайн", "#00f5ff", "#2979ff", "swords_crossed", "Sword ⚔ Art Online"],
-  ["Мастера на все руки выгнали из отряда героев", "#00e5ff", "#ffd740", "swords_crossed", "Handyman 🛡 Hero"],
-  ["Младшая сестра моего друга досаждает", "#ffab00", "#40c4ff", "idol_star", "ImoUza ★ Tease"],
-  ["Может ли существовать дружба между мужчиной и женщиной? (Нет, это не так!)", "#2979ff", "#ff4081", "sakura_bloom", "Danjo 🌺 Friendship"],
-  ["Мой сосед Тоторо", "#69f0ae", "#ffd54f", "nature_ghibli", "My Neighbor 🍃 Totoro"],
-  ["Молчаливая ведьма: Тайна молчаливой колдуньи", "#b388ff", "#80d8ff", "magic_circle", "Silent 🔮 Witch"],
-  ["Монолог фармацевта", "#00e676", "#ffd740", "nature_ghibli", "Apothecary 🌿 Diaries"],
-  ["Моя возлюбленная забыла свои очки", "#ffb74d", "#81d4fa", "sakura_bloom", "Forgot 👓 Glasses"],
-  ["Наруто", "#ff7b00", "#ffd700", "naruto_ninja", "Naruto 🍥 Shippuden"],
-  ["Не скрывая крик", "#ff1744", "#00e5ff", "music_symphony", "Girls 🎸 Band Cry"],
-  ["Небесный замок Лапута", "#80d8ff", "#ffd740", "nature_ghibli", "Castle 💎 in the Sky"],
-  ["Непринуждённая жизнь в другом мире экс-кандидата в герои, оказавшегося читером со второго уровня", "#ffd740", "#69f0ae", "magic_circle", "Lv2 ♾ Cheat Hero"],
-  ["Один танец", "#00f5ff", "#ff1493", "music_symphony", "Wandance 🕺 Stage"],
-  ["Одинокий рокер!", "#ff4081", "#ffea00", "music_symphony", "Bocchi 🎸 the Rock!"],
-  ["Он — сильнейший учитель!", "#00e5ff", "#ffd740", "magic_circle", "Ultimate 🎓 Otaku"],
-  ["Освободите эту ведьму", "#ff6d00", "#ffd740", "magic_circle", "Release 🔥 that Witch"],
-  ["Отчаянные бойцы Бакуган", "#ff3d00", "#00e676", "flame", "Bakugan 🐉 Battle"],
-  ["Очень приятно, Бог", "#ff5252", "#ffd740", "sakura_bloom", "Kamisama 🦊 Kiss"],
-  ["Парад смерти", "#b57cff", "#00e5ff", "cards_royal", "Death 🍸 Parade"],
-  ["Песнь ночных сов", "#d500f9", "#00e5ff", "idol_star", "Call 🌙 of the Night"],
-  ["Пластиковые воспоминания", "#80d8ff", "#ff80ab", "frost_crystal", "Plastic 🎡 Memories"],
-  ["Плачущий призрак на пенсии", "#b388ff", "#ffd740", "magic_circle", "Grieving 👻 Soul"],
-  ["По велению адской сестры", "#ff1744", "#d500f9", "gothic_thorn", "Testament 😈 Sister"],
-  ["Повар-боец Сома", "#ff6d00", "#ffd600", "flame", "Food 🍽 Wars! Soma"],
-  ["Повелитель тайн: Клоун", "#ffd740", "#7e57c2", "cards_royal", "Lord 🃏 of Mysteries"],
-  ["Поднятие уровня в одиночку", "#304ffe", "#00e5ff", "swords_crossed", "Solo 🗡 Leveling"],
-  ["Покемон", "#ffea00", "#ff1744", "idol_star", "Pokémon ⚡ Master"],
-  ["Полуночный мотив сердца", "#7c4dff", "#ff4081", "music_symphony", "Mayonaka 🎙 Heart"],
-  ["Поцелуй сестёр", "#ff80ab", "#ff4081", "sakura_bloom", "Kiss 💋 x Sis"],
-  ["Пощади меня, великий господин", "#ff1744", "#7c4dff", "swords_crossed", "Spare 🗡 Me, Lord!"],
-  ["Призматическое рондо", "#00e5ff", "#ff80ab", "idol_star", "Prism 🌈 Rondo"],
-  ["Приключения пингвинёнка Лоло", "#80d8ff", "#ffffff", "frost_crystal", "Lolo 🐧 Adventures"],
-  ["Провожающая в последний путь Фрирен", "#ffe57f", "#80d8ff", "magic_circle", "Frieren 🪄 Journey"],
-  ["Проект «Мир»: Сломанный мир и непоющая Мику", "#00f5ff", "#ff4081", "music_symphony", "Project 🎤 Sekai"],
-  ["Просто так!", "#ffb74d", "#80d8ff", "sakura_bloom", "Just 📷 Because!"],
-  ["Путешествие Элейны", "#b388ff", "#ffd54f", "magic_circle", "Wandering 🧹 Witch"],
-  ["Пять сантиметров в секунду", "#ff80ab", "#b39ddb", "sakura_bloom", "5cm 🌸 per Second"],
-  ["Реинкарнация безработного: История о приключениях в другом мире", "#ffd54f", "#00e676", "magic_circle", "Mushoku 🪄 Tensei"],
-  ["Рок — женская скромность", "#f48fb1", "#fff59d", "music_symphony", "Rock 🎸 Modesty"],
-  ["Рыбка Поньо на утесе", "#ff5252", "#40c4ff", "nature_ghibli", "Ponyo 🐠 on the Cliff"],
-  ["С нынешними детективами ничего не поделаешь", "#ffd740", "#90a4ae", "cards_royal", "Detectives 🔍 Today"],
-  ["Связь сердец", "#ff80ab", "#00e5ff", "idol_star", "Kokoro 💞 Connect"],
-  ["Сказание об Аканэ", "#ff5252", "#ffd740", "sakura_bloom", "Akane 🪭 Banashi"],
-  ["Судзумэ, закрывающая двери", "#00e5ff", "#ff5252", "idol_star", "Suzume 🚪 Locking"],
-  ["Суперпринцесса Кагуя!", "#ffd740", "#ff80ab", "cards_royal", "Princess 🎋 Kaguya"],
-  ["Тацуки Фудзимото: С семнадцати до двадцати шести", "#ff3d00", "#00e5ff", "chainsaw_teeth", "Fujimoto 🎬 17–26"],
-  ["Твоё имя", "#00b0ff", "#ff4081", "idol_star", "Your ☄ Name."],
-  ["Твоя апрельская ложь", "#80d8ff", "#ff80ab", "music_symphony", "Your 🎻 Lie in April"],
-  ["Тетрадь Смерти", "#d50000", "#9e9e9e", "gothic_thorn", "Death 🍎 Note"],
-  ["Тоннель в лето, выход прощаний", "#ff6d00", "#00b0ff", "nature_ghibli", "Summer 🍁 Tunnel"],
-  ["ТораДора!", "#ff9100", "#ff4081", "flame", "ToraDora! 🐯"],
-  ["Троецарствие Японии", "#ff1744", "#ffd740", "swords_crossed", "Three 🏯 Kingdoms"],
-  ["Тусовщик Кунмин", "#00f5ff", "#ffd740", "music_symphony", "Ya Boy 🪩 Kongming!"],
-  ["Убийца Акамэ!", "#ff1744", "#212121", "swords_crossed", "Akame 🩸 ga Kill!"],
-  ["Убийца гоблинов", "#ff3d00", "#78909c", "swords_crossed", "Goblin 🛡 Slayer"],
-  ["Укрась прощальное утро цветами обещания", "#fff59d", "#81d4fa", "sakura_bloom", "Maquia 🌸 Promise"],
-  ["Унесенные призраками", "#ff5252", "#ffd740", "nature_ghibli", "Spirited 🏮 Away"],
-  ["Фармацевт из параллельного мира", "#00e5ff", "#69f0ae", "magic_circle", "Parallel ⚗ Pharmacy"],
-  ["Форма голоса", "#80d8ff", "#ff80ab", "sakura_bloom", "A Silent 🌸 Voice"],
-  ["Ходячий замок", "#ff9100", "#40c4ff", "flame", "Howl's 🔥 Castle"],
-  ["Хоримия", "#ff4081", "#40c4ff", "sakura_bloom", "Horimiya 💫"],
-  ["Хоть я и бездарная злодейка: Сказка о том, как бабочка и крыса поменялись местами в девичьем дворе", "#ff80ab", "#ffd740", "cards_royal", "Villainess 🦋 Court"],
-  ["Человек-бензопила", "#ff3d00", "#ffea00", "chainsaw_teeth", "Chainsaw 🪚 Man"],
-  ["Чёрный клевер", "#dc143c", "#ff1744", "clover5", "Black ♣ Clover"],
-  ["Чёрный факел", "#ff3d00", "#651fff", "gothic_thorn", "Black 🔥 Torch"],
-  ["Чудачества любви не помеха", "#d500f9", "#ffd740", "magic_circle", "Chuunibyou 👁 Love"],
-  ["Шарлотта", "#00e5ff", "#ffd740", "idol_star", "Charlotte ☄"],
-  ["Эта фарфоровая кукла влюбилась", "#ff4081", "#ffd740", "sakura_bloom", "Dress-Up 🎀 Darling"],
-  ["Этот замечательный мир!", "#ff3d00", "#ffd600", "magic_circle", "KonoSuba! 💥"],
-  ["Эхо террора", "#90a4ae", "#00e5ff", "cyber_hud", "Terror 🪶 Resonance"],
-  ["Я подружился со второй самой симпатичной девушкой в классе", "#ffd740", "#80d8ff", "sakura_bloom", "Second ☀ Cutest"],
-  ["Я хочу съесть твою поджелудочную", "#ff80ab", "#80d8ff", "sakura_bloom", "Pancreas 🌸 Spring"],
-  ["ID: Вторжение", "#00f5ff", "#ff1744", "cyber_hud", "ID: 🧩 Invaded"],
-  ["Re:Zero. Жизнь с нуля в альтернативном мире", "#b57cff", "#00e5ff", "magic_circle", "Re:Zero ❄ Starting"]
+const BORDER_KEYS = Object.keys(FRAME_BORDERS);
+const LEFT_KEYS = Object.keys(LEFT_ARTS);
+const RIGHT_KEYS = Object.keys(RIGHT_ARTS);
+const BOTTOM_KEYS = Object.keys(BOTTOM_ARTS);
+const PALETTE_PAIRS = [
+  ["#ff4081", "#ffd740"], ["#00e5ff", "#7c4dff"], ["#ff6d00", "#ffea00"], ["#00e676", "#00b0ff"],
+  ["#ff1744", "#b57cff"], ["#ffd740", "#00bfa5"], ["#f48fb1", "#80d8ff"], ["#d500f9", "#ff5252"],
+  ["#40c4ff", "#ffd54f"], ["#ff5252", "#69f0ae"], ["#b388ff", "#ff80ab"], ["#ffab40", "#4fc3f7"]
 ];
-
-const EXACT_ANIME_FRAMES_MAP = new Map();
-const NORM_ANIME_FRAMES_MAP = new Map();
-
-function normalizeTitleForExactMatch(str) {
-  return String(str || "")
-    .trim()
-    .toLowerCase()
-    .replace(/ё/g, "е")
-    .replace(/\s+/g, " ");
-}
-
-EXACT_ANIME_FRAMES_RAW.forEach(([exactTitle, c1, c2, motif, bannerText], idx) => {
-  const frameConfig = {
-    id: idx + 1,
-    exactTitle,
-    c1,
-    c2,
-    motif,
-    bannerText: bannerText || exactTitle.slice(0, 18)
-  };
-  EXACT_ANIME_FRAMES_MAP.set(exactTitle.trim(), frameConfig);
-  NORM_ANIME_FRAMES_MAP.set(normalizeTitleForExactMatch(exactTitle), frameConfig);
-});
 
 function getTitleCustomFrame(title) {
   if (!title) return null;
-  const trimmed = String(title).trim();
-
-  if (EXACT_ANIME_FRAMES_MAP.has(trimmed)) {
-    return EXACT_ANIME_FRAMES_MAP.get(trimmed);
+  const clean = String(title).trim();
+  const key = clean.toLowerCase();
+  if (SIGNATURE_TITLES[key]) {
+    return { ...SIGNATURE_TITLES[key], exactTitle: clean };
   }
-  const normKey = normalizeTitleForExactMatch(trimmed);
-  if (NORM_ANIME_FRAMES_MAP.has(normKey)) {
-    return NORM_ANIME_FRAMES_MAP.get(normKey);
+  let h1 = 2166136261, h2 = 16777619;
+  for (let i = 0; i < key.length; i++) {
+    h1 ^= key.charCodeAt(i);
+    h1 = Math.imul(h1, 16777619) >>> 0;
+    h2 = (h2 * 31 + key.charCodeAt(i) * (i + 3)) >>> 0;
   }
-  return null;
+  const [c1, c2] = PALETTE_PAIRS[h1 % PALETTE_PAIRS.length];
+  return {
+    exactTitle: clean,
+    c1,
+    c2,
+    border: BORDER_KEYS[h1 % BORDER_KEYS.length],
+    left: LEFT_KEYS[(h1 >>> 4) % LEFT_KEYS.length],
+    right: RIGHT_KEYS[h2 % RIGHT_KEYS.length],
+    bottom: BOTTOM_KEYS[(h2 >>> 5) % BOTTOM_KEYS.length],
+    banner: clean.length > 18 ? clean.slice(0, 17).trim() + "…" : clean
+  };
 }
 window.getTitleCustomFrame = getTitleCustomFrame;
 
-let frameUidCounter = 0;
 function renderTitleCustomFrameHtml(title) {
   const f = getTitleCustomFrame(title);
   if (!f) return "";
-  frameUidCounter = (frameUidCounter + 1) % 99999;
-  const svgMarkup = buildHeavyEngravedFrameSvg(f, `${f.id}_${frameUidCounter}`);
+  const p = "#e2ceb0";
+  const borderSvg = (FRAME_BORDERS[f.border] || FRAME_BORDERS.parchment)(f.c1, f.c2, p);
+  const leftSvg = (LEFT_ARTS[f.left] || LEFT_ARTS.buster)(f.c1, f.c2, p);
+  const rightSvg = (RIGHT_ARTS[f.right] || RIGHT_ARTS.castle)(f.c1, f.c2, p);
+  const bottomSvg = (BOTTOM_ARTS[f.bottom] || BOTTOM_ARTS.crest)(f.c1, f.c2, p);
 
   return `
-    <span class="anime-custom-frame" data-frame-id="${f.id}" data-motif="${esc(f.motif)}" style="--fc1:${f.c1};--fc2:${f.c2};" aria-hidden="true">
-      ${svgMarkup}
+    <span class="anime-custom-frame" style="--fc1:${f.c1};--fc2:${f.c2};" aria-hidden="true">
+      <svg class="acf-heavy-svg" viewBox="0 0 200 300" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+        ${borderSvg}
+        <path d="M36,4 H164 L156,25 C120,21 80,21 44,25 Z" fill="#09070e" stroke="${p}" stroke-width="1.3"/>
+        <text x="100" y="19" text-anchor="middle" fill="${p}" font-family="'Cinzel','Playfair Display',serif" font-weight="900" font-size="10.5" letter-spacing="0.04em">${esc(f.banner)}</text>
+        ${leftSvg}
+        ${rightSvg}
+        ${bottomSvg}
+      </svg>
     </span>
   `;
 }
